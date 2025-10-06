@@ -1,0 +1,24 @@
+/* Custom scrollbar for Webkit browsers */
+.scrollbar-hide::-webkit-scrollbar {
+  height: 4px;
+}
+
+.scrollbar-hide::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 2px;
+}
+
+.scrollbar-hide::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 2px;
+}
+
+.scrollbar-hide::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* For Firefox */
+.scrollbar-hide {
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
+}

@@ -1,0 +1,501 @@
+
+import React, { useState, ChangeEvent } from 'react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ChevronDown, ArrowLeft, Camera, X, Plus, Trash2, Star } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+
+interface Portfolio {
+  id: number;
+  title: string;
+  views: string;
+  thumbnail: string;
+  images?: string[];
+  mediaCount: number;
+  description: string;
+  category: string;
+  bhk?: string;
+  buildDate?: string;
+  budget?: string;
+  specifications?: string[];
+}
+
+interface AboutInfo {
+  profession: string;
+  experience: string;
+  skills: string[];
+  location: string;
+  contact: string;
+}
+
+interface EditProfileProps {
+  onBack: () => void;
+  onSave: (profileData: any) => void;
+  initialData?: any;
+}
+
+const EditProfile: React.FC<EditProfileProps> = ({ onBack, onSave, initialData }) => {
+  const [profileImage, setProfileImage] = useState(initialData?.profileImage || '/lovable-uploads/1c8904bf-5b78-4e55-88ea-dc5028083eef.png');
+  const [bio, setBio] = useState(initialData?.bio || '💫 ✨🎵✨ Hrushikesh More ✨🎵✨ 💫');
+  const [occupation, setOccupation] = useState(initialData?.occupation || '👨‍💻 Computer Engineer');
+  const [additionalInfo, setAdditionalInfo] = useState(initialData?.additionalInfo || '🎧 Music in My Soul... more');
+  
+  const [portfolios, setPortfolios] = useState<Portfolio[]>(initialData?.portfolios || [
+    {
+      id: 1,
+      title: 'Hrushi Live Part-1',
+      views: '1,311',
+      thumbnail: 'https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=600&fit=crop',
+      mediaCount: 5,
+      description: 'Live performance featuring acoustic guitar and vocals with audience interaction.',
+      category: 'Live Performance'
+    },
+    {
+      id: 2,
+      title: 'Hrushi Live Part-2',
+      views: '1,449',
+      thumbnail: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=400&h=600&fit=crop',
+      mediaCount: 3,
+      description: 'Continuation of the live session with electronic music elements.',
+      category: 'Live Performance'
+    }
+  ]);
+
+  const [aboutInfo, setAboutInfo] = useState<AboutInfo>(initialData?.aboutInfo || {
+    profession: '🎵 Music Producer & Sound Engineer',
+    experience: '5+ years in music production and live performances',
+    skills: ['Music Production', 'Sound Engineering', 'Live Performance', 'Multi-instrumentalist'],
+    location: '📍 Based in Mumbai, India',
+    contact: 'hrushikesh.more@email.com'
+  });
+
+  const [newPortfolio, setNewPortfolio] = useState({
+    title: '',
+    thumbnail: '',
+    mediaCount: 1,
+    description: '',
+    category: '',
+    bhk: '',
+    buildDate: '',
+    budget: '',
+    specifications: [] as string[],
+    specificationInput: ''
+  });
+
+  const [showAddPortfolio, setShowAddPortfolio] = useState(false);
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setProfileImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handlePortfolioImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setNewPortfolio(prev => ({ ...prev, thumbnail: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setProfileImage('');
+  };
+
+  const handleAddPortfolio = () => {
+    if (newPortfolio.title && newPortfolio.thumbnail) {
+      const portfolio: Portfolio = {
+        id: Date.now(),
+        title: newPortfolio.title,
+        views: '0',
+        thumbnail: newPortfolio.thumbnail,
+        mediaCount: newPortfolio.mediaCount,
+        description: newPortfolio.description,
+        category: newPortfolio.category,
+        bhk: newPortfolio.bhk,
+        buildDate: newPortfolio.buildDate,
+        budget: newPortfolio.budget,
+        specifications: [...newPortfolio.specifications]
+      };
+      setPortfolios(prev => [...prev, portfolio]);
+      setNewPortfolio({ 
+        title: '', 
+        thumbnail: '', 
+        mediaCount: 1, 
+        description: '', 
+        category: '',
+        bhk: '',
+        buildDate: '',
+        budget: '',
+        specifications: [],
+        specificationInput: ''
+      });
+      setShowAddPortfolio(false);
+    }
+  };
+
+  const addSpecification = () => {
+    if (newPortfolio.specificationInput.trim()) {
+      setNewPortfolio(prev => ({
+        ...prev,
+        specifications: [...prev.specifications, prev.specificationInput],
+        specificationInput: ''
+      }));
+    }
+  };
+
+  const removeSpecification = (index: number) => {
+    setNewPortfolio(prev => ({
+      ...prev,
+      specifications: prev.specifications.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleDeletePortfolio = (id: number) => {
+    setPortfolios(prev => prev.filter(p => p.id !== id));
+  };
+
+  const handleSave = () => {
+    const updatedData = {
+      profileImage,
+      bio,
+      occupation,
+      additionalInfo,
+      portfolios,
+      aboutInfo
+    };
+    onSave(updatedData);
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-white">
+      {/* Header */}
+      <div className="sticky top-0 z-50 bg-black border-b border-gray-800 px-4 py-3">
+        <div className="flex items-center justify-between">
+          <button onClick={onBack} className="p-2 hover:bg-gray-800 rounded-full">
+            <ArrowLeft size={20} />
+          </button>
+          <h1 className="text-lg font-semibold">Edit Profile</h1>
+          <Button 
+            onClick={handleSave}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 text-sm"
+          >
+            Save
+          </Button>
+        </div>
+      </div>
+
+      <div className="px-4 py-6 pb-24 space-y-6">
+        {/* Profile Picture Section */}
+        <div className="text-center">
+          <div className="relative inline-block">
+            {profileImage ? (
+              <div className="relative">
+                <img
+                  src={profileImage}
+                  alt="Profile"
+                  className="w-24 h-24 rounded-full object-cover"
+                />
+                <button
+                  onClick={handleRemoveImage}
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs hover:bg-red-600"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ) : (
+              <div className="w-24 h-24 rounded-full bg-gray-700 flex items-center justify-center">
+                <Camera size={24} className="text-gray-400" />
+              </div>
+            )}
+            <label className="absolute -bottom-2 -right-2 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white cursor-pointer hover:bg-blue-600">
+              <Camera size={16} />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+            </label>
+          </div>
+          <p className="text-sm text-gray-400 mt-2">Change profile picture</p>
+        </div>
+
+        {/* Bio Section */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-300">Bio</label>
+          <Textarea
+            value={bio}
+            onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setBio(e.target.value)}
+            className="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 resize-none"
+            rows={3}
+            placeholder="Tell people about yourself..."
+          />
+        </div>
+
+        {/* Occupation Section */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-300">Occupation</label>
+          <input
+            type="text"
+            value={occupation}
+            onChange={(e) => setOccupation(e.target.value)}
+            className="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+            placeholder="Your occupation..."
+          />
+        </div>
+
+        {/* Additional Info Section */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-300">Additional Info</label>
+          <input
+            type="text"
+            value={additionalInfo}
+            onChange={(e) => setAdditionalInfo(e.target.value)}
+            className="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+            placeholder="Additional information..."
+          />
+        </div>
+
+        {/* About Section */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">About Information</h3>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">Profession</label>
+            <input
+              type="text"
+              value={aboutInfo.profession}
+              onChange={(e) => setAboutInfo(prev => ({ ...prev, profession: e.target.value }))}
+              className="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">Experience</label>
+            <input
+              type="text"
+              value={aboutInfo.experience}
+              onChange={(e) => setAboutInfo(prev => ({ ...prev, experience: e.target.value }))}
+              className="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">Location</label>
+            <input
+              type="text"
+              value={aboutInfo.location}
+              onChange={(e) => setAboutInfo(prev => ({ ...prev, location: e.target.value }))}
+              className="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">Contact</label>
+            <input
+              type="text"
+              value={aboutInfo.contact}
+              onChange={(e) => setAboutInfo(prev => ({ ...prev, contact: e.target.value }))}
+              className="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+            />
+          </div>
+        </div>
+
+        {/* Portfolio Management Section */}
+        <div className="space-y-4">
+          <div className="relative">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Portfolio Management</h3>
+              <Button
+                onClick={() => setShowAddPortfolio(!showAddPortfolio)}
+                className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 text-sm flex items-center gap-2"
+              >
+                <Plus size={16} />
+                {showAddPortfolio ? 'Close' : 'Add Portfolio'}
+              </Button>
+            </div>
+            
+            {/* Add Portfolio Form */}
+            {showAddPortfolio && (
+              <div className="mt-4 w-full">
+                <div className="bg-gray-800 p-4 rounded-lg space-y-4 border border-gray-700 shadow-lg">
+                  <h4 className="font-medium">Add New Portfolio</h4>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-1">Title</label>
+                      <input
+                        type="text"
+                        value={newPortfolio.title}
+                        onChange={(e) => setNewPortfolio(prev => ({ ...prev, title: e.target.value }))}
+                        className="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        placeholder="Enter project title"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-1">Project Overview</label>
+                      <Textarea
+                        value={newPortfolio.description}
+                        onChange={(e) => setNewPortfolio(prev => ({ ...prev, description: e.target.value }))}
+                        className="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        placeholder="Enter detailed project overview"
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Category</label>
+                        <input
+                          type="text"
+                          value={newPortfolio.category}
+                          onChange={(e) => setNewPortfolio(prev => ({ ...prev, category: e.target.value }))}
+                          className="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                          placeholder="E.g., Modern, Luxury"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">BHK</label>
+                        <input
+                          type="text"
+                          value={newPortfolio.bhk}
+                          onChange={(e) => setNewPortfolio(prev => ({ ...prev, bhk: e.target.value }))}
+                          className="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                          placeholder="E.g., 2 BHK, 3 BHK"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Build Date</label>
+                        <input
+                          type="text"
+                          value={newPortfolio.buildDate}
+                          onChange={(e) => setNewPortfolio(prev => ({ ...prev, buildDate: e.target.value }))}
+                          className="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                          placeholder="E.g., January 2023"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Budget</label>
+                        <input
+                          type="text"
+                          value={newPortfolio.budget}
+                          onChange={(e) => setNewPortfolio(prev => ({ ...prev, budget: e.target.value }))}
+                          className="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                          placeholder="E.g., ₹50L - ₹60L"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-1">Thumbnail Image</label>
+                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-700 border-gray-600 hover:bg-gray-600">
+                        {newPortfolio.thumbnail ? (
+                          <img src={newPortfolio.thumbnail} alt="Preview" className="h-full w-full object-cover rounded" />
+                        ) : (
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <Camera className="w-8 h-8 mb-2 text-gray-400" />
+                            <p className="text-sm text-gray-400">Click to upload thumbnail</p>
+                          </div>
+                        )}
+                        <input type="file" className="hidden" onChange={handlePortfolioImageUpload} />
+                      </label>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-1">Specifications</label>
+                      <div className="flex gap-2 mb-2">
+                        <input
+                          type="text"
+                          value={newPortfolio.specificationInput || ''}
+                          onChange={(e) => setNewPortfolio(prev => ({ ...prev, specificationInput: e.target.value }))}
+                          onKeyPress={(e) => e.key === 'Enter' && addSpecification()}
+                          className="flex-1 bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                          placeholder="Add specification and press Enter"
+                        />
+                        <button
+                          type="button"
+                          onClick={addSpecification}
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
+                        >
+                          Add
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {newPortfolio.specifications?.map((spec, index) => (
+                          <div key={index} className="bg-gray-700 px-3 py-1 rounded-full text-sm flex items-center">
+                            {spec}
+                            <button 
+                              type="button"
+                              onClick={() => removeSpecification(index)}
+                              className="ml-2 text-gray-300 hover:text-white"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 pt-4">
+                      <Button
+                        onClick={handleAddPortfolio}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm"
+                      >
+                        Add Portfolio
+                      </Button>
+                      <Button
+                        onClick={() => setShowAddPortfolio(false)}
+                        className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 text-sm"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Current Portfolios */}
+          <div className="space-y-3 pt-4">
+            {portfolios.map((portfolio) => (
+              <div key={portfolio.id} className="bg-gray-800 p-4 rounded-lg flex items-center gap-4">
+                <img
+                  src={portfolio.thumbnail}
+                  alt={portfolio.title}
+                  className="w-16 h-16 object-cover rounded"
+                />
+                <div className="flex-1">
+                  <h4 className="font-medium">{portfolio.title}</h4>
+                  <p className="text-sm text-gray-400">{portfolio.category}</p>
+                  <p className="text-xs text-gray-500">{portfolio.mediaCount} media files</p>
+                </div>
+                <button
+                  onClick={() => handleDeletePortfolio(portfolio.id)}
+                  className="p-2 hover:bg-red-500 rounded-full text-red-400 hover:text-white"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default EditProfile;

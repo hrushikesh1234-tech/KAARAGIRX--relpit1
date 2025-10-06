@@ -61,44 +61,67 @@ export class AuthController {
       
       // Create professional profile for contractor, architect, and rental merchant
       if (validatedData.userType === 'contractor' || validatedData.userType === 'architect' || validatedData.userType === 'rental_merchant') {
-        const location = validatedData.city && validatedData.state 
-          ? `${validatedData.city}, ${validatedData.state}`
-          : validatedData.city || validatedData.state || '';
-        
-        await professionalService.createProfessional({
-          userId: newUser.id,
-          companyName: validatedData.companyName || '',
-          address: validatedData.address || '',
-          pincode: validatedData.pincode || '',
-          phone: validatedData.phone || '',
-          profession: validatedData.userType as 'contractor' | 'architect' | 'rental_merchant',
-          experience: parseInt(validatedData.experience?.split('-')[0] || '1') || 1,
-          location: location,
-        });
-        console.log('Created professional profile for user:', newUser.id);
+        try {
+          const location = validatedData.city && validatedData.state 
+            ? `${validatedData.city}, ${validatedData.state}`
+            : validatedData.city || validatedData.state || '';
+          
+          console.log('Creating professional profile with data:', {
+            userId: newUser.id,
+            profession: validatedData.userType,
+            location: location || 'Not provided',
+          });
+          
+          await professionalService.createProfessional({
+            userId: newUser.id,
+            companyName: validatedData.companyName || '',
+            address: validatedData.address || '',
+            pincode: validatedData.pincode || '',
+            phone: validatedData.phone || '',
+            profession: validatedData.userType as 'contractor' | 'architect' | 'rental_merchant',
+            experience: parseInt(validatedData.experience?.split('-')[0] || '1') || 1,
+            location: location,
+          });
+          console.log('Created professional profile for user:', newUser.id);
+        } catch (profError) {
+          console.error('Error creating professional profile:', profError);
+        }
       }
       
       // Create dealer profile for material dealer
       if (validatedData.userType === 'material_dealer') {
-        const location = validatedData.city && validatedData.state 
-          ? `${validatedData.city}, ${validatedData.state}`
-          : validatedData.city || validatedData.state || '';
-        
-        // Generate unique dealer code
-        const dealerCode = `DLR${newUser.id}${Date.now().toString().slice(-4)}`;
-        
-        await dealerService.createDealer({
-          userId: newUser.id,
-          dealerCode: dealerCode,
-          name: validatedData.companyName || validatedData.fullName,
-          location: location,
-          phone: validatedData.phone,
-          category: 'Building Materials',
-          subcategory: 'General',
-          price: '0',
-          unit: 'unit',
-        });
-        console.log('Created dealer profile for user:', newUser.id);
+        try {
+          const location = validatedData.city && validatedData.state 
+            ? `${validatedData.city}, ${validatedData.state}`
+            : validatedData.city || validatedData.state || 'Not provided';
+          
+          if (!location || location === 'Not provided') {
+            console.warn('No location provided for dealer, using default');
+          }
+          
+          // Generate unique dealer code
+          const dealerCode = `DLR${newUser.id}${Date.now().toString().slice(-4)}`;
+          
+          console.log('Creating dealer profile with data:', {
+            userId: newUser.id,
+            dealerCode: dealerCode,
+            location: location,
+          });
+          
+          await dealerService.createDealer({
+            userId: newUser.id,
+            dealerCode: dealerCode,
+            name: validatedData.companyName || validatedData.fullName,
+            location: location,
+            category: 'Building Materials',
+            subcategory: 'General',
+            price: '0',
+            unit: 'unit',
+          });
+          console.log('Created dealer profile for user:', newUser.id);
+        } catch (dealerError) {
+          console.error('Error creating dealer profile:', dealerError);
+        }
       }
       
       res.status(201).json({

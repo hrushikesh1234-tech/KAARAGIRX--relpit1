@@ -61,6 +61,11 @@ const ConversationsListME = lazy(() => import("./pages/messages/conversationsME"
 const NewMessageME = lazy(() => import("./pages/messages/new-messageME"));
 const ConversationDetailME = lazy(() => import("./pages/messages/conversation-detailME"));
 
+// Dashboard Pages
+const MaterialDealerDashboard = lazy(() => import("@/pages/dealer-dashboard/MaterialDealerDashboard"));
+const RentalMerchantDashboard = lazy(() => import("@/pages/rental-dashboard/RentalMerchantDashboard"));
+const CustomerDashboard = lazy(() => import("@/pages/customer-dashboard/CustomerDashboard"));
+
 // Loading spinner component
 function LoadingSpinner() {
   return (
@@ -204,6 +209,23 @@ function AppRoutes() {
           {/* Redirect old dashboard messages route */}
           <Route path="/dashboard/messages" element={
             <Navigate to="/messages" replace />
+          } />
+          
+          {/* Dashboard Routes */}
+          <Route path="/customer/dashboard" element={
+            <Suspense fallback={<LoadingSpinner />}>
+              <CustomerDashboard />
+            </Suspense>
+          } />
+          <Route path="/dealer/dashboard" element={
+            <Suspense fallback={<LoadingSpinner />}>
+              <MaterialDealerDashboard />
+            </Suspense>
+          } />
+          <Route path="/rental/dashboard" element={
+            <Suspense fallback={<LoadingSpinner />}>
+              <RentalMerchantDashboard />
+            </Suspense>
           } />
           
           {/* 404 Route */}

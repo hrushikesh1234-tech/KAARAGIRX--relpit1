@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProfessionalHub Dashboard Preview</title>
+  <style>
+    :root {
+      --theme-primary: #2563eb;
+      --theme-primary-darker: #1d4ed8;
+      --primary-gradient: linear-gradient(to right, #2563eb, #1d4ed8);
+      --radius: 0.5rem;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background-color: #f8fafc;
+      color: #334155;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    
+    h1 {
+      font-size: 1.75rem;
+      margin-bottom: 1.5rem;
+      color: #1e293b;
+    }
+    
+    h2 {
+      font-size: 1.25rem;
+      margin: 1.5rem 0 0.75rem;
+      color: #1e293b;
+    }
+    
+    .card {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .flex {
+      display: flex;
+    }
+    
+    .wrap {
+      flex-wrap: wrap;
+    }
+    
+    .gap-4 {
+      gap: 1rem;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: var(--radius);
+      border: 1px solid #e2e8f0;
+    }
+    
+    .feature-list {
+      list-style-type: none;
+      margin: 1rem 0;
+    }
+    
+    .feature-list li {
+      padding: 0.5rem 0;
+      display: flex;
+      align-items: center;
+    }
+    
+    .feature-list li::before {
+      content: "✓";
+      color: var(--theme-primary);
+      font-weight: bold;
+      margin-right: 0.5rem;
+    }
+    
+    .gradient-bg {
+      background: var(--primary-gradient);
+      color: white;
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      font-weight: 500;
+    }
+    
+    .color-swatch {
+      width: 100px;
+      height: 40px;
+      border-radius: var(--radius);
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .theme-primary {
+      background-color: var(--theme-primary);
+    }
+    
+    .theme-primary-dark {
+      background-color: var(--theme-primary-darker);
+    }
+    
+    .theme-gradient {
+      background: var(--primary-gradient);
+    }
+    
+    button {
+      background: var(--theme-primary);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius);
+      font-weight: 500;
+      cursor: pointer;
+    }
+    
+    button:hover {
+      background: var(--theme-primary-darker);
+    }
+    
+    .preview-image {
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 1rem;
+    }
+    
+    .emoji-picker {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid #e2e8f0;
+      padding: 0.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+    
+    .emoji {
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    
+    .mobile-nav {
+      background: #fff;
+      border-top: 1px solid #e2e8f0;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      padding: 0.5rem;
+      text-align: center;
+    }
+    
+    .mobile-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 0.75rem;
+      color: #64748b;
+      padding: 0.5rem;
+    }
+    
+    .mobile-nav-item.active {
+      color: var(--theme-primary);
+      font-weight: 500;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding-bottom: 5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>ProfessionalHub Dashboard Improvements</h1>
+    
+    <div class="card">
+      <h2>Enhanced Dashboard Layout</h2>
+      <p>We've implemented a completely redesigned dashboard layout with improved aesthetics and functionality.</p>
+      
+      <div class="gradient-bg">Active Navigation Item with Gradient Background</div>
+      
+      <ul class="feature-list">
+        <li>Gradient styling for active navigation items</li>
+        <li>Improved mobile responsiveness with bottom navigation</li>
+        <li>Account section links in sidebar</li>
+        <li>Cleaner message bubbles in chat interfaces</li>
+        <li>Enhanced portfolio gallery view</li>
+      </ul>
+      
+      <div class="preview-image">
+        <div style="background:#f3f4f6; padding:1rem; border-radius:var(--radius) var(--radius) 0 0; border-bottom:1px solid #e5e7eb;">
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <div style="width:2rem; height:2rem; background:var(--primary-gradient); border-radius:0.375rem; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold;">P</div>
+              <div>
+                <div style="font-weight:500;">Welcome back, Rohan!</div>
+                <div style="font-size:0.75rem; color:#64748b;">Contractor Dashboard</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <div style="font-size:0.875rem;">Rohan Sharma</div>
+              <div style="width:2.25rem; height:2.25rem; border-radius:9999px; background:#e2e8f0; display:flex; align-items:center; justify-content:center;">👤</div>
+            </div>
+          </div>
+        </div>
+        
+        <div style="display:flex; min-height:300px;">
+          <!-- Sidebar -->
+          <div style="width:250px; background:white; border-right:1px solid #e5e7eb; padding:1rem; display:none; flex-direction:column; gap:0.5rem;">
+            <div style="background:var(--primary-gradient); color:white; padding:0.5rem 0.75rem; border-radius:0.375rem; display:flex; align-items:center; gap:0.5rem;">
+              <span>📊</span>
+              <span>Dashboard</span>
+            </div>
+            
+            <div style="padding:0.5rem 0.75rem; border-radius:0.375rem; display:flex; align-items:center; gap:0.5rem; color:#64748b;">
+              <span>💬</span>
+              <span>Messages</span>
+              <span style="margin-left:auto; background:#f87171; color:white; padding:0.125rem 0.375rem; border-radius:9999px; font-size:0.75rem;">2</span>
+            </div>
+            
+            <div style="padding:0.5rem 0.75rem; border-radius:0.375rem; display:flex; align-items:center; gap:0.5rem; color:#64748b;">
+              <span>🧮</span>
+              <span>Calculator</span>
+            </div>
+            
+            <div style="padding:0.5rem 0.75rem; border-radius:0.375rem; display:flex; align-items:center; gap:0.5rem; color:#64748b;">
+              <span>🛒</span>
+              <span>Shop</span>
+            </div>
+            
+            <div style="padding:0.5rem 0.75rem; border-radius:0.375rem; display:flex; align-items:center; gap:0.5rem; color:#64748b;">
+              <span>🖼️</span>
+              <span>Portfolio</span>
+            </div>
+            
+            <div style="border-top:1px solid #e5e7eb; margin:0.75rem 0;"></div>
+            
+            <div style="font-size:0.75rem; color:#94a3b8; padding-left:0.5rem;">ACCOUNT</div>
+            
+            <div style="padding:0.5rem 0.75rem; border-radius:0.375rem; display:flex; align-items:center; gap:0.5rem; color:#64748b;">
+              <span>👤</span>
+              <span>Edit Profile</span>
+            </div>
+            
+            <div style="padding:0.5rem 0.75rem; border-radius:0.375rem; display:flex; align-items:center; gap:0.5rem; color:#64748b;">
+              <span>🔒</span>
+              <span>Security Settings</span>
+            </div>
+          </div>
+          
+          <!-- Main Content -->
+          <div style="flex:1; background:#f8fafc; padding:1rem; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+            <div style="text-align:center; max-width:400px;">
+              <h3 style="margin-bottom:0.5rem; color:#1e293b;">ProfessionalHub Dashboard</h3>
+              <p style="color:#64748b; margin-bottom:1rem;">We've enhanced the dashboard with improved styling, mobile navigation, and theme customization.</p>
+              <div style="position:relative; height:30px;">
+                <div style="position:absolute; bottom:0; right:0; width:2.5rem; height:2.5rem; background:var(--theme-primary); border-radius:9999px; display:flex; align-items:center; justify-content:center; color:white;">🎨</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Mobile Navigation -->
+        <div style="display:grid; grid-template-columns:repeat(5, 1fr); background:white; border-top:1px solid #e5e7eb; padding:0.5rem;">
+          <div style="display:flex; flex-direction:column; align-items:center; font-size:0.75rem; color:var(--theme-primary);">
+            <span>📊</span>
+            <span style="font-size:0.625rem;">Projects</span>
+          </div>
+          
+          <div style="display:flex; flex-direction:column; align-items:center; font-size:0.75rem; color:#64748b;">
+            <span>🧮</span>
+            <span style="font-size:0.625rem;">Calculator</span>
+          </div>
+          
+          <div style="display:flex; flex-direction:column; align-items:center; font-size:0.75rem; color:#64748b; position:relative;">
+            <span>💬</span>
+            <span style="font-size:0.625rem;">Messages</span>
+            <span style="position:absolute; top:-0.25rem; right:0.25rem; width:1rem; height:1rem; background:#f87171; color:white; border-radius:9999px; font-size:0.625rem; display:flex; align-items:center; justify-content:center;">2</span>
+          </div>
+          
+          <div style="display:flex; flex-direction:column; align-items:center; font-size:0.75rem; color:#64748b;">
+            <span>🛒</span>
+            <span style="font-size:0.625rem;">Shop</span>
+          </div>
+          
+          <div style="display:flex; flex-direction:column; align-items:center; font-size:0.75rem; color:#64748b;">
+            <span>👤</span>
+            <span style="font-size:0.625rem;">Profile</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <h2>Theme Customizer</h2>
+      <p>We've added a Theme Customizer that allows users to personalize their experience.</p>
+      
+      <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+        <div>
+          <h3 style="font-size:1rem; margin-bottom:0.5rem;">Primary Colors</h3>
+          <div class="flex wrap">
+            <div class="color-swatch" style="background-color: #2563eb;"></div>
+            <div class="color-swatch" style="background-color: #8b5cf6;"></div>
+            <div class="color-swatch" style="background-color: #10b981;"></div>
+            <div class="color-swatch" style="background-color: #ef4444;"></div>
+            <div class="color-swatch" style="background-color: #f97316;"></div>
+            <div class="color-swatch" style="background-color: #ec4899;"></div>
+          </div>
+        </div>
+        
+        <div>
+          <h3 style="font-size:1rem; margin-bottom:0.5rem;">Theme Variants</h3>
+          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:0.5rem;">
+            <button>Classic</button>
+            <button>Vibrant</button>
+            <button>Soft</button>
+          </div>
+          
+          <h3 style="font-size:1rem; margin:1rem 0 0.5rem;">Appearance</h3>
+          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:0.5rem;">
+            <button>Light</button>
+            <button>Dark</button>
+            <button>System</button>
+          </div>
+        </div>
+      </div>
+      
+      <h3 style="font-size:1rem; margin:1rem 0 0.5rem;">Border Radius: 0.5rem</h3>
+      <input type="range" min="0" max="2" step="0.1" value="0.5" style="width:100%;">
+    </div>
+    
+    <div class="card">
+      <h2>Enhanced Messages Component</h2>
+      <p>We've improved the Messages component with better styling and functionality.</p>
+      
+      <div class="preview-image" style="background:white; padding:1rem; border-radius:var(--radius);">
+        <div style="display:flex; border:1px solid #e5e7eb; border-radius:var(--radius); overflow:hidden;">
+          <!-- Contacts List -->
+          <div style="width:40%; max-width:300px; border-right:1px solid #e5e7eb; height:400px; overflow-y:auto;">
+            <div style="padding:0.75rem; border-bottom:1px solid #e5e7eb;">
+              <input type="text" placeholder="Search professionals..." style="width:100%; padding:0.5rem; border-radius:var(--radius); border:1px solid #e5e7eb; font-size:0.875rem;">
+            </div>
+            
+            <div style="padding:0.75rem; border-bottom:1px solid #e5e7eb; background:#f8fafc;">
+              <div style="display:flex; align-items:center;">
+                <div style="position:relative;">
+                  <div style="width:3rem; height:3rem; border-radius:9999px; background:#e2e8f0; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+                    <span style="font-size:1.5rem;">👨</span>
+                  </div>
+                  <div style="position:absolute; bottom:0; right:0; width:0.75rem; height:0.75rem; background:#10b981; border:2px solid white; border-radius:9999px;"></div>
+                </div>
+                
+                <div style="margin-left:0.75rem; flex:1;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-weight:500; font-size:0.875rem;">John Doe</div>
+                    <div style="font-size:0.75rem; color:#94a3b8;">10:30 AM</div>
+                  </div>
+                  
+                  <div style="font-size:0.75rem; color:#64748b; display:flex; align-items:center; gap:0.25rem;">
+                    <span>👷</span>
+                    <span>Building Contractor</span>
+                  </div>
+                  
+                  <div style="font-size:0.75rem; color:#64748b; margin-top:0.25rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                    Hello! I received your project details. 👋
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div style="padding:0.75rem; border-bottom:1px solid #e5e7eb;">
+              <div style="display:flex; align-items:center;">
+                <div style="position:relative;">
+                  <div style="width:3rem; height:3rem; border-radius:9999px; background:#e2e8f0; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+                    <span style="font-size:1.5rem;">👩</span>
+                  </div>
+                </div>
+                
+                <div style="margin-left:0.75rem; flex:1;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-weight:500; font-size:0.875rem;">Jane Smith</div>
+                    <div style="font-size:0.75rem; color:#94a3b8;">Yesterday</div>
+                  </div>
+                  
+                  <div style="font-size:0.75rem; color:#64748b; display:flex; align-items:center; gap:0.25rem;">
+                    <span>🏗️</span>
+                    <span>Architect</span>
+                  </div>
+                  
+                  <div style="font-size:0.75rem; color:#64748b; margin-top:0.25rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                    Thank you for the quote! 🙏
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Messages Area -->
+          <div style="flex:1; display:flex; flex-direction:column; height:400px;">
+            <!-- Header -->
+            <div style="padding:0.75rem; border-bottom:1px solid #e5e7eb; display:flex; align-items:center; justify-content:space-between;">
+              <div style="display:flex; align-items:center;">
+                <div style="position:relative;">
+                  <div style="width:2.5rem; height:2.5rem; border-radius:9999px; background:#e2e8f0; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+                    <span style="font-size:1.25rem;">👨</span>
+                  </div>
+                  <div style="position:absolute; bottom:0; right:0; width:0.625rem; height:0.625rem; background:#10b981; border:2px solid white; border-radius:9999px;"></div>
+                </div>
+                
+                <div style="margin-left:0.5rem;">
+                  <div style="font-weight:500; font-size:0.875rem;">John Doe</div>
+                  <div style="font-size:0.75rem; color:#64748b; display:flex; align-items:center; gap:0.25rem;">
+                    <span>👷</span>
+                    <span>Building Contractor</span>
+                    <span style="display:flex; align-items:center; margin-left:0.5rem;">
+                      <span style="width:0.375rem; height:0.375rem; background:#10b981; border-radius:9999px; margin-right:0.25rem;"></span>
+                      <span>Online</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <button style="background:none; color:#64748b;">📞</button>
+            </div>
+            
+            <!-- Message Thread -->
+            <div style="flex:1; padding:0.75rem; background:#f8fafc; overflow-y:auto; display:flex; flex-direction:column; gap:1rem;">
+              <div style="text-align:center; margin:0.5rem 0;">
+                <span style="font-size:0.75rem; background:#e2e8f0; color:#64748b; padding:0.25rem 0.5rem; border-radius:9999px;">Today</span>
+              </div>
+              
+              <div style="display:flex; align-items:flex-end;">
+                <div style="width:2rem; height:2rem; border-radius:9999px; background:#e2e8f0; overflow:hidden; display:flex; align-items:center; justify-content:center; margin-right:0.5rem;">
+                  <span style="font-size:1rem;">👨</span>
+                </div>
+                
+                <div style="background:white; padding:0.75rem; border-radius:var(--radius); border-bottom-left-radius:0; max-width:80%;">
+                  <p style="font-size:0.875rem;">Hello! I received your project details. 👋</p>
+                  <p style="font-size:0.75rem; color:#94a3b8; text-align:right; margin-top:0.25rem;">10:30 AM</p>
+                </div>
+              </div>
+              
+              <div style="display:flex; align-items:flex-end; justify-content:flex-end;">
+                <div style="background:var(--theme-primary); color:white; padding:0.75rem; border-radius:var(--radius); border-bottom-right-radius:0; max-width:80%;">
+                  <p style="font-size:0.875rem;">Great! When can we discuss the timeline? 📅</p>
+                  <p style="font-size:0.75rem; color:rgba(255,255,255,0.7); text-align:right; margin-top:0.25rem;">10:35 AM ✓</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Quick Emojis -->
+            <div style="padding:0.5rem; border-top:1px solid #e5e7eb; display:flex; overflow-x:auto; gap:0.5rem;">
+              <button style="background:none; color:inherit; font-size:1.25rem;">🏠</button>
+              <button style="background:none; color:inherit; font-size:1.25rem;">🔨</button>
+              <button style="background:none; color:inherit; font-size:1.25rem;">🧱</button>
+              <button style="background:none; color:inherit; font-size:1.25rem;">🚧</button>
+              <button style="background:none; color:inherit; font-size:1.25rem;">🔧</button>
+              <button style="background:none; color:inherit; font-size:1.25rem;">⚙️</button>
+              <button style="background:none; color:inherit; font-size:0.75rem; color:#64748b;">more...</button>
+            </div>
+            
+            <!-- Message Input -->
+            <div style="padding:0.75rem; border-top:1px solid #e5e7eb; display:flex; gap:0.5rem;">
+              <div style="flex:1; position:relative;">
+                <input type="text" placeholder="Type your message..." style="width:100%; padding:0.5rem 4rem 0.5rem 1rem; border-radius:9999px; border:1px solid #e5e7eb;">
+                <div style="position:absolute; right:0.5rem; top:50%; transform:translateY(-50%); display:flex; gap:0.5rem;">
+                  <button style="background:none; color:#64748b; padding:0.25rem;">😊</button>
+                  <button style="background:none; color:#64748b; padding:0.25rem;">📎</button>
+                </div>
+              </div>
+              
+              <button style="border-radius:9999px; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center;">➤</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mobile-nav">
+      <div class="mobile-nav-item active">
+        <span>📊</span>
+        <span>Projects</span>
+      </div>
+      
+      <div class="mobile-nav-item">
+        <span>🧮</span>
+        <span>Calculator</span>
+      </div>
+      
+      <div class="mobile-nav-item">
+        <span>💬</span>
+        <span>Messages</span>
+      </div>
+      
+      <div class="mobile-nav-item">
+        <span>🛒</span>
+        <span>Shop</span>
+      </div>
+      
+      <div class="mobile-nav-item">
+        <span>👤</span>
+        <span>Profile</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html> 

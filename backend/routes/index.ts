@@ -6,6 +6,7 @@ import professionalRoutes from "./professional.routes";
 import projectRoutes from "./project.routes";
 import dealerRoutes from "./dealer.routes";
 import orderRoutes from "./order.routes";
+import messageRoutes from "./message.routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/auth', authRoutes);
@@ -13,6 +14,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/projects', projectRoutes);
   app.use('/api/dealers', dealerRoutes);
   app.use('/api/orders', orderRoutes);
+  app.use('/api/messages', messageRoutes);
 
   const httpServer = createServer(app);
   return httpServer;

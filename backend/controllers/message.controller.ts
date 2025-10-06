@@ -3,6 +3,7 @@ import { messageService } from '../services/message.service';
 import { z } from 'zod';
 
 const createMessageSchema = z.object({
+  userId: z.number().optional(),
   otherUserId: z.number(),
   text: z.string().min(1),
   fileInfo: z.object({
@@ -32,15 +33,15 @@ class MessageController {
 
   async getMessages(req: Request, res: Response) {
     try {
-      const userId = (req as any).user?.id;
+      const userId = parseInt(req.query.userId as string) || (req as any).user?.id;
       const otherUserId = parseInt(req.params.otherUserId);
       
       if (!userId) {
-        return res.status(401).json({ error: 'Not authenticated' });
+        return res.status(401).json({ error: 'Not authenticated - userId required' });
       }
 
       if (isNaN(otherUserId)) {
-        return res.status(400).json({ error: 'Invalid user ID' });
+        return res.status(400).json({ error: 'Invalid other user ID' });
       }
 
       const conversation = await messageService.getOrCreateConversation(userId, otherUserId);
@@ -58,10 +59,10 @@ class MessageController {
 
   async sendMessage(req: Request, res: Response) {
     try {
-      const userId = (req as any).user?.id;
+      const userId = parseInt(req.body.userId) || (req as any).user?.id;
       
       if (!userId) {
-        return res.status(401).json({ error: 'Not authenticated' });
+        return res.status(401).json({ error: 'Not authenticated - userId required' });
       }
 
       const { otherUserId, text, fileInfo } = createMessageSchema.parse(req.body);

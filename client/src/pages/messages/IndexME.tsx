@@ -137,24 +137,26 @@ const IndexME: React.FC = () => {
   const renderContent = () => {
     if (selectedChat) {
       return (
-        <ChatWindow
-          chatId={selectedChat} 
-          onBack={handleBackToList} 
-          onTabChange={setActiveTab}
-          chatContact={{
-            ...chatContacts[selectedChat],
-            id: selectedChat,
-            name: chatContacts[selectedChat]?.name || 'Unknown',
-            avatar: chatContacts[selectedChat]?.avatar || '👤',
-            status: chatContacts[selectedChat]?.status || 'offline',
-            isOnline: chatContacts[selectedChat]?.isOnline || false,
-            lastSeen: chatContacts[selectedChat]?.lastSeen || new Date().toISOString(),
-            unreadCount: 0,
-            badge: undefined,
-            message: undefined,
-            timestamp: undefined
-          } as ChatContact}
-        />
+        <div className="h-full flex flex-col overflow-hidden">
+          <ChatWindow
+            chatId={selectedChat} 
+            onBack={handleBackToList} 
+            onTabChange={setActiveTab}
+            chatContact={{
+              ...chatContacts[selectedChat],
+              id: selectedChat,
+              name: chatContacts[selectedChat]?.name || 'Unknown',
+              avatar: chatContacts[selectedChat]?.avatar || '👤',
+              status: chatContacts[selectedChat]?.status || 'offline',
+              isOnline: chatContacts[selectedChat]?.isOnline || false,
+              lastSeen: chatContacts[selectedChat]?.lastSeen || new Date().toISOString(),
+              unreadCount: 0,
+              badge: undefined,
+              message: undefined,
+              timestamp: undefined
+            } as ChatContact}
+          />
+        </div>
       );
     }
 

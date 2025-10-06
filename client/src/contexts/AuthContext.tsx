@@ -64,39 +64,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log("AuthContext: Attempting login with credentials:", credentials.email);
       
-      // Special handling for demo accounts
-      const isDemoAccount = [
-        'contractor@example.com', 
-        'architect@example.com',
-        'john.smith@example.com',
-        'sarah.johnson@example.com'
-      ].includes(credentials.email);
-      
-      let userData;
-      
-      if (isDemoAccount) {
-        console.log("AuthContext: Using demo account login");
-        // For demo accounts, we'll create a mock user directly
-        const userType = credentials.email.includes('contractor') ? 'contractor' : 
-                        credentials.email.includes('architect') ? 'architect' : 'customer';
-        
-        userData = {
-          id: Math.floor(Math.random() * 1000) + 100,
-          username: credentials.email.split('@')[0],
-          email: credentials.email,
-          fullName: credentials.email.includes('john') ? 'John Smith' : 
-                   credentials.email.includes('sarah') ? 'Sarah Johnson' :
-                   credentials.email.includes('contractor') ? 'Demo Contractor' : 'Demo Architect',
-          userType: userType
-        };
-        console.log("AuthContext: Created demo user:", userData);
-      } else {
-        // Regular login through API
-        const res = await apiRequest("POST", "/api/auth/login", credentials);
-        console.log("AuthContext: Login API response received");
-        userData = await res.json();
-        console.log("AuthContext: User data received:", userData);
-      }
+      // Always use backend authentication
+      const res = await apiRequest("POST", "/api/auth/login", credentials);
+      console.log("AuthContext: Login API response received");
+      const userData = await res.json();
+      console.log("AuthContext: User data received:", userData);
       
       setUser(userData);
       localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));

@@ -155,6 +155,30 @@ export const orderItems = pgTable("order_items", {
   dealerId: integer("dealer_id").references(() => dealers.id, { onDelete: 'set null' }),
 });
 
+export const conversations = pgTable("conversations", {
+  id: serial("id").primaryKey(),
+  user1Id: integer("user1_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  user2Id: integer("user2_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  lastMessageAt: timestamp("last_message_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  conversationId: integer("conversation_id").notNull().references(() => conversations.id, { onDelete: 'cascade' }),
+  senderId: integer("sender_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  text: text("text").notNull(),
+  status: text("status", { enum: ["sent", "delivered", "read"] }).default("sent"),
+  fileInfo: jsonb("file_info").$type<{
+    name: string;
+    type: string;
+    size: number;
+    url: string;
+  }>(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const usersRelations = relations(users, ({ many, one }) => ({
   professional: one(professionals, {
     fields: [users.id],
@@ -163,6 +187,9 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   reviews: many(reviews),
   bookmarks: many(bookmarks),
   orders: many(orders),
+  sentMessages: many(messages),
+  conversationsAsUser1: many(conversations, { relationName: "user1Conversations" }),
+  conversationsAsUser2: many(conversations, { relationName: "user2Conversations" }),
 }));
 
 export const professionalsRelations = relations(professionals, ({ one, many }) => ({
@@ -237,6 +264,31 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
   }),
 }));
 
+export const conversationsRelations = relations(conversations, ({ one, many }) => ({
+  user1: one(users, {
+    fields: [conversations.user1Id],
+    references: [users.id],
+    relationName: "user1Conversations",
+  }),
+  user2: one(users, {
+    fields: [conversations.user2Id],
+    references: [users.id],
+    relationName: "user2Conversations",
+  }),
+  messages: many(messages),
+}));
+
+export const messagesRelations = relations(messages, ({ one }) => ({
+  conversation: one(conversations, {
+    fields: [messages.conversationId],
+    references: [conversations.id],
+  }),
+  sender: one(users, {
+    fields: [messages.senderId],
+    references: [users.id],
+  }),
+}));
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -252,6 +304,8 @@ export const insertBookmarkSchema = createInsertSchema(bookmarks);
 export const insertDealerSchema = createInsertSchema(dealers);
 export const insertOrderSchema = createInsertSchema(orders);
 export const insertOrderItemSchema = createInsertSchema(orderItems);
+export const insertConversationSchema = createInsertSchema(conversations);
+export const insertMessageSchema = createInsertSchema(messages);
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -262,3 +316,7 @@ export type Bookmark = typeof bookmarks.$inferSelect;
 export type Dealer = typeof dealers.$inferSelect;
 export type Order = typeof orders.$inferSelect;
 export type OrderItem = typeof orderItems.$inferSelect;
+export type Conversation = typeof conversations.$inferSelect;
+export type Message = typeof messages.$inferSelect;
+export type InsertConversation = z.infer<typeof insertConversationSchema>;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;

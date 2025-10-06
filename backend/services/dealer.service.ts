@@ -13,6 +13,11 @@ export class DealerService {
     return dealer || undefined;
   }
 
+  async getDealerByUserId(userId: number): Promise<Dealer | undefined> {
+    const [dealer] = await db.select().from(dealers).where(eq(dealers.userId, userId));
+    return dealer || undefined;
+  }
+
   async getAllDealers(): Promise<Dealer[]> {
     return await db.select().from(dealers).orderBy(desc(dealers.rating));
   }

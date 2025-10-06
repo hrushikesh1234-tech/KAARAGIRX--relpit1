@@ -1,18 +1,17 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Package, Calendar, Clock, DollarSign, Plus, Edit, Trash2, Eye, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Package, Calendar, Plus, Edit, Trash2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import ProfileHeader from "@/components/Profile-Dashboard/ProfileHeader";
+import TabNavigation from "@/components/Profile-Dashboard/TabNavigation";
+import StarRating from "@/components/Profile-Dashboard/StarRating";
 
 interface RentalEquipment {
   id: number;
@@ -53,11 +52,14 @@ interface Booking {
   createdAt?: string;
 }
 
-interface DashboardStats {
-  totalEquipment: number;
-  totalBookings: number;
-  pendingBookings: number;
-  totalRevenue: number;
+interface Review {
+  id: number;
+  merchantId: number;
+  customerId: number;
+  customerName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
 }
 
 const categories = [
@@ -83,21 +85,13 @@ export default function RentalMerchantDashboard() {
 
   const [equipment, setEquipment] = useState<RentalEquipment[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [stats, setStats] = useState<DashboardStats>({
-    totalEquipment: 0,
-    totalBookings: 0,
-    pendingBookings: 0,
-    totalRevenue: 0
-  });
-  
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [activeTab, setActiveTab] = useState("portfolio");
   const [loading, setLoading] = useState(true);
   const [merchantId, setMerchantId] = useState<number | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<RentalEquipment | null>(null);
-  const [bookingStatusFilter, setBookingStatusFilter] = useState<string>("all");
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [isViewBookingOpen, setIsViewBookingOpen] = useState(false);
 
   const [equipmentForm, setEquipmentForm] = useState({
     name: "",
@@ -115,6 +109,10 @@ export default function RentalMerchantDashboard() {
     image: "",
     specifications: "{}"
   });
+
+  const averageRating = reviews.length > 0 
+    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length 
+    : 0;
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -139,6 +137,7 @@ export default function RentalMerchantDashboard() {
     if (merchantId) {
       fetchEquipment();
       fetchBookings();
+      fetchReviews();
     }
   }, [merchantId]);
 
@@ -178,7 +177,6 @@ export default function RentalMerchantDashboard() {
       if (response.ok) {
         const data = await response.json();
         setEquipment(data);
-        calculateStats(data, bookings);
       }
     } catch (error) {
       console.error("Error fetching equipment:", error);
@@ -201,7 +199,6 @@ export default function RentalMerchantDashboard() {
       if (response.ok) {
         const data = await response.json();
         setBookings(data);
-        calculateStats(equipment, data);
       }
     } catch (error) {
       console.error("Error fetching bookings:", error);
@@ -213,19 +210,23 @@ export default function RentalMerchantDashboard() {
     }
   };
 
-  const calculateStats = (equipmentData: RentalEquipment[], bookingsData: Booking[]) => {
-    const totalRevenue = bookingsData
-      .filter(booking => booking.status !== "cancelled")
-      .reduce((sum, booking) => sum + Number(booking.totalCost), 0);
+  const fetchReviews = async () => {
+    if (!merchantId) return;
+    
+    try {
+      const response = await fetch(`http://127.0.0.1:3001/api/professionals/${merchantId}`, {
+        credentials: "include"
+      });
 
-    const pendingBookings = bookingsData.filter(booking => booking.status === "pending").length;
-
-    setStats({
-      totalEquipment: equipmentData.length,
-      totalBookings: bookingsData.length,
-      pendingBookings,
-      totalRevenue
-    });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.reviews) {
+          setReviews(data.reviews);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+    }
   };
 
   const resetForm = () => {
@@ -430,406 +431,246 @@ export default function RentalMerchantDashboard() {
     setIsEditModalOpen(true);
   };
 
-  const handleUpdateBookingStatus = async (bookingId: string, status: string) => {
-    try {
-      const response = await fetch(`http://127.0.0.1:3001/api/bookings/${bookingId}/status`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: "include",
-        body: JSON.stringify({ status })
-      });
-
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: `Booking ${status} successfully.`
-        });
-        fetchBookings();
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to update booking status.",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      console.error("Error updating booking status:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update booking status.",
-        variant: "destructive"
-      });
-    }
+  const getAvailabilityColor = (eq: RentalEquipment) => {
+    if (eq.available === 0) return "bg-red-500/80";
+    if (eq.available < eq.quantity) return "bg-yellow-500/80";
+    return "bg-green-500/80";
   };
 
-  const filteredBookings = bookingStatusFilter === "all" 
-    ? bookings 
-    : bookings.filter(booking => booking.status === bookingStatusFilter);
-
-  const getAvailabilityStatus = (eq: RentalEquipment) => {
-    if (eq.available === 0) return { label: "Rented", color: "bg-red-500" };
-    if (eq.available < eq.quantity) return { label: "Partially Available", color: "bg-yellow-500" };
-    return { label: "Available", color: "bg-green-500" };
-  };
-
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case "pending": return "secondary";
-      case "approved": return "default";
-      case "active": return "default";
-      case "completed": return "outline";
-      case "cancelled": return "destructive";
-      default: return "secondary";
-    }
+  const profileData = {
+    username: user?.username || "",
+    displayName: user?.fullName || "Rental Merchant",
+    bio: "Construction Equipment Rental Services",
+    occupation: "Rental Merchant",
+    additionalInfo: user?.companyName || "",
+    stats: {
+      posts: equipment.length,
+      followers: bookings.length,
+      following: bookings.filter(b => b.status === "pending").length
+    },
+    profileImage: "/images/profiles/architect.png",
+    isLive: false
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <Loader2 className="h-8 w-8 animate-spin text-white" />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Rental Equipment Dashboard</h1>
-          <p className="text-muted-foreground">Manage your rental equipment and bookings</p>
-        </div>
-      </div>
+    <div className="min-h-screen bg-black text-white">
+      <div className="max-w-4xl mx-auto">
+        <ProfileHeader 
+          profileData={profileData}
+          onEditProfile={() => navigate("/profile/edit")}
+          averageRating={averageRating}
+          reviewCount={reviews.length}
+        />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Equipment</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalEquipment}</div>
-            <p className="text-xs text-muted-foreground">Equipment listed</p>
-          </CardContent>
-        </Card>
+        <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalBookings}</div>
-            <p className="text-xs text-muted-foreground">All time bookings</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Bookings</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.pendingBookings}</div>
-            <p className="text-xs text-muted-foreground">Awaiting approval</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">₹{stats.totalRevenue.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Total earnings</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle>Equipment Management</CardTitle>
-              <CardDescription>Manage your rental equipment inventory</CardDescription>
+        {activeTab === "portfolio" && (
+          <div className="px-4 py-6">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-semibold">My Equipment</h3>
+              <Button 
+                onClick={() => {
+                  resetForm();
+                  setIsAddModalOpen(true);
+                }}
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Equipment
+              </Button>
             </div>
-            <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-              <DialogTrigger asChild>
-                <Button onClick={() => resetForm()}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add New Equipment
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Add New Equipment</DialogTitle>
-                  <DialogDescription>Fill in the details to add new rental equipment</DialogDescription>
-                </DialogHeader>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Equipment Name *</Label>
-                    <Input
-                      id="name"
-                      value={equipmentForm.name}
-                      onChange={(e) => setEquipmentForm({ ...equipmentForm, name: e.target.value })}
-                      placeholder="e.g., JCB 3DX"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="category">Category *</Label>
-                    <Select value={equipmentForm.category} onValueChange={(value) => setEquipmentForm({ ...equipmentForm, category: value, subcategory: "" })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map(cat => (
-                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="subcategory">Subcategory</Label>
-                    <Select 
-                      value={equipmentForm.subcategory} 
-                      onValueChange={(value) => setEquipmentForm({ ...equipmentForm, subcategory: value })}
-                      disabled={!equipmentForm.category}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select subcategory" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {equipmentForm.category && subcategoriesByCategory[equipmentForm.category]?.map(sub => (
-                          <SelectItem key={sub} value={sub}>{sub}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="condition">Condition *</Label>
-                    <Select value={equipmentForm.condition} onValueChange={(value: any) => setEquipmentForm({ ...equipmentForm, condition: value })}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="excellent">Excellent</SelectItem>
-                        <SelectItem value="good">Good</SelectItem>
-                        <SelectItem value="fair">Fair</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="dailyRate">Daily Rate (₹) *</Label>
-                    <Input
-                      id="dailyRate"
-                      type="number"
-                      value={equipmentForm.dailyRate}
-                      onChange={(e) => setEquipmentForm({ ...equipmentForm, dailyRate: e.target.value })}
-                      placeholder="2000"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="weeklyRate">Weekly Rate (₹)</Label>
-                    <Input
-                      id="weeklyRate"
-                      type="number"
-                      value={equipmentForm.weeklyRate}
-                      onChange={(e) => setEquipmentForm({ ...equipmentForm, weeklyRate: e.target.value })}
-                      placeholder="12000"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="monthlyRate">Monthly Rate (₹)</Label>
-                    <Input
-                      id="monthlyRate"
-                      type="number"
-                      value={equipmentForm.monthlyRate}
-                      onChange={(e) => setEquipmentForm({ ...equipmentForm, monthlyRate: e.target.value })}
-                      placeholder="45000"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="securityDeposit">Security Deposit (₹)</Label>
-                    <Input
-                      id="securityDeposit"
-                      type="number"
-                      value={equipmentForm.securityDeposit}
-                      onChange={(e) => setEquipmentForm({ ...equipmentForm, securityDeposit: e.target.value })}
-                      placeholder="10000"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="quantity">Total Quantity *</Label>
-                    <Input
-                      id="quantity"
-                      type="number"
-                      value={equipmentForm.quantity}
-                      onChange={(e) => setEquipmentForm({ ...equipmentForm, quantity: e.target.value })}
-                      placeholder="5"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="available">Available Quantity *</Label>
-                    <Input
-                      id="available"
-                      type="number"
-                      value={equipmentForm.available}
-                      onChange={(e) => setEquipmentForm({ ...equipmentForm, available: e.target.value })}
-                      placeholder="3"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="minRentalPeriod">Min Rental Period</Label>
-                    <Input
-                      id="minRentalPeriod"
-                      value={equipmentForm.minRentalPeriod}
-                      onChange={(e) => setEquipmentForm({ ...equipmentForm, minRentalPeriod: e.target.value })}
-                      placeholder="1 day"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="image">Image URL</Label>
-                    <Input
-                      id="image"
-                      value={equipmentForm.image}
-                      onChange={(e) => setEquipmentForm({ ...equipmentForm, image: e.target.value })}
-                      placeholder="https://example.com/image.jpg"
-                    />
-                  </div>
-                  <div className="col-span-2 space-y-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea
-                      id="description"
-                      value={equipmentForm.description}
-                      onChange={(e) => setEquipmentForm({ ...equipmentForm, description: e.target.value })}
-                      placeholder="Detailed description of the equipment"
-                      rows={3}
-                    />
-                  </div>
-                  <div className="col-span-2 space-y-2">
-                    <Label htmlFor="specifications">Specifications (JSON format)</Label>
-                    <Textarea
-                      id="specifications"
-                      value={equipmentForm.specifications}
-                      onChange={(e) => setEquipmentForm({ ...equipmentForm, specifications: e.target.value })}
-                      placeholder='{"engine": "100HP", "capacity": "1 ton"}'
-                      rows={3}
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>Cancel</Button>
-                  <Button onClick={handleAddEquipment}>Add Equipment</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Condition</TableHead>
-                <TableHead>Daily Rate</TableHead>
-                <TableHead>Weekly Rate</TableHead>
-                <TableHead>Monthly Rate</TableHead>
-                <TableHead>Availability</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {equipment.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center text-muted-foreground">
-                    No equipment found. Add your first equipment to get started.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                equipment.map((eq) => {
-                  const availStatus = getAvailabilityStatus(eq);
-                  return (
-                    <TableRow key={eq.id}>
-                      <TableCell className="font-medium">{eq.name}</TableCell>
-                      <TableCell>{eq.category}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{eq.condition}</Badge>
-                      </TableCell>
-                      <TableCell>₹{parseFloat(eq.dailyRate).toLocaleString()}</TableCell>
-                      <TableCell>{eq.weeklyRate ? `₹${parseFloat(eq.weeklyRate).toLocaleString()}` : "-"}</TableCell>
-                      <TableCell>{eq.monthlyRate ? `₹${parseFloat(eq.monthlyRate).toLocaleString()}` : "-"}</TableCell>
-                      <TableCell>
-                        <Badge className={availStatus.color}>
-                          {availStatus.label} ({eq.available}/{eq.quantity})
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditEquipment(eq)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Delete Equipment</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to delete "{eq.name}"? This action cannot be undone.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDeleteEquipment(eq.id)}>
-                                  Delete
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
 
-      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            {equipment.length === 0 ? (
+              <div className="text-center py-12 text-gray-400">
+                <Package className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <p>No equipment listed yet</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-0.5">
+                {equipment.map((eq) => (
+                  <div 
+                    key={eq.id}
+                    className="relative w-full pb-[177.78%] bg-gray-900 overflow-hidden group cursor-pointer"
+                  >
+                    <div className="absolute inset-0">
+                      {eq.image ? (
+                        <img 
+                          src={eq.image} 
+                          alt={eq.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-purple-900 to-gray-900 flex flex-col items-center justify-center p-2">
+                          <Calendar className="w-8 h-8 mb-2 text-purple-400" />
+                          <p className="text-xs font-semibold text-center line-clamp-2">{eq.name}</p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                    <div className="absolute bottom-2 left-2 right-2">
+                      <p className="text-xs font-bold line-clamp-1">{eq.name}</p>
+                      <p className="text-xs text-gray-400">₹{eq.dailyRate}/day</p>
+                    </div>
+                    <div className="absolute top-2 right-2 flex gap-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditEquipment(eq);
+                        }}
+                        className="bg-black/60 rounded-full p-1.5 hover:bg-black/80"
+                      >
+                        <Edit className="w-3 h-3 text-white" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm("Are you sure you want to delete this equipment?")) {
+                            handleDeleteEquipment(eq.id);
+                          }
+                        }}
+                        className="bg-black/60 rounded-full p-1.5 hover:bg-black/80"
+                      >
+                        <Trash2 className="w-3 h-3 text-white" />
+                      </button>
+                    </div>
+                    <div className={`absolute top-2 left-2 ${getAvailabilityColor(eq)} rounded-full px-2 py-1`}>
+                      <span className="text-[10px] font-medium">{eq.available}/{eq.quantity} available</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "about" && (
+          <div className="px-4 py-6 space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Business Information</h3>
+              <div className="space-y-3 bg-gray-900/50 rounded-lg p-4">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Business Name</span>
+                  <span className="font-medium">{user?.companyName || "N/A"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Owner Name</span>
+                  <span className="font-medium">{user?.fullName || "N/A"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Email</span>
+                  <span className="font-medium">{user?.email || "N/A"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Phone</span>
+                  <span className="font-medium">{user?.phone || "N/A"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Address</span>
+                  <span className="font-medium text-right">{user?.address || "N/A"}</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Business Stats</h3>
+              <div className="space-y-3 bg-gray-900/50 rounded-lg p-4">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Total Equipment</span>
+                  <span className="font-medium">{equipment.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Total Bookings</span>
+                  <span className="font-medium">{bookings.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Pending Bookings</span>
+                  <span className="font-medium">{bookings.filter(b => b.status === 'pending').length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Total Revenue</span>
+                  <span className="font-medium">₹{bookings.reduce((sum, b) => sum + (b.status !== 'cancelled' ? Number(b.totalCost) : 0), 0).toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+
+            <Button 
+              onClick={() => navigate("/profile/edit")}
+              className="w-full"
+            >
+              Edit Profile
+            </Button>
+          </div>
+        )}
+
+        {activeTab === "reviews" && (
+          <div className="px-4 py-6">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-semibold">Customer Reviews</h3>
+            </div>
+            
+            {reviews.length === 0 ? (
+              <div className="text-center py-12 text-gray-400">
+                <StarRating rating={0} size={48} className="justify-center mb-4 opacity-50" />
+                <p>No reviews yet</p>
+                <p className="text-sm mt-2">Reviews from customers will appear here</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {reviews.map((review) => (
+                  <div key={review.id} className="bg-gray-900/50 rounded-lg p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <p className="font-medium">{review.customerName}</p>
+                        <StarRating rating={review.rating} size={14} className="mt-1" />
+                      </div>
+                      <span className="text-xs text-gray-400">
+                        {new Date(review.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-300">{review.comment}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="h-20"></div>
+      </div>
+
+      <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-gray-900 text-white border-gray-800">
           <DialogHeader>
-            <DialogTitle>Edit Equipment</DialogTitle>
-            <DialogDescription>Update equipment details</DialogDescription>
+            <DialogTitle>Add New Equipment</DialogTitle>
+            <DialogDescription className="text-gray-400">Fill in the details to add new rental equipment</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-name">Equipment Name *</Label>
+              <Label htmlFor="name">Equipment Name *</Label>
               <Input
-                id="edit-name"
+                id="name"
                 value={equipmentForm.name}
                 onChange={(e) => setEquipmentForm({ ...equipmentForm, name: e.target.value })}
                 placeholder="e.g., JCB 3DX"
+                className="bg-gray-800 border-gray-700"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-category">Category *</Label>
+              <Label htmlFor="category">Category *</Label>
               <Select value={equipmentForm.category} onValueChange={(value) => setEquipmentForm({ ...equipmentForm, category: value, subcategory: "" })}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-gray-800 border-gray-700">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-gray-800 border-gray-700">
                   {categories.map(cat => (
                     <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                   ))}
@@ -837,16 +678,16 @@ export default function RentalMerchantDashboard() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-subcategory">Subcategory</Label>
+              <Label htmlFor="subcategory">Subcategory</Label>
               <Select 
                 value={equipmentForm.subcategory} 
                 onValueChange={(value) => setEquipmentForm({ ...equipmentForm, subcategory: value })}
                 disabled={!equipmentForm.category}
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-gray-800 border-gray-700">
                   <SelectValue placeholder="Select subcategory" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-gray-800 border-gray-700">
                   {equipmentForm.category && subcategoriesByCategory[equipmentForm.category]?.map(sub => (
                     <SelectItem key={sub} value={sub}>{sub}</SelectItem>
                   ))}
@@ -854,12 +695,12 @@ export default function RentalMerchantDashboard() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-condition">Condition *</Label>
+              <Label htmlFor="condition">Condition *</Label>
               <Select value={equipmentForm.condition} onValueChange={(value: any) => setEquipmentForm({ ...equipmentForm, condition: value })}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-gray-800 border-gray-700">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-gray-800 border-gray-700">
                   <SelectItem value="excellent">Excellent</SelectItem>
                   <SelectItem value="good">Good</SelectItem>
                   <SelectItem value="fair">Fair</SelectItem>
@@ -867,264 +708,234 @@ export default function RentalMerchantDashboard() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-dailyRate">Daily Rate (₹) *</Label>
+              <Label htmlFor="dailyRate">Daily Rate (₹) *</Label>
               <Input
-                id="edit-dailyRate"
+                id="dailyRate"
                 type="number"
                 value={equipmentForm.dailyRate}
                 onChange={(e) => setEquipmentForm({ ...equipmentForm, dailyRate: e.target.value })}
+                placeholder="2000"
+                className="bg-gray-800 border-gray-700"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-weeklyRate">Weekly Rate (₹)</Label>
+              <Label htmlFor="weeklyRate">Weekly Rate (₹)</Label>
               <Input
-                id="edit-weeklyRate"
+                id="weeklyRate"
                 type="number"
                 value={equipmentForm.weeklyRate}
                 onChange={(e) => setEquipmentForm({ ...equipmentForm, weeklyRate: e.target.value })}
+                placeholder="12000"
+                className="bg-gray-800 border-gray-700"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-monthlyRate">Monthly Rate (₹)</Label>
+              <Label htmlFor="monthlyRate">Monthly Rate (₹)</Label>
               <Input
-                id="edit-monthlyRate"
+                id="monthlyRate"
                 type="number"
                 value={equipmentForm.monthlyRate}
                 onChange={(e) => setEquipmentForm({ ...equipmentForm, monthlyRate: e.target.value })}
+                placeholder="40000"
+                className="bg-gray-800 border-gray-700"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-securityDeposit">Security Deposit (₹)</Label>
+              <Label htmlFor="securityDeposit">Security Deposit (₹)</Label>
               <Input
-                id="edit-securityDeposit"
+                id="securityDeposit"
                 type="number"
                 value={equipmentForm.securityDeposit}
                 onChange={(e) => setEquipmentForm({ ...equipmentForm, securityDeposit: e.target.value })}
+                placeholder="10000"
+                className="bg-gray-800 border-gray-700"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-quantity">Total Quantity *</Label>
+              <Label htmlFor="quantity">Total Quantity *</Label>
               <Input
-                id="edit-quantity"
+                id="quantity"
                 type="number"
                 value={equipmentForm.quantity}
                 onChange={(e) => setEquipmentForm({ ...equipmentForm, quantity: e.target.value })}
+                placeholder="5"
+                className="bg-gray-800 border-gray-700"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-available">Available Quantity *</Label>
+              <Label htmlFor="available">Available Quantity *</Label>
               <Input
-                id="edit-available"
+                id="available"
                 type="number"
                 value={equipmentForm.available}
                 onChange={(e) => setEquipmentForm({ ...equipmentForm, available: e.target.value })}
+                placeholder="5"
+                className="bg-gray-800 border-gray-700"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-minRentalPeriod">Min Rental Period</Label>
-              <Input
-                id="edit-minRentalPeriod"
-                value={equipmentForm.minRentalPeriod}
-                onChange={(e) => setEquipmentForm({ ...equipmentForm, minRentalPeriod: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-image">Image URL</Label>
-              <Input
-                id="edit-image"
-                value={equipmentForm.image}
-                onChange={(e) => setEquipmentForm({ ...equipmentForm, image: e.target.value })}
-              />
-            </div>
-            <div className="col-span-2 space-y-2">
-              <Label htmlFor="edit-description">Description</Label>
+            <div className="space-y-2 col-span-2">
+              <Label htmlFor="description">Description</Label>
               <Textarea
-                id="edit-description"
+                id="description"
                 value={equipmentForm.description}
                 onChange={(e) => setEquipmentForm({ ...equipmentForm, description: e.target.value })}
-                rows={3}
+                placeholder="Describe the equipment"
+                className="bg-gray-800 border-gray-700"
               />
             </div>
-            <div className="col-span-2 space-y-2">
-              <Label htmlFor="edit-specifications">Specifications (JSON format)</Label>
-              <Textarea
-                id="edit-specifications"
-                value={equipmentForm.specifications}
-                onChange={(e) => setEquipmentForm({ ...equipmentForm, specifications: e.target.value })}
-                rows={3}
+            <div className="space-y-2 col-span-2">
+              <Label htmlFor="image">Image URL</Label>
+              <Input
+                id="image"
+                value={equipmentForm.image}
+                onChange={(e) => setEquipmentForm({ ...equipmentForm, image: e.target.value })}
+                placeholder="https://example.com/image.jpg"
+                className="bg-gray-800 border-gray-700"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>Cancel</Button>
-            <Button onClick={handleUpdateEquipment}>Update Equipment</Button>
+            <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddEquipment}>Add Equipment</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle>Bookings Management</CardTitle>
-              <CardDescription>View and manage rental bookings</CardDescription>
-            </div>
-            <Select value={bookingStatusFilter} onValueChange={setBookingStatusFilter}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Bookings</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Booking ID</TableHead>
-                <TableHead>Equipment</TableHead>
-                <TableHead>Start Date</TableHead>
-                <TableHead>End Date</TableHead>
-                <TableHead>Total Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredBookings.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground">
-                    No bookings found.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredBookings.map((booking) => {
-                  const equipmentItem = equipment.find(eq => eq.id === booking.equipmentId);
-                  return (
-                    <TableRow key={booking.id}>
-                      <TableCell className="font-medium">{booking.bookingNumber || booking.id}</TableCell>
-                      <TableCell>{equipmentItem?.name || "Unknown"}</TableCell>
-                      <TableCell>{new Date(booking.startDate).toLocaleDateString()}</TableCell>
-                      <TableCell>{new Date(booking.endDate).toLocaleDateString()}</TableCell>
-                      <TableCell>₹{parseFloat(booking.totalCost).toLocaleString()}</TableCell>
-                      <TableCell>
-                        <Badge variant={getStatusBadgeVariant(booking.status)}>
-                          {booking.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedBooking(booking);
-                              setIsViewBookingOpen(true);
-                            }}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          {booking.status === "pending" && (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleUpdateBookingStatus(booking.id, "approved")}
-                              >
-                                <CheckCircle className="h-4 w-4 text-green-600" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleUpdateBookingStatus(booking.id, "cancelled")}
-                              >
-                                <XCircle className="h-4 w-4 text-red-600" />
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      <Dialog open={isViewBookingOpen} onOpenChange={setIsViewBookingOpen}>
-        <DialogContent>
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-gray-900 text-white border-gray-800">
           <DialogHeader>
-            <DialogTitle>Booking Details</DialogTitle>
+            <DialogTitle>Edit Equipment</DialogTitle>
+            <DialogDescription className="text-gray-400">Update equipment information</DialogDescription>
           </DialogHeader>
-          {selectedBooking && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-muted-foreground">Booking ID</Label>
-                  <p className="font-medium">{selectedBooking.bookingNumber || selectedBooking.id}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Status</Label>
-                  <p>
-                    <Badge variant={getStatusBadgeVariant(selectedBooking.status)}>
-                      {selectedBooking.status}
-                    </Badge>
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Equipment</Label>
-                  <p className="font-medium">
-                    {equipment.find(eq => eq.id === selectedBooking.equipmentId)?.name || "Unknown"}
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Quantity</Label>
-                  <p className="font-medium">{selectedBooking.quantity}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Start Date</Label>
-                  <p className="font-medium">{new Date(selectedBooking.startDate).toLocaleDateString()}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">End Date</Label>
-                  <p className="font-medium">{new Date(selectedBooking.endDate).toLocaleDateString()}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Total Cost</Label>
-                  <p className="font-medium">₹{parseFloat(selectedBooking.totalCost).toLocaleString()}</p>
-                </div>
-                {selectedBooking.securityDeposit && (
-                  <div>
-                    <Label className="text-muted-foreground">Security Deposit</Label>
-                    <p className="font-medium">₹{parseFloat(selectedBooking.securityDeposit).toLocaleString()}</p>
-                  </div>
-                )}
-              </div>
-              {selectedBooking.deliveryAddress && (
-                <div>
-                  <Label className="text-muted-foreground">Delivery Address</Label>
-                  <p className="font-medium">{selectedBooking.deliveryAddress}</p>
-                </div>
-              )}
-              {selectedBooking.notes && (
-                <div>
-                  <Label className="text-muted-foreground">Notes</Label>
-                  <p className="font-medium">{selectedBooking.notes}</p>
-                </div>
-              )}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Equipment Name</Label>
+              <Input
+                value={equipmentForm.name}
+                onChange={(e) => setEquipmentForm({ ...equipmentForm, name: e.target.value })}
+                className="bg-gray-800 border-gray-700"
+              />
             </div>
-          )}
+            <div className="space-y-2">
+              <Label>Category</Label>
+              <Select value={equipmentForm.category} onValueChange={(value) => setEquipmentForm({ ...equipmentForm, category: value, subcategory: "" })}>
+                <SelectTrigger className="bg-gray-800 border-gray-700">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
+                  {categories.map(cat => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Subcategory</Label>
+              <Select 
+                value={equipmentForm.subcategory} 
+                onValueChange={(value) => setEquipmentForm({ ...equipmentForm, subcategory: value })}
+              >
+                <SelectTrigger className="bg-gray-800 border-gray-700">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
+                  {equipmentForm.category && subcategoriesByCategory[equipmentForm.category]?.map(sub => (
+                    <SelectItem key={sub} value={sub}>{sub}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Condition</Label>
+              <Select value={equipmentForm.condition} onValueChange={(value: any) => setEquipmentForm({ ...equipmentForm, condition: value })}>
+                <SelectTrigger className="bg-gray-800 border-gray-700">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
+                  <SelectItem value="excellent">Excellent</SelectItem>
+                  <SelectItem value="good">Good</SelectItem>
+                  <SelectItem value="fair">Fair</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Daily Rate (₹)</Label>
+              <Input
+                type="number"
+                value={equipmentForm.dailyRate}
+                onChange={(e) => setEquipmentForm({ ...equipmentForm, dailyRate: e.target.value })}
+                className="bg-gray-800 border-gray-700"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Weekly Rate (₹)</Label>
+              <Input
+                type="number"
+                value={equipmentForm.weeklyRate}
+                onChange={(e) => setEquipmentForm({ ...equipmentForm, weeklyRate: e.target.value })}
+                className="bg-gray-800 border-gray-700"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Monthly Rate (₹)</Label>
+              <Input
+                type="number"
+                value={equipmentForm.monthlyRate}
+                onChange={(e) => setEquipmentForm({ ...equipmentForm, monthlyRate: e.target.value })}
+                className="bg-gray-800 border-gray-700"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Security Deposit (₹)</Label>
+              <Input
+                type="number"
+                value={equipmentForm.securityDeposit}
+                onChange={(e) => setEquipmentForm({ ...equipmentForm, securityDeposit: e.target.value })}
+                className="bg-gray-800 border-gray-700"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Total Quantity</Label>
+              <Input
+                type="number"
+                value={equipmentForm.quantity}
+                onChange={(e) => setEquipmentForm({ ...equipmentForm, quantity: e.target.value })}
+                className="bg-gray-800 border-gray-700"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Available Quantity</Label>
+              <Input
+                type="number"
+                value={equipmentForm.available}
+                onChange={(e) => setEquipmentForm({ ...equipmentForm, available: e.target.value })}
+                className="bg-gray-800 border-gray-700"
+              />
+            </div>
+            <div className="space-y-2 col-span-2">
+              <Label>Description</Label>
+              <Textarea
+                value={equipmentForm.description}
+                onChange={(e) => setEquipmentForm({ ...equipmentForm, description: e.target.value })}
+                className="bg-gray-800 border-gray-700"
+              />
+            </div>
+            <div className="space-y-2 col-span-2">
+              <Label>Image URL</Label>
+              <Input
+                value={equipmentForm.image}
+                onChange={(e) => setEquipmentForm({ ...equipmentForm, image: e.target.value })}
+                className="bg-gray-800 border-gray-700"
+              />
+            </div>
+          </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsViewBookingOpen(false)}>Close</Button>
+            <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdateEquipment}>Update Equipment</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

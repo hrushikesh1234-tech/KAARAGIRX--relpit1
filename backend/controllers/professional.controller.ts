@@ -47,6 +47,22 @@ export class ProfessionalController {
     }
   }
 
+  async getProfessionalByUserId(req: Request, res: Response) {
+    try {
+      const userId = parseInt(req.params.userId);
+      const professional = await professionalService.getProfessionalByUserId(userId);
+      
+      if (!professional) {
+        return res.status(404).json({ error: 'Professional not found' });
+      }
+      
+      res.json(professional);
+    } catch (error) {
+      console.error('Error fetching professional by user ID:', error);
+      res.status(500).json({ error: 'Failed to fetch professional' });
+    }
+  }
+
   async getProfessionalsByType(req: Request, res: Response) {
     try {
       const { type } = req.params;
@@ -106,6 +122,17 @@ export class ProfessionalController {
     } catch (error) {
       console.error('Error updating professional:', error);
       res.status(500).json({ error: 'Failed to update professional' });
+    }
+  }
+
+  async getReviewsByUserId(req: Request, res: Response) {
+    try {
+      const userId = parseInt(req.params.userId);
+      const reviews = await professionalService.getReviewsByUserId(userId);
+      res.json(reviews);
+    } catch (error) {
+      console.error('Error fetching reviews by user ID:', error);
+      res.status(500).json({ error: 'Failed to fetch reviews' });
     }
   }
 }

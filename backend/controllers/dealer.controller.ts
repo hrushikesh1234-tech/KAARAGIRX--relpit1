@@ -28,6 +28,22 @@ export class DealerController {
     }
   }
 
+  async getDealerByUserId(req: Request, res: Response) {
+    try {
+      const userId = parseInt(req.params.userId);
+      const dealer = await dealerService.getDealerByUserId(userId);
+      
+      if (!dealer) {
+        return res.status(404).json({ error: 'Dealer not found' });
+      }
+      
+      res.json(dealer);
+    } catch (error) {
+      console.error('Error fetching dealer by user ID:', error);
+      res.status(500).json({ error: 'Failed to fetch dealer' });
+    }
+  }
+
   async getDealersByCategory(req: Request, res: Response) {
     try {
       const { category } = req.params;

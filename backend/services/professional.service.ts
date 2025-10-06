@@ -80,6 +80,12 @@ export class ProfessionalService {
       .where(eq(reviews.professionalId, professionalId))
       .orderBy(desc(reviews.createdAt));
   }
+
+  async getReviewsByUserId(userId: number) {
+    return await db.select().from(reviews)
+      .where(eq(reviews.userId, userId))
+      .orderBy(desc(reviews.createdAt));
+  }
 }
 
 export const professionalService = new ProfessionalService();

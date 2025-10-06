@@ -1,18 +1,17 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Package, ShoppingCart, Clock, DollarSign, Plus, Edit, Trash2, Eye, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Package, Plus, Edit, Trash2, Loader2, ShoppingBag, Layers } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import ProfileHeader from "@/components/Profile-Dashboard/ProfileHeader";
+import TabNavigation from "@/components/Profile-Dashboard/TabNavigation";
+import StarRating from "@/components/Profile-Dashboard/StarRating";
 
 interface Material {
   id: number;
@@ -48,11 +47,14 @@ interface Order {
   dealerName: string;
 }
 
-interface DashboardStats {
-  totalMaterials: number;
-  totalOrders: number;
-  pendingOrders: number;
-  totalRevenue: number;
+interface Review {
+  id: number;
+  dealerId: number;
+  customerId: number;
+  customerName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
 }
 
 const categories = [
@@ -80,19 +82,13 @@ export default function MaterialDealerDashboard() {
 
   const [materials, setMaterials] = useState<Material[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [stats, setStats] = useState<DashboardStats>({
-    totalMaterials: 0,
-    totalOrders: 0,
-    pendingOrders: 0,
-    totalRevenue: 0
-  });
-  
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [activeTab, setActiveTab] = useState("portfolio");
   const [loading, setLoading] = useState(true);
   const [dealerId, setDealerId] = useState<number | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
-  const [orderStatusFilter, setOrderStatusFilter] = useState<string>("all");
 
   const [materialForm, setMaterialForm] = useState({
     name: "",
@@ -105,6 +101,10 @@ export default function MaterialDealerDashboard() {
     minOrder: "",
     image: ""
   });
+
+  const averageRating = reviews.length > 0 
+    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length 
+    : 0;
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -129,6 +129,7 @@ export default function MaterialDealerDashboard() {
     if (dealerId) {
       fetchMaterials();
       fetchOrders();
+      fetchReviews();
     }
   }, [dealerId]);
 
@@ -168,7 +169,6 @@ export default function MaterialDealerDashboard() {
       if (response.ok) {
         const data = await response.json();
         setMaterials(data);
-        calculateStats(data, orders);
       }
     } catch (error) {
       console.error("Error fetching materials:", error);
@@ -191,7 +191,6 @@ export default function MaterialDealerDashboard() {
       if (response.ok) {
         const data = await response.json();
         setOrders(data);
-        calculateStats(materials, data);
       }
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -203,19 +202,8 @@ export default function MaterialDealerDashboard() {
     }
   };
 
-  const calculateStats = (materialsData: Material[], ordersData: Order[]) => {
-    const totalRevenue = ordersData
-      .filter(order => order.status !== "cancelled")
-      .reduce((sum, order) => sum + Number(order.total), 0);
-
-    const pendingOrders = ordersData.filter(order => order.status === "pending").length;
-
-    setStats({
-      totalMaterials: materialsData.length,
-      totalOrders: ordersData.length,
-      pendingOrders,
-      totalRevenue
-    });
+  const fetchReviews = async () => {
+    setReviews([]);
   };
 
   const handleAddMaterial = async () => {
@@ -348,40 +336,6 @@ export default function MaterialDealerDashboard() {
     }
   };
 
-  const handleUpdateOrderStatus = async (orderId: string, status: string) => {
-    try {
-      const response = await fetch(`http://127.0.0.1:3001/api/orders/${orderId}/status`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: "include",
-        body: JSON.stringify({ status })
-      });
-
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: `Order ${status === "verified" ? "approved" : "rejected"} successfully.`
-        });
-        fetchOrders();
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to update order status.",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      console.error("Error updating order status:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update order status.",
-        variant: "destructive"
-      });
-    }
-  };
-
   const openEditModal = (material: Material) => {
     setSelectedMaterial(material);
     setMaterialForm({
@@ -412,335 +366,266 @@ export default function MaterialDealerDashboard() {
     });
   };
 
-  const filteredOrders = orderStatusFilter === "all" 
-    ? orders 
-    : orders.filter(order => {
-        if (orderStatusFilter === "pending") return order.status === "pending";
-        if (orderStatusFilter === "approved") return order.status === "verified" || order.status === "processing";
-        if (orderStatusFilter === "rejected") return order.status === "cancelled";
-        return true;
-      });
+  const profileData = {
+    username: user?.username || "",
+    displayName: user?.fullName || "Material Dealer",
+    bio: "Construction Materials Supplier",
+    occupation: "Material Dealer",
+    additionalInfo: user?.companyName || "",
+    stats: {
+      posts: materials.length,
+      followers: orders.length,
+      following: orders.filter(o => o.status === "pending").length
+    },
+    profileImage: "/images/profiles/sarah johnson.png",
+    isLive: false
+  };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <Loader2 className="h-8 w-8 animate-spin text-white" />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 pb-24">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Material Dealer Dashboard</h1>
-        <p className="text-muted-foreground">Manage your materials inventory and orders</p>
-      </div>
+    <div className="min-h-screen bg-black text-white">
+      <div className="max-w-4xl mx-auto">
+        <ProfileHeader 
+          profileData={profileData}
+          onEditProfile={() => navigate("/profile/edit")}
+          averageRating={averageRating}
+          reviewCount={reviews.length}
+        />
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Materials</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalMaterials}</div>
-            <p className="text-xs text-muted-foreground">Active materials in inventory</p>
-          </CardContent>
-        </Card>
+        <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalOrders}</div>
-            <p className="text-xs text-muted-foreground">All time orders</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Orders</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.pendingOrders}</div>
-            <p className="text-xs text-muted-foreground">Awaiting approval</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">₹{stats.totalRevenue.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">From all orders</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card className="mb-8">
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle>Materials Management</CardTitle>
-              <CardDescription>Manage your materials inventory</CardDescription>
+        {activeTab === "portfolio" && (
+          <div className="px-4 py-6">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-semibold">My Materials</h3>
+              <Button 
+                onClick={() => {
+                  resetForm();
+                  setIsAddModalOpen(true);
+                }}
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Material
+              </Button>
             </div>
-            <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-              <DialogTrigger asChild>
-                <Button onClick={() => resetForm()}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add New Material
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Add New Material</DialogTitle>
-                  <DialogDescription>Add a new material to your inventory</DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="name">Material Name</Label>
-                    <Input
-                      id="name"
-                      value={materialForm.name}
-                      onChange={(e) => setMaterialForm({ ...materialForm, name: e.target.value })}
-                      placeholder="e.g., Premium OPC Cement"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea
-                      id="description"
-                      value={materialForm.description}
-                      onChange={(e) => setMaterialForm({ ...materialForm, description: e.target.value })}
-                      placeholder="Describe the material"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="category">Category</Label>
-                      <Select 
-                        value={materialForm.category}
-                        onValueChange={(value) => setMaterialForm({ ...materialForm, category: value, subcategory: "" })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categories.map((cat) => (
-                            <SelectItem key={cat} value={cat}>
-                              {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="subcategory">Subcategory</Label>
-                      <Select
-                        value={materialForm.subcategory}
-                        onValueChange={(value) => setMaterialForm({ ...materialForm, subcategory: value })}
-                        disabled={!materialForm.category}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select subcategory" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {materialForm.category && subcategoriesByCategory[materialForm.category]?.map((subcat) => (
-                            <SelectItem key={subcat} value={subcat}>
-                              {subcat}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="price">Price</Label>
-                      <Input
-                        id="price"
-                        type="number"
-                        value={materialForm.price}
-                        onChange={(e) => setMaterialForm({ ...materialForm, price: e.target.value })}
-                        placeholder="0.00"
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="unit">Unit</Label>
-                      <Select
-                        value={materialForm.unit}
-                        onValueChange={(value) => setMaterialForm({ ...materialForm, unit: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select unit" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {units.map((unit) => (
-                            <SelectItem key={unit} value={unit}>
-                              {unit}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="quantity">Stock Quantity</Label>
-                      <Input
-                        id="quantity"
-                        type="number"
-                        value={materialForm.quantity}
-                        onChange={(e) => setMaterialForm({ ...materialForm, quantity: e.target.value })}
-                        placeholder="0"
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="minOrder">Minimum Order</Label>
-                      <Input
-                        id="minOrder"
-                        value={materialForm.minOrder}
-                        onChange={(e) => setMaterialForm({ ...materialForm, minOrder: e.target.value })}
-                        placeholder="e.g., 10 bags"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="image">Image URL</Label>
-                    <Input
-                      id="image"
-                      value={materialForm.image}
-                      onChange={(e) => setMaterialForm({ ...materialForm, image: e.target.value })}
-                      placeholder="https://example.com/image.jpg"
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleAddMaterial}>Add Material</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Subcategory</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Stock</TableHead>
-                  <TableHead>Unit</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {materials.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                      No materials found. Add your first material to get started.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  materials.map((material) => (
-                    <TableRow key={material.id}>
-                      <TableCell className="font-medium">{material.name}</TableCell>
-                      <TableCell className="capitalize">{material.category}</TableCell>
-                      <TableCell>{material.subcategory}</TableCell>
-                      <TableCell>₹{material.price}/{material.unit}</TableCell>
-                      <TableCell>{material.quantity}</TableCell>
-                      <TableCell>{material.unit}</TableCell>
-                      <TableCell>
-                        <Badge variant={material.inStock ? "default" : "secondary"}>
-                          {material.inStock ? "In Stock" : "Out of Stock"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => openEditModal(material)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button size="sm" variant="outline">
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Delete Material</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to delete {material.name}? This action cannot be undone.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDeleteMaterial(material.id)}>
-                                  Delete
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
 
-      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            {materials.length === 0 ? (
+              <div className="text-center py-12 text-gray-400">
+                <Package className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <p>No materials listed yet</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-0.5">
+                {materials.map((material) => (
+                  <div 
+                    key={material.id}
+                    className="relative w-full pb-[177.78%] bg-gray-900 overflow-hidden group cursor-pointer"
+                  >
+                    <div className="absolute inset-0">
+                      {material.image ? (
+                        <img 
+                          src={material.image} 
+                          alt={material.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-green-900 to-gray-900 flex flex-col items-center justify-center p-2">
+                          <Package className="w-8 h-8 mb-2 text-green-400" />
+                          <p className="text-xs font-semibold text-center line-clamp-2">{material.name}</p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                    <div className="absolute bottom-2 left-2 right-2">
+                      <p className="text-xs font-bold line-clamp-1">{material.name}</p>
+                      <p className="text-xs text-gray-400">₹{material.price}/{material.unit}</p>
+                    </div>
+                    <div className="absolute top-2 right-2 flex gap-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEditModal(material);
+                        }}
+                        className="bg-black/60 rounded-full p-1.5 hover:bg-black/80"
+                      >
+                        <Edit className="w-3 h-3 text-white" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm("Are you sure you want to delete this material?")) {
+                            handleDeleteMaterial(material.id);
+                          }
+                        }}
+                        className="bg-black/60 rounded-full p-1.5 hover:bg-black/80"
+                      >
+                        <Trash2 className="w-3 h-3 text-white" />
+                      </button>
+                    </div>
+                    {material.quantity > 0 && (
+                      <div className="absolute top-2 left-2 bg-green-500/80 rounded-full px-2 py-1">
+                        <span className="text-[10px] font-medium">{material.quantity} in stock</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "about" && (
+          <div className="px-4 py-6 space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Business Information</h3>
+              <div className="space-y-3 bg-gray-900/50 rounded-lg p-4">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Business Name</span>
+                  <span className="font-medium">{user?.companyName || "N/A"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Owner Name</span>
+                  <span className="font-medium">{user?.fullName || "N/A"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Email</span>
+                  <span className="font-medium">{user?.email || "N/A"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Phone</span>
+                  <span className="font-medium">{user?.phone || "N/A"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Address</span>
+                  <span className="font-medium text-right">{user?.address || "N/A"}</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Business Stats</h3>
+              <div className="space-y-3 bg-gray-900/50 rounded-lg p-4">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Total Materials</span>
+                  <span className="font-medium">{materials.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Total Orders</span>
+                  <span className="font-medium">{orders.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Pending Orders</span>
+                  <span className="font-medium">{orders.filter(o => o.status === 'pending').length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Total Revenue</span>
+                  <span className="font-medium">₹{orders.reduce((sum, o) => sum + (o.status !== 'cancelled' ? Number(o.total) : 0), 0).toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+
+            <Button 
+              onClick={() => navigate("/profile/edit")}
+              className="w-full"
+            >
+              Edit Profile
+            </Button>
+          </div>
+        )}
+
+        {activeTab === "reviews" && (
+          <div className="px-4 py-6">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-semibold">Customer Reviews</h3>
+            </div>
+            
+            <div className="text-center py-12 text-gray-400">
+              <div className="bg-gray-900/50 rounded-lg p-8">
+                <div className="mb-4">
+                  <svg className="w-16 h-16 mx-auto text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-white mb-2">Reviews Coming Soon</h3>
+                <p className="text-sm text-gray-500">
+                  Customer reviews for material dealers will be available in a future update.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {false && activeTab === "reviews" && reviews.length > 0 && (
+              <div className="space-y-4">
+                {reviews.map((review) => (
+                  <div key={review.id} className="bg-gray-900/50 rounded-lg p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <p className="font-medium">{review.customerName}</p>
+                        <StarRating rating={review.rating} size={14} className="mt-1" />
+                      </div>
+                      <span className="text-xs text-gray-400">
+                        {new Date(review.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-300">{review.comment}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="h-20"></div>
+      </div>
+
+      <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-gray-900 text-white border-gray-800">
           <DialogHeader>
-            <DialogTitle>Edit Material</DialogTitle>
-            <DialogDescription>Update material information</DialogDescription>
+            <DialogTitle>Add New Material</DialogTitle>
+            <DialogDescription className="text-gray-400">Add a new material to your inventory</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="edit-name">Material Name</Label>
+              <Label htmlFor="name">Material Name</Label>
               <Input
-                id="edit-name"
+                id="name"
                 value={materialForm.name}
                 onChange={(e) => setMaterialForm({ ...materialForm, name: e.target.value })}
+                placeholder="e.g., Premium OPC Cement"
+                className="bg-gray-800 border-gray-700"
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-description">Description</Label>
+              <Label htmlFor="description">Description</Label>
               <Textarea
-                id="edit-description"
+                id="description"
                 value={materialForm.description}
                 onChange={(e) => setMaterialForm({ ...materialForm, description: e.target.value })}
+                placeholder="Describe the material"
+                className="bg-gray-800 border-gray-700"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="edit-category">Category</Label>
+                <Label htmlFor="category">Category</Label>
                 <Select 
                   value={materialForm.category}
                   onValueChange={(value) => setMaterialForm({ ...materialForm, category: value, subcategory: "" })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-gray-800 border-gray-700">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-gray-800 border-gray-700">
                     {categories.map((cat) => (
                       <SelectItem key={cat} value={cat}>
                         {cat.charAt(0).toUpperCase() + cat.slice(1)}
@@ -750,16 +635,16 @@ export default function MaterialDealerDashboard() {
                 </Select>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="edit-subcategory">Subcategory</Label>
+                <Label htmlFor="subcategory">Subcategory</Label>
                 <Select
                   value={materialForm.subcategory}
                   onValueChange={(value) => setMaterialForm({ ...materialForm, subcategory: value })}
                   disabled={!materialForm.category}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-gray-800 border-gray-700">
                     <SelectValue placeholder="Select subcategory" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-gray-800 border-gray-700">
                     {materialForm.category && subcategoriesByCategory[materialForm.category]?.map((subcat) => (
                       <SelectItem key={subcat} value={subcat}>
                         {subcat}
@@ -771,24 +656,26 @@ export default function MaterialDealerDashboard() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="edit-price">Price</Label>
+                <Label htmlFor="price">Price</Label>
                 <Input
-                  id="edit-price"
+                  id="price"
                   type="number"
                   value={materialForm.price}
                   onChange={(e) => setMaterialForm({ ...materialForm, price: e.target.value })}
+                  placeholder="0.00"
+                  className="bg-gray-800 border-gray-700"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="edit-unit">Unit</Label>
+                <Label htmlFor="unit">Unit</Label>
                 <Select
                   value={materialForm.unit}
                   onValueChange={(value) => setMaterialForm({ ...materialForm, unit: value })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-gray-800 border-gray-700">
                     <SelectValue placeholder="Select unit" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-gray-800 border-gray-700">
                     {units.map((unit) => (
                       <SelectItem key={unit} value={unit}>
                         {unit}
@@ -800,29 +687,164 @@ export default function MaterialDealerDashboard() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="edit-quantity">Stock Quantity</Label>
+                <Label htmlFor="quantity">Stock Quantity</Label>
                 <Input
-                  id="edit-quantity"
+                  id="quantity"
                   type="number"
                   value={materialForm.quantity}
                   onChange={(e) => setMaterialForm({ ...materialForm, quantity: e.target.value })}
+                  placeholder="0"
+                  className="bg-gray-800 border-gray-700"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="edit-minOrder">Minimum Order</Label>
+                <Label htmlFor="minOrder">Minimum Order</Label>
                 <Input
-                  id="edit-minOrder"
+                  id="minOrder"
                   value={materialForm.minOrder}
                   onChange={(e) => setMaterialForm({ ...materialForm, minOrder: e.target.value })}
+                  placeholder="e.g., 10 bags"
+                  className="bg-gray-800 border-gray-700"
                 />
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-image">Image URL</Label>
+              <Label htmlFor="image">Image URL</Label>
               <Input
-                id="edit-image"
+                id="image"
                 value={materialForm.image}
                 onChange={(e) => setMaterialForm({ ...materialForm, image: e.target.value })}
+                placeholder="https://example.com/image.jpg"
+                className="bg-gray-800 border-gray-700"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddMaterial}>Add Material</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-gray-900 text-white border-gray-800">
+          <DialogHeader>
+            <DialogTitle>Edit Material</DialogTitle>
+            <DialogDescription className="text-gray-400">Update material information</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="edit-name">Material Name</Label>
+              <Input
+                id="edit-name"
+                value={materialForm.name}
+                onChange={(e) => setMaterialForm({ ...materialForm, name: e.target.value })}
+                className="bg-gray-800 border-gray-700"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-description">Description</Label>
+              <Textarea
+                id="edit-description"
+                value={materialForm.description}
+                onChange={(e) => setMaterialForm({ ...materialForm, description: e.target.value })}
+                className="bg-gray-800 border-gray-700"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Category</Label>
+                <Select 
+                  value={materialForm.category}
+                  onValueChange={(value) => setMaterialForm({ ...materialForm, category: value, subcategory: "" })}
+                >
+                  <SelectTrigger className="bg-gray-800 border-gray-700">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700">
+                    {categories.map((cat) => (
+                      <SelectItem key={cat} value={cat}>
+                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label>Subcategory</Label>
+                <Select
+                  value={materialForm.subcategory}
+                  onValueChange={(value) => setMaterialForm({ ...materialForm, subcategory: value })}
+                >
+                  <SelectTrigger className="bg-gray-800 border-gray-700">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700">
+                    {materialForm.category && subcategoriesByCategory[materialForm.category]?.map((subcat) => (
+                      <SelectItem key={subcat} value={subcat}>
+                        {subcat}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Price</Label>
+                <Input
+                  type="number"
+                  value={materialForm.price}
+                  onChange={(e) => setMaterialForm({ ...materialForm, price: e.target.value })}
+                  className="bg-gray-800 border-gray-700"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label>Unit</Label>
+                <Select
+                  value={materialForm.unit}
+                  onValueChange={(value) => setMaterialForm({ ...materialForm, unit: value })}
+                >
+                  <SelectTrigger className="bg-gray-800 border-gray-700">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700">
+                    {units.map((unit) => (
+                      <SelectItem key={unit} value={unit}>
+                        {unit}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Stock Quantity</Label>
+                <Input
+                  type="number"
+                  value={materialForm.quantity}
+                  onChange={(e) => setMaterialForm({ ...materialForm, quantity: e.target.value })}
+                  className="bg-gray-800 border-gray-700"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label>Minimum Order</Label>
+                <Input
+                  value={materialForm.minOrder}
+                  onChange={(e) => setMaterialForm({ ...materialForm, minOrder: e.target.value })}
+                  className="bg-gray-800 border-gray-700"
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label>Image URL</Label>
+              <Input
+                value={materialForm.image}
+                onChange={(e) => setMaterialForm({ ...materialForm, image: e.target.value })}
+                className="bg-gray-800 border-gray-700"
               />
             </div>
           </div>
@@ -834,109 +856,6 @@ export default function MaterialDealerDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle>Orders Management</CardTitle>
-              <CardDescription>Manage customer orders</CardDescription>
-            </div>
-            <Select value={orderStatusFilter} onValueChange={setOrderStatusFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Orders</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Order ID</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Quantity</TableHead>
-                  <TableHead>Total Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredOrders.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                      No orders found.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredOrders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-medium">{order.orderNumber}</TableCell>
-                      <TableCell>{order.phone}</TableCell>
-                      <TableCell>{new Date(order.orderDate).toLocaleDateString()}</TableCell>
-                      <TableCell>{order.productName}</TableCell>
-                      <TableCell>{order.quantity} {order.unit}</TableCell>
-                      <TableCell>₹{Number(order.total).toLocaleString()}</TableCell>
-                      <TableCell>
-                        <Badge 
-                          variant={
-                            order.status === "pending" ? "secondary" :
-                            order.status === "verified" || order.status === "processing" ? "default" :
-                            order.status === "cancelled" ? "destructive" :
-                            "outline"
-                          }
-                        >
-                          {order.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          {order.status === "pending" && (
-                            <>
-                              <Button
-                                size="sm"
-                                variant="default"
-                                onClick={() => handleUpdateOrderStatus(order.id, "verified")}
-                              >
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Approve
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleUpdateOrderStatus(order.id, "cancelled")}
-                              >
-                                <XCircle className="h-4 w-4 mr-1" />
-                                Reject
-                              </Button>
-                            </>
-                          )}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => navigate(`/order/${order.id}`)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

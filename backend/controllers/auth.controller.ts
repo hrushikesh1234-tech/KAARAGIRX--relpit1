@@ -1,6 +1,8 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
 import { userService } from "../services/user.service";
+import { professionalService } from "../services/professional.service";
+import { dealerService } from "../services/dealer.service";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -12,7 +14,7 @@ const registerSchema = z.object({
   password: z.string().min(6),
   email: z.string().email(),
   fullName: z.string().min(2),
-  userType: z.enum(['customer', 'contractor', 'architect']),
+  userType: z.enum(['customer', 'contractor', 'architect', 'material_dealer', 'rental_merchant']),
   companyName: z.string().optional(),
   address: z.string().optional(),
   city: z.string().optional(),
@@ -27,13 +29,13 @@ export class AuthController {
     try {
       console.log('Registration request body:', { ...req.body, password: '***' });
       
-      if (!['customer', 'contractor', 'architect'].includes(req.body.userType)) {
+      if (!['customer', 'contractor', 'architect', 'material_dealer', 'rental_merchant'].includes(req.body.userType)) {
         console.log('Invalid userType:', req.body.userType);
         req.body.userType = 'customer';
         console.log('Defaulting to userType: customer');
       }
       
-      if (req.body.userType === 'contractor' || req.body.userType === 'architect') {
+      if (req.body.userType === 'contractor' || req.body.userType === 'architect' || req.body.userType === 'material_dealer' || req.body.userType === 'rental_merchant') {
         console.log('Professional registration detected:', req.body.userType);
         if (!req.body.companyName) req.body.companyName = '';
         if (!req.body.experience) req.body.experience = '1-3';
@@ -56,6 +58,48 @@ export class AuthController {
       console.log('Registering user with type:', validatedData.userType);
       const newUser = await userService.createUser(validatedData);
       console.log('Created user:', { ...newUser, password: '***' });
+      
+      // Create professional profile for contractor, architect, and rental merchant
+      if (validatedData.userType === 'contractor' || validatedData.userType === 'architect' || validatedData.userType === 'rental_merchant') {
+        const location = validatedData.city && validatedData.state 
+          ? `${validatedData.city}, ${validatedData.state}`
+          : validatedData.city || validatedData.state || '';
+        
+        await professionalService.createProfessional({
+          userId: newUser.id,
+          companyName: validatedData.companyName || '',
+          address: validatedData.address || '',
+          pincode: validatedData.pincode || '',
+          phone: validatedData.phone || '',
+          profession: validatedData.userType as 'contractor' | 'architect' | 'rental_merchant',
+          experience: parseInt(validatedData.experience?.split('-')[0] || '1') || 1,
+          location: location,
+        });
+        console.log('Created professional profile for user:', newUser.id);
+      }
+      
+      // Create dealer profile for material dealer
+      if (validatedData.userType === 'material_dealer') {
+        const location = validatedData.city && validatedData.state 
+          ? `${validatedData.city}, ${validatedData.state}`
+          : validatedData.city || validatedData.state || '';
+        
+        // Generate unique dealer code
+        const dealerCode = `DLR${newUser.id}${Date.now().toString().slice(-4)}`;
+        
+        await dealerService.createDealer({
+          userId: newUser.id,
+          dealerCode: dealerCode,
+          name: validatedData.companyName || validatedData.fullName,
+          location: location,
+          phone: validatedData.phone,
+          category: 'Building Materials',
+          subcategory: 'General',
+          price: '0',
+          unit: 'unit',
+        });
+        console.log('Created dealer profile for user:', newUser.id);
+      }
       
       res.status(201).json({
         id: newUser.id,

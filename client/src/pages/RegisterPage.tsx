@@ -39,7 +39,7 @@ const professionalRegistrationSchema = z.object({
   pincode: z.string().min(6, { message: "Please enter a valid pincode" }),
   phone: z.string().min(10, { message: "Please enter a valid phone number" }),
   experience: z.string({ required_error: "Please select years of experience" }),
-  professionalType: z.enum(["contractor", "architect"], {
+  professionalType: z.enum(["contractor", "architect", "material_dealer", "rental_merchant"], {
     required_error: "Please select a professional type",
   }),
   terms: z.boolean().refine((val) => val === true, {
@@ -114,7 +114,7 @@ const RegisterPage = () => {
       setIsProfessional(isProfessionalValue);
       
       // If a specific professional type is provided, update the form
-      if (professionalType === "contractor" || professionalType === "architect") {
+      if (professionalType === "contractor" || professionalType === "architect" || professionalType === "material_dealer" || professionalType === "rental_merchant") {
         form.setValue("professionalType", professionalType);
         console.log(`Setting professional type from URL: ${professionalType}`);
       } else if (isProfessionalValue) {
@@ -139,14 +139,14 @@ const RegisterPage = () => {
         data.username = data.email.split('@')[0] + Math.floor(Math.random() * 1000);
       }
       
-      // Always set isProfessional to true for contractor and architect registrations
-      if (data.professionalType === 'contractor' || data.professionalType === 'architect') {
+      // Always set isProfessional to true for all professional registrations
+      if (data.professionalType === 'contractor' || data.professionalType === 'architect' || 
+          data.professionalType === 'material_dealer' || data.professionalType === 'rental_merchant') {
         setIsProfessional(true);
       }
       
       // Set the correct userType based on the professionalType selected
-      const userType = data.professionalType === 'contractor' ? 'contractor' : 
-                      data.professionalType === 'architect' ? 'architect' : 'customer';
+      const userType = data.professionalType;
       
       console.log('Registering with userType:', userType);
       console.log('Professional type from form:', data.professionalType);
@@ -234,7 +234,7 @@ const RegisterPage = () => {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold text-white">
-            {isProfessional ? "Register as a Contractor or Architect" : "Create Your Account"}
+            {isProfessional ? "Register as a Professional" : "Create Your Account"}
           </h2>
           <p className="mt-2 text-white text-sm">
             {isProfessional 
@@ -265,7 +265,7 @@ const RegisterPage = () => {
                               }
                             }}
                             value={field.value}
-                            className="flex space-x-6 mt-2"
+                            className="grid grid-cols-2 gap-4 mt-2"
                           >
                             <div className="flex items-center space-x-2 border border-gray-300 rounded-md px-6 py-3 hover:bg-gray-50">
                               <RadioGroupItem value="contractor" id="contractor" className="text-blue-600" />
@@ -274,6 +274,14 @@ const RegisterPage = () => {
                             <div className="flex items-center space-x-2 border border-gray-300 rounded-md px-6 py-3 hover:bg-gray-50">
                               <RadioGroupItem value="architect" id="architect" className="text-blue-600" />
                               <label htmlFor="architect" className="text-sm font-medium cursor-pointer">Architect</label>
+                            </div>
+                            <div className="flex items-center space-x-2 border border-gray-300 rounded-md px-6 py-3 hover:bg-gray-50">
+                              <RadioGroupItem value="material_dealer" id="material_dealer" className="text-blue-600" />
+                              <label htmlFor="material_dealer" className="text-sm font-medium cursor-pointer">Material Dealer</label>
+                            </div>
+                            <div className="flex items-center space-x-2 border border-gray-300 rounded-md px-6 py-3 hover:bg-gray-50">
+                              <RadioGroupItem value="rental_merchant" id="rental_merchant" className="text-blue-600" />
+                              <label htmlFor="rental_merchant" className="text-sm font-medium cursor-pointer">Rental Merchant</label>
                             </div>
                           </RadioGroup>
                         </FormControl>

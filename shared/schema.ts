@@ -9,7 +9,7 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   email: text("email").notNull().unique(),
   fullName: text("full_name").notNull(),
-  userType: text("user_type", { enum: ["customer", "contractor", "architect"] }).notNull(),
+  userType: text("user_type", { enum: ["customer", "contractor", "architect", "material_dealer", "rental_merchant"] }).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -21,7 +21,7 @@ export const professionals = pgTable("professionals", {
   address: text("address"),
   pincode: text("pincode"),
   phone: text("phone"),
-  profession: text("profession", { enum: ["contractor", "architect"] }).notNull(),
+  profession: text("profession", { enum: ["contractor", "architect", "material_dealer", "rental_merchant"] }).notNull(),
   experience: integer("experience").default(0),
   profileImage: text("profile_image"),
   about: text("about"),
@@ -76,6 +76,7 @@ export const bookmarks = pgTable("bookmarks", {
 
 export const dealers = pgTable("dealers", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().unique().references(() => users.id, { onDelete: 'cascade' }),
   dealerCode: text("dealer_code").notNull().unique(),
   name: text("name").notNull(),
   rating: decimal("rating", { precision: 3, scale: 2 }).default("0"),
@@ -155,6 +156,67 @@ export const orderItems = pgTable("order_items", {
   dealerId: integer("dealer_id").references(() => dealers.id, { onDelete: 'set null' }),
 });
 
+export const materials = pgTable("materials", {
+  id: serial("id").primaryKey(),
+  dealerId: integer("dealer_id").notNull().references(() => dealers.id, { onDelete: 'cascade' }),
+  name: text("name").notNull(),
+  category: text("category").notNull(),
+  subcategory: text("subcategory"),
+  description: text("description"),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  unit: text("unit").notNull(),
+  quantity: integer("quantity").default(0),
+  minOrder: text("min_order"),
+  image: text("image"),
+  images: jsonb("images").$type<string[]>(),
+  specifications: jsonb("specifications").$type<Record<string, string>>(),
+  inStock: boolean("in_stock").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const rentalEquipment = pgTable("rental_equipment", {
+  id: serial("id").primaryKey(),
+  merchantId: integer("merchant_id").notNull().references(() => professionals.id, { onDelete: 'cascade' }),
+  name: text("name").notNull(),
+  category: text("category").notNull(),
+  description: text("description"),
+  dailyRate: decimal("daily_rate", { precision: 10, scale: 2 }).notNull(),
+  weeklyRate: decimal("weekly_rate", { precision: 10, scale: 2 }),
+  monthlyRate: decimal("monthly_rate", { precision: 10, scale: 2 }),
+  securityDeposit: decimal("security_deposit", { precision: 10, scale: 2 }),
+  quantity: integer("quantity").default(1),
+  available: integer("available").default(1),
+  image: text("image"),
+  images: jsonb("images").$type<string[]>(),
+  specifications: jsonb("specifications").$type<Record<string, string>>(),
+  condition: text("condition", { enum: ["excellent", "good", "fair"] }).default("good"),
+  minRentalPeriod: text("min_rental_period"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const bookings = pgTable("bookings", {
+  id: varchar("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  equipmentId: integer("equipment_id").notNull().references(() => rentalEquipment.id, { onDelete: 'cascade' }),
+  merchantId: integer("merchant_id").notNull().references(() => professionals.id, { onDelete: 'cascade' }),
+  bookingNumber: text("booking_number").unique(),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  quantity: integer("quantity").notNull().default(1),
+  totalCost: decimal("total_cost", { precision: 10, scale: 2 }).notNull(),
+  securityDeposit: decimal("security_deposit", { precision: 10, scale: 2 }),
+  status: text("status", { 
+    enum: ["pending", "approved", "active", "completed", "cancelled"] 
+  }).notNull().default("pending"),
+  paymentStatus: text("payment_status", { enum: ["pending", "partially_paid", "paid", "refunded"] }).default("pending"),
+  deliveryAddress: text("delivery_address"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const conversations = pgTable("conversations", {
   id: serial("id").primaryKey(),
   user1Id: integer("user1_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
@@ -184,9 +246,14 @@ export const usersRelations = relations(users, ({ many, one }) => ({
     fields: [users.id],
     references: [professionals.userId],
   }),
+  dealer: one(dealers, {
+    fields: [users.id],
+    references: [dealers.userId],
+  }),
   reviews: many(reviews),
   bookmarks: many(bookmarks),
   orders: many(orders),
+  bookings: many(bookings),
   sentMessages: many(messages),
   conversationsAsUser1: many(conversations, { relationName: "user1Conversations" }),
   conversationsAsUser2: many(conversations, { relationName: "user2Conversations" }),
@@ -200,6 +267,8 @@ export const professionalsRelations = relations(professionals, ({ one, many }) =
   projects: many(projects),
   reviews: many(reviews),
   bookmarks: many(bookmarks),
+  rentalEquipment: many(rentalEquipment),
+  bookings: many(bookings),
 }));
 
 export const projectsRelations = relations(projects, ({ one }) => ({
@@ -235,10 +304,15 @@ export const bookmarksRelations = relations(bookmarks, ({ one }) => ({
   }),
 }));
 
-export const dealersRelations = relations(dealers, ({ many }) => ({
+export const dealersRelations = relations(dealers, ({ one, many }) => ({
+  user: one(users, {
+    fields: [dealers.userId],
+    references: [users.id],
+  }),
   bookmarks: many(bookmarks),
   orders: many(orders),
   orderItems: many(orderItems),
+  materials: many(materials),
 }));
 
 export const ordersRelations = relations(orders, ({ one, many }) => ({
@@ -289,6 +363,36 @@ export const messagesRelations = relations(messages, ({ one }) => ({
   }),
 }));
 
+export const materialsRelations = relations(materials, ({ one }) => ({
+  dealer: one(dealers, {
+    fields: [materials.dealerId],
+    references: [dealers.id],
+  }),
+}));
+
+export const rentalEquipmentRelations = relations(rentalEquipment, ({ one, many }) => ({
+  merchant: one(professionals, {
+    fields: [rentalEquipment.merchantId],
+    references: [professionals.id],
+  }),
+  bookings: many(bookings),
+}));
+
+export const bookingsRelations = relations(bookings, ({ one }) => ({
+  user: one(users, {
+    fields: [bookings.userId],
+    references: [users.id],
+  }),
+  equipment: one(rentalEquipment, {
+    fields: [bookings.equipmentId],
+    references: [rentalEquipment.id],
+  }),
+  merchant: one(professionals, {
+    fields: [bookings.merchantId],
+    references: [professionals.id],
+  }),
+}));
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -304,6 +408,9 @@ export const insertBookmarkSchema = createInsertSchema(bookmarks);
 export const insertDealerSchema = createInsertSchema(dealers);
 export const insertOrderSchema = createInsertSchema(orders);
 export const insertOrderItemSchema = createInsertSchema(orderItems);
+export const insertMaterialSchema = createInsertSchema(materials);
+export const insertRentalEquipmentSchema = createInsertSchema(rentalEquipment);
+export const insertBookingSchema = createInsertSchema(bookings);
 export const insertConversationSchema = createInsertSchema(conversations);
 export const insertMessageSchema = createInsertSchema(messages);
 
@@ -316,7 +423,13 @@ export type Bookmark = typeof bookmarks.$inferSelect;
 export type Dealer = typeof dealers.$inferSelect;
 export type Order = typeof orders.$inferSelect;
 export type OrderItem = typeof orderItems.$inferSelect;
+export type Material = typeof materials.$inferSelect;
+export type RentalEquipment = typeof rentalEquipment.$inferSelect;
+export type Booking = typeof bookings.$inferSelect;
 export type Conversation = typeof conversations.$inferSelect;
 export type Message = typeof messages.$inferSelect;
 export type InsertConversation = z.infer<typeof insertConversationSchema>;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type InsertMaterial = z.infer<typeof insertMaterialSchema>;
+export type InsertRentalEquipment = z.infer<typeof insertRentalEquipmentSchema>;
+export type InsertBooking = z.infer<typeof insertBookingSchema>;

@@ -130,6 +130,74 @@ The application uses:
   - Vite config verified with host 0.0.0.0:5000 and allowedHosts enabled
   - Backend configured for port 3001
 
+## Critical Production Readiness Issues (October 6, 2025)
+
+### ⚠️ MOCK DATA IN FRONTEND - NOT PRODUCTION READY ⚠️
+
+The application currently has **extensive mock data hardcoded in the frontend** that needs to be migrated to the database for production use:
+
+#### 1. **Chat Messages** (client/src/components/ChatWindowME.tsx)
+- **580+ lines** of hardcoded chat conversations
+- Mock messages for 15+ contacts including contractors, dealers, architects
+- **Status**: Must be moved to database + real-time messaging API
+- **Impact**: CRITICAL - No real messaging functionality
+
+#### 2. **Dealers Data** (client/src/data/dealers.ts)
+- **708 lines** of construction material dealer information
+- Complete product catalogs, pricing, images
+- **Status**: Must be migrated to database (partially done per replit.md)
+- **Impact**: HIGH - Product data not persistent
+
+#### 3. **Professionals** (client/src/hooks/useProfessionals.ts, useProjects.ts)
+- Mock contractors and architects data
+- Reviews, ratings, portfolios
+- **Status**: Needs migration (API exists per replit.md, but frontend still using mocks)
+- **Impact**: HIGH - Professional listings not dynamic
+
+#### 4. **Equipment Rentals** (client/src/components/onrent/EquipmentGrid.tsx)
+- Equipment listings: JCB, cranes, concrete equipment, transport vehicles
+- **Status**: No database schema or API exists
+- **Impact**: CRITICAL - Rental feature non-functional
+
+#### 5. **Bookmarks** (client/src/data/bookmarkData.ts)
+- Saved professionals and items
+- **Status**: Schema exists, needs API implementation
+- **Impact**: MEDIUM - User preferences not saved
+
+#### 6. **Notifications** (client/src/hooks/useNotifications.ts)
+- Mock notification data
+- **Status**: No database schema exists
+- **Impact**: MEDIUM - No real notification system
+
+#### 7. **Profile Images & Assets**
+- Using placeholder images and local storage
+- **Status**: Needs cloud storage integration (AWS S3/Cloudinary)
+- **Impact**: HIGH - No persistent media storage
+
+### What's Working (Backend APIs)
+✅ User authentication with bcrypt
+✅ Professionals API (contractors/architects)
+✅ Projects/Portfolio API
+✅ Dealers API
+✅ Orders API
+✅ PostgreSQL database with proper schemas
+
+### What's NOT Production Ready
+❌ Messaging system (no backend, 580+ lines of mock data)
+❌ Equipment rental (no backend, frontend-only mock data)
+❌ Notifications (no backend implementation)
+❌ Image/file uploads (no storage solution)
+❌ Real-time features (no WebSocket implementation)
+❌ Frontend still using mock data despite backend APIs existing
+
+### Immediate Actions Required for Production
+1. **Connect Frontend to Backend APIs** - Frontend components still use mock data hooks instead of API calls
+2. **Implement Messaging Backend** - Create messages schema, API, WebSocket for real-time
+3. **Equipment Rental System** - Create database schema and API endpoints
+4. **File Storage** - Integrate Cloudinary or AWS S3 for images
+5. **Remove All Mock Data** - Replace with actual API calls throughout frontend
+6. **Testing** - End-to-end testing of all features with real data
+
 ## User Preferences
 - None set yet (fresh import)
 

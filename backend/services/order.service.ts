@@ -44,6 +44,20 @@ export class OrderService {
     await db.delete(orders).where(eq(orders.id, id));
     return true;
   }
+
+  async getOrdersByDealerId(dealerId: number): Promise<Order[]> {
+    return await db.select().from(orders)
+      .where(eq(orders.dealerId, dealerId))
+      .orderBy(desc(orders.createdAt));
+  }
+
+  async updateOrderStatus(orderId: string, status: string): Promise<Order | undefined> {
+    const [updated] = await db.update(orders)
+      .set({ status: status as any, updatedAt: new Date() })
+      .where(eq(orders.id, orderId))
+      .returning();
+    return updated || undefined;
+  }
 }
 
 export const orderService = new OrderService();

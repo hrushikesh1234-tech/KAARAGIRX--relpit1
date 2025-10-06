@@ -89,6 +89,39 @@ export class OrderController {
       res.status(500).json({ error: 'Failed to delete order' });
     }
   }
+
+  async getOrdersByDealer(req: Request, res: Response) {
+    try {
+      const dealerId = parseInt(req.params.dealerId);
+      const orders = await orderService.getOrdersByDealerId(dealerId);
+      res.json(orders);
+    } catch (error) {
+      console.error('Error fetching dealer orders:', error);
+      res.status(500).json({ error: 'Failed to fetch dealer orders' });
+    }
+  }
+
+  async updateOrderStatus(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      if (!status) {
+        return res.status(400).json({ error: 'Status is required' });
+      }
+
+      const order = await orderService.updateOrderStatus(id, status);
+      
+      if (!order) {
+        return res.status(404).json({ error: 'Order not found' });
+      }
+      
+      res.json(order);
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      res.status(500).json({ error: 'Failed to update order status' });
+    }
+  }
 }
 
 export const orderController = new OrderController();

@@ -7,6 +7,11 @@ import projectRoutes from "./project.routes";
 import dealerRoutes from "./dealer.routes";
 import orderRoutes from "./order.routes";
 import messageRoutes from "./message.routes";
+import materialRoutes from "./material.routes";
+import rentalRoutes from "./rental.routes";
+import bookingRoutes from "./booking.routes";
+import wishlistRoutes from "./wishlist.routes";
+import notificationRoutes from "./notification.routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/auth', authRoutes);
@@ -15,6 +20,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/dealers', dealerRoutes);
   app.use('/api/orders', orderRoutes);
   app.use('/api/messages', messageRoutes);
+  app.use('/api/materials', materialRoutes);
+  app.use('/api/rental-equipment', rentalRoutes);
+  app.use('/api/bookings', bookingRoutes);
+  app.use('/api/wishlist', wishlistRoutes);
+  app.use('/api/notifications', notificationRoutes);
 
   const httpServer = createServer(app);
   return httpServer;

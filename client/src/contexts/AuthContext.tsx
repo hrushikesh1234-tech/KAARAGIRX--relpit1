@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = useCallback(async () => {
     try {
-      const res = await fetch("http://127.0.0.1:3001/api/auth/me", {
+      const res = await fetch("/api/auth/me", {
         credentials: "include",
       });
 
@@ -80,16 +80,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // Redirect based on user type
       if (userData.userType === 'contractor') {
-        // Redirect contractors to their dedicated dashboard
-        navigate("/contractor-dashboard");
-        console.log('Redirecting to contractor dashboard');
+        // Redirect contractors to their profile dashboard
+        navigate("/profile-dashboard");
+        console.log('Redirecting to contractor profile dashboard');
       } else if (userData.userType === 'architect') {
-        // Redirect architects to their dedicated dashboard
-        navigate("/architect-dashboard");
-        console.log('Redirecting to architect dashboard');
+        // Redirect architects to their profile dashboard
+        navigate("/profile-dashboard");
+        console.log('Redirecting to architect profile dashboard');
       } else if (userData.userType === 'material_dealer') {
         // Redirect material dealers to their dedicated dashboard
-        navigate("/material-dealer-dashboard");
+        navigate("/dealer/dashboard");
         console.log('Redirecting to material dealer dashboard');
       } else if (userData.userType === 'rental_merchant') {
         // Redirect rental merchants to their dedicated dashboard
@@ -97,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('Redirecting to rental merchant dashboard');
       } else if (userData.userType === 'customer') {
         // Redirect customers to their dashboard
-        navigate("/dashboard");
+        navigate("/customer/dashboard");
         console.log('Redirecting to customer dashboard');
       } else {
         // Default to homepage

@@ -12,18 +12,14 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  // Ensure the URL points to the correct server
-  const apiUrl = url.startsWith("/api") ? `http://127.0.0.1:3001${url}` : url;
-  
-  console.log(`Making API request: ${method} ${apiUrl}`, data);
+  console.log(`Making API request: ${method} ${url}`, data);
   
   try {
-    const res = await fetch(apiUrl, {
+    const res = await fetch(url, {
       method,
       headers: data ? { "Content-Type": "application/json" } : {},
       body: data ? JSON.stringify(data) : undefined,
       credentials: "include",
-      mode: "cors"
     });
 
     console.log(`API response status: ${res.status}`);
@@ -48,10 +44,8 @@ export const getQueryFn: <T>(options: {
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
     const url = queryKey[0] as string;
-    // Ensure the URL points to the correct server
-    const apiUrl = url.startsWith("/api") ? `http://127.0.0.1:3001${url}` : url;
     
-    const res = await fetch(apiUrl, {
+    const res = await fetch(url, {
       credentials: "include",
     });
 

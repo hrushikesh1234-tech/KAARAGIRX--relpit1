@@ -1,4 +1,4 @@
-modules = ["nodejs-20", "web", "bash"]
+modules = ["nodejs-20", "web", "bash", "postgresql-16"]
 [agent]
 expertMode = true
 integrations = ["javascript_database:1.0.0"]
@@ -41,6 +41,10 @@ externalPort = 80
 [[ports]]
 localPort = 32919
 externalPort = 3003
+
+[[ports]]
+localPort = 33921
+externalPort = 5000
 
 [[ports]]
 localPort = 34001

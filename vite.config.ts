@@ -31,6 +31,13 @@ export default defineConfig({
       clientPort: 443,
     },
     cors: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
     watch: {
       usePolling: true,
       ignored: ['**/node_modules/**', '**/dist/**']

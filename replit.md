@@ -10,7 +10,7 @@ KaaragirX is a full-stack construction marketplace platform connecting customers
 ### Technology Stack
 - **Frontend**: React 18, TypeScript, Vite, TailwindCSS, Radix UI components
 - **Backend**: Express.js (Node.js)
-- **Database**: In-memory storage (MemStorage) - no external database required
+- **Database**: PostgreSQL (Neon-backed) with Drizzle ORM
 - **State Management**: React Context API, TanStack React Query
 - **Routing**: React Router v6
 - **UI Components**: Custom components with Radix UI primitives
@@ -26,13 +26,24 @@ KaaragirX is a full-stack construction marketplace platform connecting customers
 │   │   ├── services/         # API services
 │   │   └── types/            # TypeScript types
 │   └── public/               # Static assets
-├── server/                   # Backend Express server
-│   ├── index.ts             # Server entry point
-│   ├── routes.ts            # API routes
-│   ├── storage.ts           # In-memory storage
-│   └── vite.ts              # Vite integration
+├── backend/                  # Backend Express server (reorganized)
+│   ├── config/               # Configuration files
+│   │   └── database.ts       # Database connection
+│   ├── controllers/          # Request handlers
+│   │   └── auth.controller.ts
+│   ├── services/             # Business logic
+│   │   └── user.service.ts   # User database operations
+│   ├── routes/               # API route definitions
+│   │   └── auth.routes.ts
+│   ├── middleware/           # Express middleware
+│   │   └── session.middleware.ts
+│   ├── utils/                # Utility functions
+│   │   └── vite.ts           # Vite dev server integration
+│   ├── scripts/              # Database scripts
+│   │   └── seed-postgres.ts  # Seed demo users
+│   └── index.ts              # Server entry point
 └── shared/                   # Shared types/schemas
-    └── schema.ts            # Database schema
+    └── schema.ts             # Drizzle schema definitions
 ```
 
 ### Key Features
@@ -50,21 +61,29 @@ KaaragirX is a full-stack construction marketplace platform connecting customers
 - **Backend (Express)**: Port 3001 (localhost) in development
 - Vite config already includes `allowedHosts: true` for Replit proxy support
 
-### Demo Users (Pre-loaded)
+### Demo Users (Database-seeded)
 ```
+Demo User: demo@example.com / password123 (customer)
 Customer 1: john.smith@example.com / Customer@123
 Customer 2: sarah.johnson@example.com / Customer@456
-Contractor: contractor@example.com / password123
-Architect: architect@example.com / password123
-Demo User: demo@example.com / password123
+Contractor: contractor@example.com / password123 (username: contractor1)
+Architect: architect@example.com / password123 (username: architect1)
 ```
+
+**Note**: Demo users are seeded into PostgreSQL database via `npm run db:seed`
 
 ## Development Setup
 
 ### Environment
 - Node.js with npm package manager
-- No environment variables required (uses in-memory storage)
-- No external database needed
+- PostgreSQL database via Replit (DATABASE_URL environment variable)
+- Drizzle ORM for database operations
+
+### Database Setup
+```bash
+npm run db:push    # Push schema to database
+npm run db:seed    # Seed demo users
+```
 
 ### Running the Application
 ```bash
@@ -75,12 +94,22 @@ The application uses:
 - `concurrently` to run both servers
 - Vite dev server on port 5000
 - Express backend on port 3001
+- PostgreSQL for persistent data storage
 
 ## Recent Changes
+- **October 6, 2025 (Latest)**: Backend reorganization and PostgreSQL integration
+  - Reorganized backend into proper folder structure (config, controllers, services, routes, middleware, utils, scripts)
+  - Migrated from in-memory storage to PostgreSQL database with Drizzle ORM
+  - Created UserService for database operations with email normalization
+  - Database schema defined in shared/schema.ts
+  - Seed script created to populate demo users in PostgreSQL
+  - All demo users successfully migrated to database
+  - Updated package.json scripts to use new backend folder
+  - Removed old server folder to prevent code drift
+  
 - **October 6, 2025**: Initial import and Replit environment configuration
   - Vite config verified with host 0.0.0.0:5000 and allowedHosts enabled
   - Backend configured for port 3001
-  - In-memory storage confirmed (no database provisioning needed)
 
 ## User Preferences
 - None set yet (fresh import)
@@ -88,5 +117,8 @@ The application uses:
 ## Notes
 - Backend uses CORS middleware with specific allowed origins
 - Frontend uses React Router for client-side routing
-- All authentication is handled via API routes with in-memory storage
-- No password hashing in demo (plain text storage for simplicity)
+- All authentication is handled via API routes with PostgreSQL database storage
+- User emails are normalized (lowercased) for consistent lookups
+- Demo users have plain text passwords for simplicity (not production-ready)
+- Database uses @neondatabase/serverless for WebSocket connections
+- Seed script uses postgres driver for reliable seeding

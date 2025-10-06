@@ -97,7 +97,30 @@ The application uses:
 - PostgreSQL for persistent data storage
 
 ## Recent Changes
-- **October 6, 2025 (Latest Update)**: Messaging System Backend Infrastructure Complete
+- **October 6, 2025 (Latest Update - Multi-Role System Foundation)**: Material Dealer & Rental Merchant Support
+  - ✅ **Database Schema Extension**: Added 2 new user roles (material_dealer, rental_merchant) and 3 new tables
+    - `materials` table for dealer inventory management
+    - `rental_equipment` table for equipment listings
+    - `bookings` table for rental reservations
+  - ✅ **Registration System Update**: 
+    - Frontend: Added Material Dealer and Rental Merchant options to registration form (grid layout)
+    - Backend: Updated auth controller to create professional/dealer records during registration
+    - Fixed userType mapping to correctly handle all 4 professional types
+  - ✅ **Database Relationships**: 
+    - Linked dealers table to users (userId unique non-null)
+    - professionals table now supports all 4 types: contractor, architect, material_dealer, rental_merchant
+  - ⚠️ **Incomplete Features**:
+    - ❌ No CRUD APIs for materials, rental equipment, or bookings yet
+    - ❌ No role-specific dashboards (Material Dealer, Rental Merchant, enhanced Customer)
+    - ❌ No role-based routing - users can register but can't access role-specific features
+    - ❌ Some services/routes still constrain to original 3 user types
+  - 📋 **Next Steps**:
+    1. Implement CRUD APIs for materials, rental equipment, and bookings
+    2. Build role-specific dashboards with real-time data
+    3. Fix remaining services/routes to accept new user types
+    4. Add role-based routing guards
+
+- **October 6, 2025**: Messaging System Backend Infrastructure Complete
   - ✅ **Messaging Database Schema**: Created `conversations` and `messages` tables with proper relationships
   - ✅ **Message Service Layer**: Built comprehensive service for message operations (backend/services/message.service.ts)
   - ✅ **Message API Routes**: Implemented RESTful API endpoints at `/api/messages`:

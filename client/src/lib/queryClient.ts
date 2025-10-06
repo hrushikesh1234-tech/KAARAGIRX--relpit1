@@ -13,7 +13,7 @@ export async function apiRequest(
   data?: unknown | undefined,
 ): Promise<Response> {
   // Ensure the URL points to the correct server
-  const apiUrl = url.startsWith("/api") ? `http://127.0.0.1:3000${url}` : url;
+  const apiUrl = url.startsWith("/api") ? `http://127.0.0.1:3001${url}` : url;
   
   console.log(`Making API request: ${method} ${apiUrl}`, data);
   
@@ -49,7 +49,7 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     const url = queryKey[0] as string;
     // Ensure the URL points to the correct server
-    const apiUrl = url.startsWith("/api") ? `http://127.0.0.1:3000${url}` : url;
+    const apiUrl = url.startsWith("/api") ? `http://127.0.0.1:3001${url}` : url;
     
     const res = await fetch(apiUrl, {
       credentials: "include",

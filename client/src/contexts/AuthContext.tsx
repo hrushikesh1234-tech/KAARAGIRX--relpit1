@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = useCallback(async () => {
     try {
-      const res = await fetch("http://127.0.0.1:3000/api/auth/me", {
+      const res = await fetch("http://127.0.0.1:3001/api/auth/me", {
         credentials: "include",
       });
 
@@ -87,6 +87,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Redirect architects to their dedicated dashboard
         navigate("/architect-dashboard");
         console.log('Redirecting to architect dashboard');
+      } else if (userData.userType === 'material_dealer') {
+        // Redirect material dealers to their dedicated dashboard
+        navigate("/material-dealer-dashboard");
+        console.log('Redirecting to material dealer dashboard');
+      } else if (userData.userType === 'rental_merchant') {
+        // Redirect rental merchants to their dedicated dashboard
+        navigate("/rental-merchant-dashboard");
+        console.log('Redirecting to rental merchant dashboard');
       } else if (userData.userType === 'customer') {
         // Redirect customers to their dashboard
         navigate("/dashboard");

@@ -217,6 +217,25 @@ export const bookings = pgTable("bookings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const wishlists = pgTable("wishlists", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  materialId: integer("material_id").references(() => materials.id, { onDelete: 'cascade' }),
+  equipmentId: integer("equipment_id").references(() => rentalEquipment.id, { onDelete: 'cascade' }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  type: text("type", { enum: ["order", "booking", "message", "review", "system"] }).notNull(),
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  relatedId: text("related_id"),
+  isRead: boolean("is_read").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const conversations = pgTable("conversations", {
   id: serial("id").primaryKey(),
   user1Id: integer("user1_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
@@ -254,6 +273,8 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   bookmarks: many(bookmarks),
   orders: many(orders),
   bookings: many(bookings),
+  wishlists: many(wishlists),
+  notifications: many(notifications),
   sentMessages: many(messages),
   conversationsAsUser1: many(conversations, { relationName: "user1Conversations" }),
   conversationsAsUser2: many(conversations, { relationName: "user2Conversations" }),
@@ -363,11 +384,12 @@ export const messagesRelations = relations(messages, ({ one }) => ({
   }),
 }));
 
-export const materialsRelations = relations(materials, ({ one }) => ({
+export const materialsRelations = relations(materials, ({ one, many }) => ({
   dealer: one(dealers, {
     fields: [materials.dealerId],
     references: [dealers.id],
   }),
+  wishlists: many(wishlists),
 }));
 
 export const rentalEquipmentRelations = relations(rentalEquipment, ({ one, many }) => ({
@@ -376,6 +398,7 @@ export const rentalEquipmentRelations = relations(rentalEquipment, ({ one, many 
     references: [professionals.id],
   }),
   bookings: many(bookings),
+  wishlists: many(wishlists),
 }));
 
 export const bookingsRelations = relations(bookings, ({ one }) => ({
@@ -390,6 +413,28 @@ export const bookingsRelations = relations(bookings, ({ one }) => ({
   merchant: one(professionals, {
     fields: [bookings.merchantId],
     references: [professionals.id],
+  }),
+}));
+
+export const wishlistsRelations = relations(wishlists, ({ one }) => ({
+  user: one(users, {
+    fields: [wishlists.userId],
+    references: [users.id],
+  }),
+  material: one(materials, {
+    fields: [wishlists.materialId],
+    references: [materials.id],
+  }),
+  equipment: one(rentalEquipment, {
+    fields: [wishlists.equipmentId],
+    references: [rentalEquipment.id],
+  }),
+}));
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(users, {
+    fields: [notifications.userId],
+    references: [users.id],
   }),
 }));
 
@@ -413,6 +458,8 @@ export const insertRentalEquipmentSchema = createInsertSchema(rentalEquipment);
 export const insertBookingSchema = createInsertSchema(bookings);
 export const insertConversationSchema = createInsertSchema(conversations);
 export const insertMessageSchema = createInsertSchema(messages);
+export const insertWishlistSchema = createInsertSchema(wishlists);
+export const insertNotificationSchema = createInsertSchema(notifications);
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -428,8 +475,12 @@ export type RentalEquipment = typeof rentalEquipment.$inferSelect;
 export type Booking = typeof bookings.$inferSelect;
 export type Conversation = typeof conversations.$inferSelect;
 export type Message = typeof messages.$inferSelect;
+export type Wishlist = typeof wishlists.$inferSelect;
+export type Notification = typeof notifications.$inferSelect;
 export type InsertConversation = z.infer<typeof insertConversationSchema>;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type InsertMaterial = z.infer<typeof insertMaterialSchema>;
 export type InsertRentalEquipment = z.infer<typeof insertRentalEquipmentSchema>;
 export type InsertBooking = z.infer<typeof insertBookingSchema>;
+export type InsertWishlist = z.infer<typeof insertWishlistSchema>;
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;

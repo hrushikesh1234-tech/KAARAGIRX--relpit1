@@ -1,0 +1,59 @@
+/* Custom styles for the slider */
+.slick-slider {
+  width: 100%;
+  height: 100%;
+}
+
+.slick-list {
+  height: 100%;
+}
+
+.slick-track,
+.slick-slide > div {
+  height: 100%;
+}
+
+/* Custom dot styles */
+.slick-dots li {
+  margin: 0 2px;
+}
+
+.slick-dots li button:before {
+  color: rgba(255, 255, 255, 0.5);
+  opacity: 1;
+  font-size: 8px;
+}
+
+.slick-dots li.slick-active button:before {
+  color: white;
+}
+
+/* Hide default arrows */
+.slick-prev:before,
+.slick-next:before {
+  display: none;
+}
+
+/* Custom arrow positioning */
+.slick-prev,
+.slick-next {
+  width: 40px;
+  height: 40px;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.slick-prev {
+  left: 10px;
+}
+
+.slick-next {
+  right: 10px;
+}
+
+/* Show arrows on hover */
+.group:hover .slick-prev,
+.group:hover .slick-next {
+  opacity: 1;
+}

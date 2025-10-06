@@ -98,7 +98,8 @@ export class AuthController {
       
       console.log(`Found user: ${user.username}, userType: ${user.userType}`);
       
-      if (user.password !== password) {
+      const isPasswordValid = await userService.verifyPassword(password, user.password);
+      if (!isPasswordValid) {
         console.log(`Password mismatch for user: ${user.username}`);
         return res.status(401).json({ error: 'Invalid credentials' });
       }

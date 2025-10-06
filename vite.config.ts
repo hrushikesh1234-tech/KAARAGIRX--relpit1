@@ -23,13 +23,12 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
-    host: '0.0.0.0', // Listen on all network interfaces
-    port: 5174,
-    strictPort: true,
+    host: '0.0.0.0',
+    port: 5000,
+    strictPort: false,
+    allowedHosts: true,
     hmr: {
-      host: '192.168.0.104',
-      port: 5174,
-      protocol: 'ws'
+      clientPort: 443,
     },
     cors: true,
     watch: {

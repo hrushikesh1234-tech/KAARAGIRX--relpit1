@@ -277,7 +277,8 @@ export default function MaterialDealerDashboard() {
           unit: materialForm.unit,
           quantity: parseInt(materialForm.quantity),
           minOrder: materialForm.minOrder,
-          image: materialForm.image,
+          image: materialForm.images[0] || "",
+          images: materialForm.images.filter(img => img.trim() !== ""),
           inStock: parseInt(materialForm.quantity) > 0
         })
       });
@@ -340,6 +341,10 @@ export default function MaterialDealerDashboard() {
 
   const openEditModal = (material: Material) => {
     setSelectedMaterial(material);
+    const materialImages = material.images || [];
+    const imagesArray: string[] = Array.isArray(materialImages) ? materialImages : [];
+    const paddedImages = [...imagesArray, "", "", "", "", ""].slice(0, 5);
+    
     setMaterialForm({
       name: material.name,
       description: material.description,
@@ -349,7 +354,8 @@ export default function MaterialDealerDashboard() {
       quantity: material.quantity.toString(),
       unit: material.unit,
       minOrder: material.minOrder,
-      image: material.image
+      image: material.image,
+      images: paddedImages as [string, string, string, string, string]
     });
     setIsEditModalOpen(true);
   };
@@ -364,7 +370,8 @@ export default function MaterialDealerDashboard() {
       quantity: "",
       unit: "",
       minOrder: "",
-      image: ""
+      image: "",
+      images: ["", "", "", "", ""]
     });
   };
 
@@ -848,12 +855,20 @@ export default function MaterialDealerDashboard() {
               </div>
             </div>
             <div className="grid gap-2">
-              <Label>Image URL</Label>
-              <Input
-                value={materialForm.image}
-                onChange={(e) => setMaterialForm({ ...materialForm, image: e.target.value })}
-                className="bg-gray-800 border-gray-700"
-              />
+              <Label>Product Images (Up to 5)</Label>
+              {[0, 1, 2, 3, 4].map((index) => (
+                <Input
+                  key={index}
+                  value={materialForm.images[index]}
+                  onChange={(e) => {
+                    const newImages = [...materialForm.images];
+                    newImages[index] = e.target.value;
+                    setMaterialForm({ ...materialForm, images: newImages, image: newImages[0] || "" });
+                  }}
+                  placeholder={`Image URL ${index + 1}${index === 0 ? ' (Main)' : ''}`}
+                  className="bg-gray-800 border-gray-700"
+                />
+              ))}
             </div>
           </div>
           <DialogFooter>

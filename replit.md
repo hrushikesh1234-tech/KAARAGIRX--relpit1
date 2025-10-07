@@ -7,6 +7,13 @@ KaaragirX is a full-stack construction marketplace platform designed to connect 
 - None set yet (fresh import)
 
 ## Recent Changes
+- **October 7, 2025**: Major feature enhancements and fixes
+  - **Professionals Display**: Updated professional service to join with projects table and include portfolio data; ProfessionalCard now displays portfolio images from database
+  - **OnRent Filtering**: Fixed subcategory filtering to use correct column (`subcategory` instead of `name`); added subcategory field to query results; rental service now joins with professionals table for merchant info
+  - **Shop Materials**: Updated material service to join with dealers table and include dealer information (name, location, rating, verification status)
+  - **Rental Merchant Dashboard**: Added bulk image upload feature (up to 5 images, 5MB max each) with file size validation and empty slot detection, matching Material Dealer functionality
+  - **Profile Dashboard UI**: Moved edit pencil button from top-right corner to below tab navigation; added "My Portfolio +Add portfolio" action bar visible only for own profile
+  - **Routing Architecture**: Clarified separation between `/profile-dashboard` (editable, owner only) and `/professionals/:id` (view-only, public browsing)
 - **October 7, 2025**: Fixed material upload to support bulk uploads (up to 5 images at once, 5MB max per image)
   - Increased Express body parser limit to 50MB to accommodate Base64-encoded images (~33MB for 5×5MB files)
   - Improved upload logic to find next empty slot instead of overwriting existing images

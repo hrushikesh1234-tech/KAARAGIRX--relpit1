@@ -69,7 +69,7 @@ const Shop = () => {
 
   const locations = useMemo(() => {
     return ['All Locations', ...new Set(dealers.map(dealer => dealer.location).filter(Boolean as any))];
-  }, []);
+  }, [dealers]);
 
   const categoryData = {
     "all": { name: "All Materials", count: 45, subcategories: [], image: "/images/categories/cement.jpg" },

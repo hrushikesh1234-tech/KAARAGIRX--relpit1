@@ -99,6 +99,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Redirect customers to their dashboard
         navigate("/customer/dashboard");
         console.log('Redirecting to customer dashboard');
+      } else if (userData.userType === 'admin') {
+        // Redirect admin to admin dashboard
+        navigate("/admin/dashboard");
+        console.log('Redirecting to admin dashboard');
       } else {
         // Default to homepage
         navigate("/");

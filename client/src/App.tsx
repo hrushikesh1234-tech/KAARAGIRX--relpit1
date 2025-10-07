@@ -65,6 +65,7 @@ const ConversationDetailME = lazy(() => import("./pages/messages/conversation-de
 const MaterialDealerDashboard = lazy(() => import("@/pages/dealer-dashboard/MaterialDealerDashboard"));
 const RentalMerchantDashboard = lazy(() => import("@/pages/rental-dashboard/RentalMerchantDashboard"));
 const CustomerDashboard = lazy(() => import("@/pages/customer-dashboard/CustomerDashboard"));
+const AdminDashboard = lazy(() => import("@/pages/admin-dashboard/AdminDashboard"));
 
 // Loading spinner component
 function LoadingSpinner() {
@@ -225,6 +226,11 @@ function AppRoutes() {
           <Route path="/rental/dashboard" element={
             <Suspense fallback={<LoadingSpinner />}>
               <RentalMerchantDashboard />
+            </Suspense>
+          } />
+          <Route path="/admin/dashboard" element={
+            <Suspense fallback={<LoadingSpinner />}>
+              <AdminDashboard />
             </Suspense>
           } />
           

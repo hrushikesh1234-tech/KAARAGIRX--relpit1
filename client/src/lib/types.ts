@@ -68,7 +68,7 @@ export interface User {
   username: string;
   email: string;
   fullName: string;
-  userType: 'customer' | 'contractor' | 'architect' | 'material_dealer' | 'rental_merchant';
+  userType: 'customer' | 'contractor' | 'architect' | 'material_dealer' | 'rental_merchant' | 'admin';
   phone?: string;
   address?: string;
 }
@@ -83,7 +83,7 @@ export interface RegisterData {
   email: string;
   password: string;
   fullName: string;
-  userType: 'customer' | 'contractor' | 'architect' | 'material_dealer' | 'rental_merchant';
+  userType: 'customer' | 'contractor' | 'architect' | 'material_dealer' | 'rental_merchant' | 'admin';
 }
 
 export type ProfessionalData = {

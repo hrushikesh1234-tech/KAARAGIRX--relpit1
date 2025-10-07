@@ -14,7 +14,7 @@ const registerSchema = z.object({
   password: z.string().min(6),
   email: z.string().email(),
   fullName: z.string().min(2),
-  userType: z.enum(['customer', 'contractor', 'architect', 'material_dealer', 'rental_merchant']),
+  userType: z.enum(['customer', 'contractor', 'architect', 'material_dealer', 'rental_merchant', 'admin']),
   companyName: z.string().optional(),
   address: z.string().optional(),
   city: z.string().optional(),
@@ -29,7 +29,7 @@ export class AuthController {
     try {
       console.log('Registration request body:', { ...req.body, password: '***' });
       
-      if (!['customer', 'contractor', 'architect', 'material_dealer', 'rental_merchant'].includes(req.body.userType)) {
+      if (!['customer', 'contractor', 'architect', 'material_dealer', 'rental_merchant', 'admin'].includes(req.body.userType)) {
         console.log('Invalid userType:', req.body.userType);
         req.body.userType = 'customer';
         console.log('Defaulting to userType: customer');

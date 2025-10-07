@@ -1,20 +1,21 @@
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, MapPin, Star, CheckCircle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useRentalEquipment } from "@/hooks/useRentalEquipment";
 
 const CategoryPageOR = () => {
   const { categoryId } = useParams();
   const [selectedLocation, setSelectedLocation] = useState("all");
   const [selectedSubCategory, setSelectedSubCategory] = useState("all");
-
-  const locations = [
-    "Khopoli", "Lonavala", "Khandala", "Kamshet", "Vadgaon", "Talegaon"
-  ];
+  
+  const { data: rentalEquipment = [], isLoading, error } = useRentalEquipment({ 
+    category: categoryId 
+  });
 
   const categoryData: Record<string, any> = {
     "earthmoving": {
@@ -80,382 +81,27 @@ const CategoryPageOR = () => {
     }
   };
 
-  const sampleEquipment = [
-    {
-      id: 1,
-      name: "JCB 3DX Backhoe Loader",
-      supplier: "Khopoli Construction Rentals",
-      location: "Khopoli",
-      price: "₹2,500",
-      period: "per day",
-      rating: 4.8,
-      reviews: 45,
-      image: "/images/sub-categories-OnRent/Earth moving/jcb.png",
-      features: ["GPS Tracking", "Operator Available", "Fuel Included"],
-      availability: "Available"
-    },
-    {
-      id: 2,
-      name: "Bulldozer",
-      supplier: "Lonavala Equipment Hub",
-      location: "Lonavala", 
-      price: "₹2,800",
-      period: "per day",
-      rating: 4.0,
-      reviews: 77,
-      image: "/images/sub-categories-OnRent/Earth moving/Bulldozer.png",
-      features: ["Advanced Hydraulics", "AC Cabin", "GPS Tracking"],
-      availability: "Available"
-    },
-    {
-      id: 3,
-      name: "mini-excavator",
-      supplier: "Lonavala Equipment Hub",
-      location: "Lonavala", 
-      price: "₹3,300",
-      period: "per day",
-      rating: 3.6,
-      reviews: 98,
-      image: "/images/sub-categories-OnRent/Earth moving/mini_excavator.png",
-      features: ["Advanced Hydraulics", "AC Cabin", "GPS Tracking"],
-      availability: "Available"
-    },
-    {
-      id: 4,
-      name: "Motor Grader",
-      supplier: "Talegoan Equipment Hub",
-      location: "Talegoan", 
-      price: "₹1,700",
-      period: "per day",
-      rating: 4.3,
-      reviews: 322,
-      image: "/images/sub-categories-OnRent/Earth moving/motor_grader.png",
-      features: ["Advanced Hydraulics", "AC Cabin", "GPS Tracking"],
-      availability: "Available"
-    },
-    {
-      id: 5,
-      name: "Excavator",
-      supplier: "Vadgoan Heavy Machinery",
-      location: "Vadgaon",
-      price: "₹2,200",
-      period: "per day", 
-      rating: 4.7,
-      reviews: 28,
-      image: "/images/sub-categories-OnRent/Earth moving/excavator.png",
-      features: ["Compact Design", "Easy Operation", "Low Fuel Consumption"],
-      availability: "Available"
-    },
-    {
-      id: 6,
-      name: "Skid Steer Loader",
-      supplier: "Nangargaon big Machinery",
-      location: "Nangargaon",
-      price: "₹5,000",
-      period: "per day", 
-      rating: 4.7,
-      reviews: 28,
-      image: "/images/sub-categories-OnRent/Earth moving/skid_steer_loader.png",
-      features: ["Compact Design", "Easy Operation", "Low Fuel Consumption"],
-      availability: "Available"
-    },
-    {
-      id: 7,
-      name: "Wheel Loader",
-      supplier: "Kamshet malooc",
-      location: "Kamshet",
-      price: "₹4,070",
-      period: "per day", 
-      rating: 4.9,
-      reviews: 2,
-      image: "/images/sub-categories-OnRent/Earth moving/wheel_loader.png",
-      features: ["Compact Design", "Easy Operation", "Low Fuel Consumption"],
-      availability: "Available"
-    },
-  ];
+  const locations = useMemo(() => {
+    const uniqueLocations = new Set(rentalEquipment.map(item => item.location).filter(Boolean));
+    return Array.from(uniqueLocations);
+  }, [rentalEquipment]);
 
-  const concreteEquipment = [
-    {
-      id: 8,
-      name: "Concrete Mixer",
-      supplier: "Pune Mixers",
-      location: "Pune",
-      price: "₹3,500",
-      period: "per day",
-      rating: 4.5,
-      reviews: 63,
-      image: "/images/sub-categories-OnRent/Concrete Equipment/concrete_mixer.png",
-      features: ["9 Cubic Meter Capacity", "Auto Loading", "Water Tank"],
-      availability: "Available"
-    },
-    {
-      id: 9,
-      name: "Concrete Batching Plant",
-      supplier: "Nashik Construction",
-      location: "Nashik",
-      price: "₹15,000",
-      period: "per day",
-      rating: 4.6,
-      reviews: 28,
-      image: "/images/sub-categories-OnRent/Concrete Equipment/concrete_batching_plant.png",
-      features: ["60m³/h Capacity", "Computer Controlled", "Dust Control"],
-      availability: "Available"
-    },
-    {
-      id: 10,
-      name: "Power Trowel",
-      supplier: "Smooth Finish Co",
-      location: "Mumbai",
-      price: "₹1,200",
-      period: "per day",
-      rating: 4.3,
-      reviews: 37,
-      image: "/images/sub-categories-OnRent/Concrete Equipment/power_trowel.png",
-      features: ["Dual Blade System", "Ergonomic Handle", "Adjustable Speed"],
-      availability: "Available"
+  const filteredEquipment = useMemo(() => {
+    let equipment = rentalEquipment;
+    
+    if (selectedLocation && selectedLocation !== "all") {
+      equipment = equipment.filter(item => item.location === selectedLocation);
     }
-  ];
+    
+    if (selectedSubCategory && selectedSubCategory !== "all") {
+      equipment = equipment.filter(item => item.subcategory === selectedSubCategory);
+    }
+    
+    return equipment;
+  }, [rentalEquipment, selectedLocation, selectedSubCategory]);
 
-  const liftingEquipment = [
-    {
-      id: 11,
-      name: "Truck Mounted Crane",
-      supplier: "Heavy Lifters",
-      location: "Mumbai",
-      price: "₹18,000",
-      period: "per day",
-      rating: 4.6,
-      reviews: 67,
-      image: "/images/sub-categories-OnRent/lifting equipment/truck-mounted_crane.png",
-      features: ["25 Ton Capacity", "4-Section Boom", "LMI System"],
-      availability: "Available"
-    },
-    {
-      id: 12,
-      name: "Tower Crane",
-      supplier: "SkyLift Solutions",
-      location: "Pune",
-      price: "₹25,000",
-      period: "per day",
-      rating: 4.8,
-      reviews: 52,
-      image: "/images/sub-categories-OnRent/lifting equipment/tall_tower_crane.png",
-      features: ["50m Height", "8 Ton Capacity", "Auto-Lube System"],
-      availability: "Available"
-    },
-    {
-      id: 13,
-      name: "Rope Hoist",
-      supplier: "Aerial Access",
-      location: "Pune",
-      price: "₹3,500",
-      period: "per day",
-      rating: 4.4,
-      reviews: 38,
-      image: "/images/sub-categories-OnRent/lifting equipment/rope_hoist_lifting.png",
-      features: ["5 Ton Capacity", "Smooth Operation", "Heavy Duty"],
-      availability: "Available"
-    },
-    {
-      id: 14,
-      name: "Mobile Crane",
-      supplier: "Heavy Lifters",
-      location: "Mumbai",
-      price: "₹18,000",
-      period: "per day",
-      rating: 4.6,
-      reviews: 67,
-      image: "/images/sub-categories-OnRent/lifting equipment/mobile_crane.png",
-      features: ["25 Ton Capacity", "4-Section Boom", "LMI System"],
-      availability: "Available"
-    },
-    {
-      id: 15,
-      name: "Forklift",
-      supplier: "Lift & Move",
-      location: "Pune",
-      price: "₹2,500",
-      period: "per day",
-      rating: 4.3,
-      reviews: 56,
-      image: "/images/sub-categories-OnRent/lifting equipment/forklift.png",
-      features: ["3 Ton Capacity", "Diesel Engine", "Side Shifter"],
-      availability: "Available"
-    },
-    {
-      id: 16,
-      name: "Crawler Crane",
-      supplier: "Heavy Lifters",
-      location: "Mumbai",
-      price: "₹22,000",
-      period: "per day",
-      rating: 4.7,
-      reviews: 42,
-      image: "/images/sub-categories-OnRent/lifting equipment/crawler_crane.png",
-      features: ["40 Ton Capacity", "Crawler Undercarriage", "Heavy Lifting"],
-      availability: "Available"
-    }
-  ];
-
-  const roadConstructionEquipment = [
-    {
-      id: 17,
-      name: "Road Roller",
-      supplier: "Road Masters",
-      location: "Pune",
-      price: "₹4,500",
-      period: "per day",
-      rating: 4.5,
-      reviews: 48,
-      image: "/images/sub-categories-OnRent/road constructions/road-roller-.jpg",
-      features: ["10 Ton Weight", "Vibration System", "Water Tank"],
-      availability: "Available"
-    },
-    {
-      id: 18,
-      name: "Asphalt Paver",
-      supplier: "Pave Right",
-      location: "Mumbai",
-      price: "₹12,000",
-      period: "per day",
-      rating: 4.7,
-      reviews: 36,
-      image: "/images/sub-categories-OnRent/road constructions/Asphalt-paver-machine.jpg",
-      features: ["6m Paving Width", "Auto Leveling", "Heated Screed"],
-      availability: "Available"
-    },
-    {
-      id: 19,
-      name: "Cold Milling Machine",
-      supplier: "Road Tech",
-      location: "Pune",
-      price: "₹15,000",
-      period: "per day",
-      rating: 4.6,
-      reviews: 29,
-      image: "/images/sub-categories-OnRent/road constructions/cold_milling_machine.jpg",
-      features: ["2m Milling Width", "Level Pro System", "Dust Suppression"],
-      availability: "Available"
-    },
-    {
-      id: 20,
-      name: "Bitumen Sprayer",
-      supplier: "Road Builders",
-      location: "Nashik",
-      price: "₹8,500",
-      period: "per day",
-      rating: 4.4,
-      reviews: 31,
-      image: "/images/sub-categories-OnRent/road constructions/bitumen_sprayer.jpg",
-      features: ["Precision Spraying", "Heated Tank", "Variable Speed"],
-      availability: "Available"
-    }
-  ];
-
-  const transportVehicles = [
-    {
-      id: 21,
-      name: "Dump Truck",
-      supplier: "Heavy Haulers",
-      location: "Pune",
-      price: "₹6,500",
-      period: "per day",
-      rating: 4.5,
-      reviews: 58,
-      image: "/images/sub-categories-OnRent/Transport vehicles/dump_truck.png",
-      features: ["10 Ton Capacity", "Tarp System", "GPS Tracking"],
-      availability: "Available"
-    },
-    {
-      id: 22,
-      name: "Trailer Truck",
-      supplier: "Cargo Movers",
-      location: "Mumbai",
-      price: "₹5,500",
-      period: "per day",
-      rating: 4.4,
-      reviews: 47,
-      image: "/images/sub-categories-OnRent/Transport vehicles/trailer_truck.png",
-      features: ["8 Ton Capacity", "Hydraulic Liftgate", "Tie-down Points"],
-      availability: "Available"
-    },
-    {
-      id: 23,
-      name: "Tractor",
-      supplier: "Agri Haul",
-      location: "Nashik",
-      price: "₹4,200",
-      period: "per day",
-      rating: 4.3,
-      reviews: 39,
-      image: "/images/sub-categories-OnRent/Transport vehicles/tractor.png",
-      features: ["Heavy Duty", "4WD", "Versatile Attachment Options"],
-      availability: "Available"
-    },
-    {
-      id: 24,
-      name: "Mini Truck",
-      supplier: "City Movers",
-      location: "Pune",
-      price: "₹3,800",
-      period: "per day",
-      rating: 4.2,
-      reviews: 42,
-      image: "/images/sub-categories-OnRent/Transport vehicles/mini_truck.png",
-      features: ["Compact Size", "Good Mileage", "Easy to Maneuver"],
-      availability: "Available"
-    },
-    {
-      id: 25,
-      name: "Container Truck",
-      supplier: "Heavy Haulers",
-      location: "Mumbai",
-      price: "₹7,800",
-      period: "per day",
-      rating: 4.6,
-      reviews: 35,
-      image: "/images/sub-categories-OnRent/Transport vehicles/container_truck.png",
-      features: ["20ft/40ft Capacity", "Heavy Duty Chassis", "Secure Locking"],
-      availability: "Available"
-    },
-    {
-      id: 26,
-      name: "Cement Bulker",
-      supplier: "Bulk Transport",
-      location: "Pune",
-      price: "₹8,500",
-      period: "per day",
-      rating: 4.5,
-      reviews: 31,
-      image: "/images/sub-categories-OnRent/Transport vehicles/cement_bulker.png",
-      features: ["30 Ton Capacity", "Pneumatic Discharge", "Dust Control"],
-      availability: "Available"
-    }
-  ];
-  const getEquipmentByCategory = (categoryId: string) => {
-    switch(categoryId) {
-      case 'earthmoving':
-        return sampleEquipment;
-      case 'concrete':
-        return concreteEquipment;
-      case 'lifting':
-        return liftingEquipment;
-      case 'road-construction':
-        return roadConstructionEquipment;
-      case 'transport':
-        return transportVehicles;
-      default:
-        return [];
-    }
-  };
 
   const currentCategory = categoryData[categoryId || ""];
-  const categoryEquipment = getEquipmentByCategory(categoryId || "");
-  
-  const filteredEquipment = categoryEquipment.filter(item => {
-    const matchesLocation = selectedLocation === "all" || item.location === selectedLocation;
-    return matchesLocation;
-  });
 
   if (!currentCategory) {
     return <div>Category not found</div>;

@@ -225,6 +225,18 @@ const LoginPage = () => {
           </Form>
           
           <div className="mt-6">
+            <div className="mb-4">
+              <Link to="/admin/dashboard">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full bg-orange-50 hover:bg-orange-100 text-orange-800 border-orange-200"
+                >
+                  🔐 Admin Dashboard Access
+                </Button>
+              </Link>
+            </div>
+            
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />

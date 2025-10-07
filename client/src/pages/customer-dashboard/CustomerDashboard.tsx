@@ -119,7 +119,7 @@ export default function CustomerDashboard() {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:3001/api/orders/user/${user?.id}`, {
+      const response = await fetch(`/api/orders/user/${user?.id}`, {
         credentials: "include"
       });
 
@@ -134,7 +134,7 @@ export default function CustomerDashboard() {
 
   const fetchBookings = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:3001/api/bookings/user/${user?.id}`, {
+      const response = await fetch(`/api/bookings/user/${user?.id}`, {
         credentials: "include"
       });
 
@@ -151,7 +151,7 @@ export default function CustomerDashboard() {
     if (!user?.id) return;
     
     try {
-      const response = await fetch(`http://127.0.0.1:3001/api/professionals/reviews/user/${user.id}`, {
+      const response = await fetch(`/api/professionals/reviews/user/${user.id}`, {
         credentials: "include"
       });
 

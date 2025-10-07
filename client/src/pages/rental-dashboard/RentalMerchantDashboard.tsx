@@ -143,7 +143,7 @@ export default function RentalMerchantDashboard() {
 
   const fetchMerchantInfo = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:3001/api/professionals/user/${user?.id}`, {
+      const response = await fetch(`/api/professionals/user/${user?.id}`, {
         credentials: "include"
       });
 
@@ -170,7 +170,7 @@ export default function RentalMerchantDashboard() {
   const fetchEquipment = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://127.0.0.1:3001/api/rental-equipment/merchant/${merchantId}`, {
+      const response = await fetch(`/api/rental-equipment/merchant/${merchantId}`, {
         credentials: "include"
       });
 
@@ -192,7 +192,7 @@ export default function RentalMerchantDashboard() {
 
   const fetchBookings = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:3001/api/bookings/merchant/${merchantId}`, {
+      const response = await fetch(`/api/bookings/merchant/${merchantId}`, {
         credentials: "include"
       });
 
@@ -214,7 +214,7 @@ export default function RentalMerchantDashboard() {
     if (!merchantId) return;
     
     try {
-      const response = await fetch(`http://127.0.0.1:3001/api/professionals/${merchantId}`, {
+      const response = await fetch(`/api/professionals/${merchantId}`, {
         credentials: "include"
       });
 
@@ -264,7 +264,7 @@ export default function RentalMerchantDashboard() {
         return;
       }
 
-      const response = await fetch("http://127.0.0.1:3001/api/rental-equipment", {
+      const response = await fetch("/api/rental-equipment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -330,7 +330,7 @@ export default function RentalMerchantDashboard() {
         return;
       }
 
-      const response = await fetch(`http://127.0.0.1:3001/api/rental-equipment/${selectedEquipment.id}`, {
+      const response = await fetch(`/api/rental-equipment/${selectedEquipment.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json"
@@ -382,7 +382,7 @@ export default function RentalMerchantDashboard() {
 
   const handleDeleteEquipment = async (equipmentId: number) => {
     try {
-      const response = await fetch(`http://127.0.0.1:3001/api/rental-equipment/${equipmentId}`, {
+      const response = await fetch(`/api/rental-equipment/${equipmentId}`, {
         method: "DELETE",
         credentials: "include"
       });

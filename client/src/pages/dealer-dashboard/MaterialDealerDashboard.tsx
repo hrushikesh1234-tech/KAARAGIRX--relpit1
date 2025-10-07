@@ -135,7 +135,7 @@ export default function MaterialDealerDashboard() {
 
   const fetchDealerInfo = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:3001/api/dealers/user/${user?.id}`, {
+      const response = await fetch(`/api/dealers/user/${user?.id}`, {
         credentials: "include"
       });
 
@@ -162,7 +162,7 @@ export default function MaterialDealerDashboard() {
   const fetchMaterials = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://127.0.0.1:3001/api/materials/dealer/${dealerId}`, {
+      const response = await fetch(`/api/materials/dealer/${dealerId}`, {
         credentials: "include"
       });
 
@@ -184,7 +184,7 @@ export default function MaterialDealerDashboard() {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:3001/api/orders/dealer/${dealerId}`, {
+      const response = await fetch(`/api/orders/dealer/${dealerId}`, {
         credentials: "include"
       });
 
@@ -210,7 +210,7 @@ export default function MaterialDealerDashboard() {
     if (!dealerId) return;
 
     try {
-      const response = await fetch("http://127.0.0.1:3001/api/materials", {
+      const response = await fetch("/api/materials", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -260,7 +260,7 @@ export default function MaterialDealerDashboard() {
     if (!selectedMaterial) return;
 
     try {
-      const response = await fetch(`http://127.0.0.1:3001/api/materials/${selectedMaterial.id}`, {
+      const response = await fetch(`/api/materials/${selectedMaterial.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json"
@@ -308,7 +308,7 @@ export default function MaterialDealerDashboard() {
 
   const handleDeleteMaterial = async (materialId: number) => {
     try {
-      const response = await fetch(`http://127.0.0.1:3001/api/materials/${materialId}`, {
+      const response = await fetch(`/api/materials/${materialId}`, {
         method: "DELETE",
         credentials: "include"
       });

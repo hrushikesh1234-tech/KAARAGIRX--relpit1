@@ -87,23 +87,9 @@ export default function AdminDashboard() {
   });
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
-
-    if (user?.userType !== "admin") {
-      toast({
-        title: "Access Denied",
-        description: "This dashboard is only accessible to administrators.",
-        variant: "destructive"
-      });
-      navigate("/");
-      return;
-    }
-
+    // No authentication required - admin dashboard is accessible to everyone
     fetchAllData();
-  }, [isAuthenticated, user, navigate]);
+  }, []);
 
   const fetchAllData = async () => {
     setLoading(true);

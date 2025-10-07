@@ -135,6 +135,17 @@ const RegisterPage = () => {
       console.log("Setting isProfessional to:", isProfessionalValue);
       setIsProfessional(isProfessionalValue);
       
+      // For customer registrations, set valid default values for professional fields to pass validation
+      if (!isProfessionalValue) {
+        form.setValue("address", "N/A");
+        form.setValue("city", "N/A");
+        form.setValue("state", "N/A");
+        form.setValue("pincode", "000000");
+        form.setValue("phone", "0000000000");
+        form.setValue("experience", "1-3");
+        form.setValue("professionalType", "contractor");
+      }
+      
       // If a specific professional type is provided, update the form
       if (professionalType === "contractor" || professionalType === "architect" || professionalType === "material_dealer" || professionalType === "rental_merchant") {
         form.setValue("professionalType", professionalType);
@@ -275,54 +286,56 @@ const RegisterPage = () => {
           <div className="p-8">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-                {/* Professional Type Selection - Full Width */}
-                <div className="border-b pb-4 mb-6">
-                  <FormField
-                    control={form.control}
-                    name="professionalType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="font-medium text-base">Select Professional Type:</FormLabel>
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={(value) => {
-                              field.onChange(value);
-                              if (!isProfessional) {
-                                setIsProfessional(true);
-                              }
-                            }}
-                            value={field.value}
-                            className="grid grid-cols-2 gap-4 mt-2"
-                          >
-                            <div className="flex items-center space-x-2 border border-gray-300 rounded-md px-6 py-3 hover:bg-gray-50">
-                              <RadioGroupItem value="contractor" id="contractor" className="text-blue-600" />
-                              <label htmlFor="contractor" className="text-sm font-medium cursor-pointer">Contractor</label>
-                            </div>
-                            <div className="flex items-center space-x-2 border border-gray-300 rounded-md px-6 py-3 hover:bg-gray-50">
-                              <RadioGroupItem value="architect" id="architect" className="text-blue-600" />
-                              <label htmlFor="architect" className="text-sm font-medium cursor-pointer">Architect</label>
-                            </div>
-                            <div className="flex items-center space-x-2 border border-gray-300 rounded-md px-6 py-3 hover:bg-gray-50">
-                              <RadioGroupItem value="material_dealer" id="material_dealer" className="text-blue-600" />
-                              <label htmlFor="material_dealer" className="text-sm font-medium cursor-pointer">Material Dealer</label>
-                            </div>
-                            <div className="flex items-center space-x-2 border border-gray-300 rounded-md px-6 py-3 hover:bg-gray-50">
-                              <RadioGroupItem value="rental_merchant" id="rental_merchant" className="text-blue-600" />
-                              <label htmlFor="rental_merchant" className="text-sm font-medium cursor-pointer">Rental Merchant</label>
-                            </div>
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage className="text-red-500 text-xs" />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                {/* Professional Type Selection - Only show for professionals */}
+                {isProfessional && (
+                  <div className="border-b pb-4 mb-6">
+                    <FormField
+                      control={form.control}
+                      name="professionalType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="font-medium text-base">Select Professional Type:</FormLabel>
+                          <FormControl>
+                            <RadioGroup
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                if (!isProfessional) {
+                                  setIsProfessional(true);
+                                }
+                              }}
+                              value={field.value}
+                              className="grid grid-cols-2 gap-4 mt-2"
+                            >
+                              <div className="flex items-center space-x-2 border border-gray-300 rounded-md px-6 py-3 hover:bg-gray-50">
+                                <RadioGroupItem value="contractor" id="contractor" className="text-blue-600" />
+                                <label htmlFor="contractor" className="text-sm font-medium cursor-pointer">Contractor</label>
+                              </div>
+                              <div className="flex items-center space-x-2 border border-gray-300 rounded-md px-6 py-3 hover:bg-gray-50">
+                                <RadioGroupItem value="architect" id="architect" className="text-blue-600" />
+                                <label htmlFor="architect" className="text-sm font-medium cursor-pointer">Architect</label>
+                              </div>
+                              <div className="flex items-center space-x-2 border border-gray-300 rounded-md px-6 py-3 hover:bg-gray-50">
+                                <RadioGroupItem value="material_dealer" id="material_dealer" className="text-blue-600" />
+                                <label htmlFor="material_dealer" className="text-sm font-medium cursor-pointer">Material Dealer</label>
+                              </div>
+                              <div className="flex items-center space-x-2 border border-gray-300 rounded-md px-6 py-3 hover:bg-gray-50">
+                                <RadioGroupItem value="rental_merchant" id="rental_merchant" className="text-blue-600" />
+                                <label htmlFor="rental_merchant" className="text-sm font-medium cursor-pointer">Rental Merchant</label>
+                              </div>
+                            </RadioGroup>
+                          </FormControl>
+                          <FormMessage className="text-red-500 text-xs" />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
                 
-                {/* Two-column layout for form fields */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-0">
+                {/* Two-column layout for form fields - or single column for customers */}
+                <div className={isProfessional ? "grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-0" : "grid grid-cols-1 gap-y-0"}>
                   {/* Left Column - Account Information */}
                   <div>
-                    <h3 className="text-lg font-semibold border-b pb-2 mb-4">Account Information</h3>
+                    <h3 className="text-lg font-semibold border-b pb-2 mb-4">{isProfessional ? "Account Information" : "Create Your Account"}</h3>
                     
                     <div className="space-y-4">
                       <FormField
@@ -431,9 +444,10 @@ const RegisterPage = () => {
                     </div>
                   </div>
                   
-                  {/* Right Column - Professional Details */}
-                  <div>
-                    <h3 className="text-lg font-semibold border-b pb-2 mb-4">Professional Details</h3>
+                  {/* Right Column - Professional Details - Only show for professionals */}
+                  {isProfessional && (
+                    <div>
+                      <h3 className="text-lg font-semibold border-b pb-2 mb-4">Professional Details</h3>
                     
                     <div className="space-y-4">
                       <FormField
@@ -563,6 +577,7 @@ const RegisterPage = () => {
                       />
                     </div>
                   </div>
+                  )}
                 </div>
                 
                 {/* Terms and Conditions */}

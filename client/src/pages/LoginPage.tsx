@@ -231,47 +231,30 @@ const LoginPage = () => {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with demo account
+                  Or create a new account
                 </span>
               </div>
             </div>
 
             <div className="mt-4 grid grid-cols-2 gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => loginWithDemoAccount(demoAccounts[0].email, demoAccounts[0].password)}
-                className="bg-blue-50 hover:bg-blue-100 text-blue-800"
-              >
-                John Smith (Customer)
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => loginWithDemoAccount(demoAccounts[1].email, demoAccounts[1].password)}
-                className="bg-green-50 hover:bg-green-100 text-green-800"
-              >
-                Sarah Johnson (Customer)
-              </Button>
-            </div>
-            
-            <div className="mt-2 grid grid-cols-2 gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => loginWithDemoAccount(demoAccounts[2].email, demoAccounts[2].password)}
-                className="bg-orange-50 hover:bg-orange-100 text-orange-800"
-              >
-                Demo Contractor
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => loginWithDemoAccount(demoAccounts[3].email, demoAccounts[3].password)}
-                className="bg-purple-50 hover:bg-purple-100 text-purple-800"
-              >
-                Demo Architect
-              </Button>
+              <Link to="/register?type=customer">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full bg-blue-50 hover:bg-blue-100 text-blue-800"
+                >
+                  Register as Customer
+                </Button>
+              </Link>
+              <Link to="/register?type=professional">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full bg-purple-50 hover:bg-purple-100 text-purple-800"
+                >
+                  Register as Professional
+                </Button>
+              </Link>
             </div>
           </div>
           

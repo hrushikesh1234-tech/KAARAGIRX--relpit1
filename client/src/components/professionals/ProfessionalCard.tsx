@@ -27,7 +27,7 @@ export function ProfessionalCard({
   className = '',
   isActive = false,
 }: ProfessionalCardProps) {
-  const rating = professional.rating || 0;
+  const rating = Number(professional.rating) || 0;
   const completedProjects = professional.completedProjects || 0;
   const responseTime = professional.responseTime || '<24h';
 

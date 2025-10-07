@@ -28,6 +28,8 @@ export class ProfessionalService {
     location?: string;
     specialization?: string;
     search?: string;
+    limit?: number;
+    featured?: boolean;
   }): Promise<Professional[]> {
     const conditions: any[] = [];
 
@@ -49,11 +51,21 @@ export class ProfessionalService {
       );
     }
 
-    const query = conditions.length > 0
+    if (filters.featured) {
+      conditions.push(eq(professionals.isFeatured, true));
+    }
+
+    let query = conditions.length > 0
       ? db.select().from(professionals).where(and(...conditions))
       : db.select().from(professionals);
 
-    return await query.orderBy(desc(professionals.rating));
+    query = query.orderBy(desc(professionals.rating));
+    
+    if (filters.limit) {
+      query = query.limit(filters.limit) as any;
+    }
+
+    return await query;
   }
 
   async createProfessional(data: typeof professionals.$inferInsert): Promise<Professional> {

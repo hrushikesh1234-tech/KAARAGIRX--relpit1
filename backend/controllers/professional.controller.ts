@@ -20,6 +20,18 @@ const createProfessionalSchema = z.object({
 export class ProfessionalController {
   async getAllProfessionals(req: Request, res: Response) {
     try {
+      const { profession, limit, featured } = req.query;
+      
+      if (profession || limit || featured) {
+        const filters: any = {};
+        if (profession) filters.profession = profession as string;
+        if (limit) filters.limit = parseInt(limit as string);
+        if (featured) filters.featured = featured === 'true';
+        
+        const professionals = await professionalService.searchProfessionals(filters);
+        return res.json(professionals);
+      }
+      
       const professionals = await professionalService.getAllProfessionals();
       res.json(professionals);
     } catch (error) {

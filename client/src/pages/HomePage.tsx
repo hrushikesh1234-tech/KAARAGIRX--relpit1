@@ -354,16 +354,20 @@ const HomePage = () => {
   const { data: featuredContractorsData = [], isLoading: loadingContractors } = useFeaturedProfessionals('contractor', 5);
   const { data: featuredArchitectsData = [], isLoading: loadingArchitects } = useFeaturedProfessionals('architect', 5);
   
-  // Map the data to include local images
-  const featuredContractors = featuredContractorsData.map(contractor => ({
-    ...contractor,
-    profileImage: contractorImageMap[contractor.id] || contractor.profileImage
-  }));
+  // Map the data to include local images - Ensure data is always an array
+  const featuredContractors = Array.isArray(featuredContractorsData) 
+    ? featuredContractorsData.map(contractor => ({
+        ...contractor,
+        profileImage: contractorImageMap[contractor.id] || contractor.profileImage
+      }))
+    : [];
   
-  const featuredArchitects = featuredArchitectsData.map(architect => ({
-    ...architect,
-    profileImage: architectImageMap[architect.id] || architect.profileImage
-  }));
+  const featuredArchitects = Array.isArray(featuredArchitectsData)
+    ? featuredArchitectsData.map(architect => ({
+        ...architect,
+        profileImage: architectImageMap[architect.id] || architect.profileImage
+      }))
+    : [];
   
   // Debug logs
   useEffect(() => {

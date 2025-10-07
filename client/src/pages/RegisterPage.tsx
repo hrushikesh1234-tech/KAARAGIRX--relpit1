@@ -25,6 +25,22 @@ import { Checkbox } from "@/components/ui/checkbox";
 const Eye = ({ size }: { size?: number }) => <span>👁️</span>;
 const EyeOff = ({ size }: { size?: number }) => <span>👁️‍🗨️</span>;
 
+// Customer Registration Schema (Simple)
+const customerRegistrationSchema = z.object({
+  fullName: z.string().min(2, { message: "Full name is required" }),
+  username: z.string().min(3, { message: "Username is required" }),
+  email: z.string().email({ message: "Please enter a valid email address" }),
+  password: z.string().min(8, { message: "Password must be at least 8 characters" }),
+  confirmPassword: z.string(),
+  phone: z.string().min(10, { message: "Please enter a valid phone number" }).optional(),
+  terms: z.boolean().refine((val) => val === true, {
+    message: "You must agree to the terms and conditions",
+  }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
 // Professional Registration Schema
 const professionalRegistrationSchema = z.object({
   fullName: z.string().min(2, { message: "Full name is required" }),
@@ -50,6 +66,7 @@ const professionalRegistrationSchema = z.object({
   path: ["confirmPassword"],
 });
 
+type CustomerRegistrationValues = z.infer<typeof customerRegistrationSchema>;
 type ProfessionalRegistrationValues = z.infer<typeof professionalRegistrationSchema>;
 
 // Experience options
@@ -109,7 +126,12 @@ const RegisterPage = () => {
       console.log("URL Parameters:", { type, professionalType });
       
       // Set isProfessional based on the type parameter
-      const isProfessionalValue = type === "professional";
+      // If type is explicitly "customer", set to false, otherwise check for "professional"
+      const isProfessionalValue = type === "professional" || 
+                                   (type !== "customer" && (professionalType === "contractor" || 
+                                                             professionalType === "architect" || 
+                                                             professionalType === "material_dealer" || 
+                                                             professionalType === "rental_merchant"));
       console.log("Setting isProfessional to:", isProfessionalValue);
       setIsProfessional(isProfessionalValue);
       
@@ -139,35 +161,40 @@ const RegisterPage = () => {
         data.username = data.email.split('@')[0] + Math.floor(Math.random() * 1000);
       }
       
-      // Always set isProfessional to true for all professional registrations
-      if (data.professionalType === 'contractor' || data.professionalType === 'architect' || 
-          data.professionalType === 'material_dealer' || data.professionalType === 'rental_merchant') {
-        setIsProfessional(true);
+      let registrationData: any;
+      
+      // Check if this is a customer registration
+      if (!isProfessional) {
+        // Customer registration - only send basic fields
+        registrationData = {
+          username: data.username,
+          password: data.password,
+          email: data.email,
+          fullName: data.fullName,
+          userType: 'customer',
+          phone: data.phone || '',
+        };
+        console.log('Registering customer:', { ...registrationData, password: '***' });
+      } else {
+        // Professional registration - send all fields
+        const userType = data.professionalType;
+        
+        registrationData = {
+          username: data.username,
+          password: data.password,
+          email: data.email,
+          fullName: data.fullName,
+          userType: userType,
+          companyName: data.companyName || '',
+          address: data.address || '',
+          city: data.city || '',
+          state: data.state || '',
+          pincode: data.pincode || '',
+          phone: data.phone || '',
+          experience: data.experience || '1-3',
+        };
+        console.log('Registering professional with userType:', userType);
       }
-      
-      // Set the correct userType based on the professionalType selected
-      const userType = data.professionalType;
-      
-      console.log('Registering with userType:', userType);
-      console.log('Professional type from form:', data.professionalType);
-      console.log('isProfessional state:', isProfessional);
-      
-      // Create a simplified registration payload with only the fields needed by the server
-      const registrationData = {
-        username: data.username,
-        password: data.password,
-        email: data.email,
-        fullName: data.fullName,
-        userType: userType, // Explicitly set the userType for the server
-        // Include additional fields that might be needed for validation
-        companyName: data.companyName || '',
-        address: data.address || '',
-        city: data.city || '',
-        state: data.state || '',
-        pincode: data.pincode || '',
-        phone: data.phone || '',
-        experience: data.experience || '1-3',
-      };
       
       console.log('Final registration payload:', { ...registrationData, password: '***' });
       

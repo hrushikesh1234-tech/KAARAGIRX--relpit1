@@ -30,6 +30,7 @@ export const professionals = pgTable("professionals", {
   location: text("location"),
   specializations: jsonb("specializations").$type<string[]>(),
   isVerified: boolean("is_verified").default(false),
+  isFeatured: boolean("is_featured").default(false),
   availability: text("availability", { enum: ["Available", "Busy", "Away"] }).default("Available"),
   completedProjects: integer("completed_projects").default(0),
   responseTime: text("response_time"),

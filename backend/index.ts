@@ -1,11 +1,16 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./utils/vite";
+import { sessionConfig } from "./config/session";
+import passport from "./config/passport";
 import path from 'path';
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(sessionConfig);
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use((req, res, next) => {
   const allowedOrigins = ['http://localhost:5174', 'https://kaaragirx.shop'];

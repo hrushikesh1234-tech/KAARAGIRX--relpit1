@@ -140,21 +140,12 @@ export class AuthController {
     }
   }
 
-  async login(req: Request, res: Response) {
+  async login(req: Request, res: Response, next: any) {
     try {
       console.log('Login request body:', { ...req.body, password: req.body.password ? '***' : undefined });
       
       const { email, password } = loginSchema.parse(req.body);
       console.log(`Login attempt for email: ${email}`);
-      
-      const allUsers = await userService.getAllUsers();
-      console.log(`Total registered users: ${allUsers.length}`);
-      console.log('All registered users:', allUsers.map(u => ({ 
-        id: u.id,
-        email: u.email, 
-        username: u.username, 
-        userType: u.userType 
-      })));
       
       const user = await userService.getUserByEmail(email);
       
@@ -171,14 +162,21 @@ export class AuthController {
         return res.status(401).json({ error: 'Invalid credentials' });
       }
       
-      console.log(`Login successful for user: ${user.username}, userType: ${user.userType}`);
-      
-      res.json({
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        fullName: user.fullName,
-        userType: user.userType,
+      req.login(user, (err) => {
+        if (err) {
+          console.error('Session login error:', err);
+          return res.status(500).json({ error: 'Login failed' });
+        }
+        
+        console.log(`Login successful for user: ${user.username}, userType: ${user.userType}`);
+        
+        res.json({
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          fullName: user.fullName,
+          userType: user.userType,
+        });
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -191,11 +189,27 @@ export class AuthController {
   }
 
   async me(req: Request, res: Response) {
-    res.status(401).json({ error: 'Not authenticated' });
+    if (!req.isAuthenticated() || !req.user) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const user = req.user as any;
+    res.json({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      fullName: user.fullName,
+      userType: user.userType,
+    });
   }
 
   async logout(req: Request, res: Response) {
-    res.json({ success: true });
+    req.logout((err) => {
+      if (err) {
+        return res.status(500).json({ error: 'Logout failed' });
+      }
+      res.json({ success: true });
+    });
   }
 }
 

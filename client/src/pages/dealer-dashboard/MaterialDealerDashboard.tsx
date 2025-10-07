@@ -7,11 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Package, Plus, Edit, Trash2, Loader2, ShoppingBag, Layers } from "lucide-react";
+import { Package, Plus, Edit, Trash2, Loader2, ShoppingBag, Layers, X, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ProfileHeader from "@/components/Profile-Dashboard/ProfileHeader";
 import TabNavigation from "@/components/Profile-Dashboard/TabNavigation";
 import StarRating from "@/components/Profile-Dashboard/StarRating";
+import Carousel, { Card as CardComponent } from '@/components/ui/apple-cards-carousel';
+import ImageSlider from '@/components/ui/ImageSlider';
+import type { CardProps } from '@/components/ui/apple-cards-carousel';
 
 interface Material {
   id: number;
@@ -25,6 +28,8 @@ interface Material {
   quantity: number;
   minOrder: string;
   image: string;
+  images?: string[];
+  specifications?: Record<string, string>;
   inStock: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -89,6 +94,7 @@ export default function MaterialDealerDashboard() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
+  const [selectedMaterialForCarousel, setSelectedMaterialForCarousel] = useState<Material | null>(null);
 
   const [materialForm, setMaterialForm] = useState({
     name: "",
@@ -390,6 +396,76 @@ export default function MaterialDealerDashboard() {
     isLive: false
   };
 
+  const createCarouselData = (material: Material, clickedIndex: number = 0): CardProps[] => {
+    const images = material.images || [material.image];
+    
+    return images.map((image: string, index: number) => ({
+      category: material.category || 'Material',
+      title: material.name,
+      src: image,
+      content: (
+        <div className="bg-black">
+          <div className="px-4 pt-1 pb-2 md:px-8">
+            <h1 className="text-lg md:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 text-center mb-4">
+              {material.name}
+            </h1>
+            <ImageSlider 
+              images={images}
+              title={material.name}
+              initialSlide={clickedIndex}
+            />
+          </div>
+          
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-2xl font-semibold text-white mb-4">
+                Material Details
+              </h2>
+              <p className="text-gray-300 text-base md:text-lg">
+                {material.description || 'No description available.'}
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-gray-900 p-4 rounded-lg border border-gray-800">
+                <h3 className="text-sm font-medium text-gray-400">Category</h3>
+                <p className="text-lg font-medium text-white">{material.category || 'N/A'}</p>
+              </div>
+              <div className="bg-gray-900 p-4 rounded-lg border border-gray-800">
+                <h3 className="text-sm font-medium text-gray-400">Subcategory</h3>
+                <p className="text-lg font-medium text-white">{material.subcategory || 'N/A'}</p>
+              </div>
+              <div className="bg-gray-900 p-4 rounded-lg border border-gray-800">
+                <h3 className="text-sm font-medium text-gray-400">Price</h3>
+                <p className="text-lg font-medium text-white">₹{material.price}/{material.unit}</p>
+              </div>
+              <div className="bg-gray-900 p-4 rounded-lg border border-gray-800">
+                <h3 className="text-sm font-medium text-gray-400">In Stock</h3>
+                <p className="text-lg font-medium text-white">{material.inStock ? 'Yes' : 'No'}</p>
+              </div>
+            </div>
+            
+            {material.specifications && Object.keys(material.specifications).length > 0 && (
+              <div>
+                <h2 className="text-2xl font-semibold text-white mb-4">
+                  Specifications
+                </h2>
+                <ul className="space-y-3">
+                  {Object.entries(material.specifications).map(([key, value], i) => (
+                    <li key={i} className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                      <span className="text-gray-300">{key}: {value}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      ),
+    }));
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-black">
@@ -437,6 +513,7 @@ export default function MaterialDealerDashboard() {
                 {materials.map((material) => (
                   <div 
                     key={material.id}
+                    onClick={() => setSelectedMaterialForCarousel(material)}
                     className="relative w-full pb-[177.78%] bg-gray-900 overflow-hidden group cursor-pointer"
                   >
                     <div className="absolute inset-0">
@@ -905,6 +982,37 @@ export default function MaterialDealerDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {selectedMaterialForCarousel && (
+        <div className="fixed inset-0 bg-black z-50 flex flex-col">
+          <div className="h-16 w-full bg-black flex-shrink-0"></div>
+          
+          <div className="flex-1 relative flex flex-col">
+            <button
+              onClick={() => setSelectedMaterialForCarousel(null)}
+              className="fixed top-20 right-4 z-[100] p-2 bg-white/90 rounded-full hover:bg-white transition-all duration-200 shadow-lg hover:scale-110"
+              style={{
+                width: '36px',
+                height: '36px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <X className="w-4 h-4 text-black" strokeWidth={2.5} />
+            </button>
+            
+            <div className="w-full h-full pt-16">
+              <Carousel 
+                items={createCarouselData(selectedMaterialForCarousel).map((card, index) => (
+                  <CardComponent key={card.src + index} card={card} index={index} />
+                ))}
+                onClose={() => setSelectedMaterialForCarousel(null)} 
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

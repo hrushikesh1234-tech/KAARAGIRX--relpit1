@@ -23,206 +23,29 @@ export function useProfessionals(filters?: ProfessionalFilter) {
   });
 }
 
-// Mock data for featured professionals
-const mockProfessionals: Record<string, Professional[]> = {
-  'contractor': [
-    {
-      id: 101,
-      userId: 1001,
-      fullName: "Rajesh Sharma",
-      companyName: "Sharma Constructions",
-      address: "123 MG Road, Lonavala",
-      pincode: "411001",
-      phone: "+91 9876543210",
-      profession: "contractor",
-      experience: 15,
-      profileImage: "/Featured-sections-images/Featured Contractors/1- Rajesh Sharma.png",
-      about: "Leading construction company with 15+ years of experience in building high-quality residential and commercial properties.",
-      rating: 4.5,
-      reviewCount: 48,
-      location: "Lonavala, Maharashtra",
-      specializations: ["Bungalow Construction", "Interior Renovation", "Office Spaces"],
-    },
-    {
-      id: 102,
-      userId: 1002,
-      fullName: "Vikram Singh",
-      companyName: "Singh & Sons Builders",
-      address: "45 Hill Road, Khandala",
-      pincode: "410301",
-      phone: "+91 9876543211",
-      profession: "contractor",
-      experience: 12,
-      profileImage: "/Featured-sections-images/Featured Contractors/2 - Vikram Singh.png",
-      about: "Specialized in modern architectural designs and sustainable construction practices.",
-      rating: 4.7,
-      reviewCount: 36,
-      location: "Khandala, Maharashtra",
-      specializations: ["Modern Homes", "Sustainable Construction", "Villa Design"],
-    },
-    {
-      id: 103,
-      userId: 1003,
-      fullName: "Amit Patel",
-      companyName: "Patel Infrastructure",
-      address: "89 Business Park, Pune",
-      pincode: "411045",
-      phone: "+91 9876543212",
-      profession: "contractor",
-      experience: 18,
-      profileImage: "/Featured-sections-images/Featured Contractors/3- Amit Patel.png",
-      about: "Expert in large-scale infrastructure projects with a focus on quality and timely delivery.",
-      rating: 4.8,
-      reviewCount: 64,
-      location: "Pune, Maharashtra",
-      specializations: ["Infrastructure", "Commercial Complexes", "Bridges"],
-    },
-    {
-      id: 104,
-      userId: 1004,
-      fullName: "Sunil Verma",
-      companyName: "Verma Builders",
-      address: "32 Lake View, Khandala",
-      pincode: "410301",
-      phone: "+91 9876543213",
-      profession: "contractor",
-      experience: 14,
-      profileImage: "/Featured-sections-images/Featured Contractors/4 - Sunil Verma.png",
-      about: "Specializing in luxury villas and high-end residential projects with attention to detail.",
-      rating: 4.9,
-      reviewCount: 72,
-      location: "Khandala, Maharashtra",
-      specializations: ["Luxury Villas", "Residential Projects", "Interior Design"],
-    },
-    {
-      id: 105,
-      userId: 1005,
-      fullName: "Ramesh Iyer",
-      companyName: "Iyer Constructions",
-      address: "5/7 Hill Top, Lonavala",
-      pincode: "410405",
-      phone: "+91 9876543214",
-      profession: "contractor",
-      experience: 20,
-      profileImage: "/Featured-sections-images/Featured Contractors/5 - Ramesh Iyer.png",
-      about: "Veteran in the construction industry with expertise in both traditional and modern construction techniques.",
-      rating: 4.7,
-      reviewCount: 88,
-      location: "Lonavala, Maharashtra",
-      specializations: ["Traditional Construction", "Renovation", "Structural Work"],
-    },
-  ],
-  'architect': [
-    {
-      id: 201,
-      userId: 2001,
-      fullName: "Priya Desai",
-      companyName: "DesignScape Architects",
-      address: "78 Park Street, Pune",
-      pincode: "411001",
-      phone: "+91 9876543222",
-      profession: "architect",
-      experience: 10,
-      profileImage: "/Featured-sections-images/Featured Contractors/1- Rajesh Sharma.png",
-      about: "Award-winning architect with a passion for innovative and sustainable designs.",
-      rating: 4.8,
-      reviewCount: 52,
-      location: "Pune, Maharashtra",
-      specializations: ["Residential Design", "Sustainable Architecture", "Interior Design"],
-    },
-    {
-      id: 202,
-      userId: 2002,
-      fullName: "Rahul Mehta",
-      companyName: "UrbanScape Designs",
-      address: "22 MG Road, Mumbai",
-      pincode: "400001",
-      phone: "+91 9876543223",
-      profession: "architect",
-      experience: 8,
-      profileImage: "/Featured-sections-images/Featured Contractors/2 - Vikram Singh.png",
-      about: "Specializing in contemporary urban designs that blend functionality with aesthetics.",
-      rating: 4.6,
-      reviewCount: 34,
-      location: "Mumbai, Maharashtra",
-      specializations: ["Urban Design", "Commercial Spaces", "Interior Architecture"],
-    },
-    {
-      id: 203,
-      userId: 2003,
-      fullName: "Ananya Reddy",
-      companyName: "Reddy & Associates",
-      address: "45 Green Park, Pune",
-      pincode: "411016",
-      phone: "+91 9876543224",
-      profession: "architect",
-      experience: 12,
-      profileImage: "/Featured-sections-images/Featured Contractors/3- Amit Patel.png",
-      about: "Passionate about creating spaces that inspire and enhance quality of life through thoughtful design.",
-      rating: 4.9,
-      reviewCount: 68,
-      location: "Pune, Maharashtra",
-      specializations: ["Residential Architecture", "Interior Design", "Space Planning"],
-    },
-    {
-      id: 204,
-      userId: 2004,
-      fullName: "Arjun Kapoor",
-      companyName: "Kapoor Design Studio",
-      address: "12 Hill View, Lonavala",
-      pincode: "410405",
-      phone: "+91 9876543225",
-      profession: "architect",
-      experience: 15,
-      profileImage: "/Featured-sections-images/Featured Contractors/4 - Sunil Verma.png",
-      about: "Specializing in luxury residential projects that combine modern aesthetics with functionality.",
-      rating: 4.7,
-      reviewCount: 56,
-      location: "Lonavala, Maharashtra",
-      specializations: ["Luxury Homes", "Contemporary Design", "Landscape Integration"],
-    },
-    {
-      id: 205,
-      userId: 2005,
-      fullName: "Meera Joshi",
-      companyName: "EcoDesign Solutions",
-      address: "7 Green Valley, Khandala",
-      pincode: "410301",
-      phone: "+91 9876543226",
-      profession: "architect",
-      experience: 9,
-      profileImage: "/Featured-sections-images/Featured Contractors/5 - Ramesh Iyer.png",
-      about: "Dedicated to sustainable and eco-friendly architectural solutions that minimize environmental impact.",
-      rating: 4.8,
-      reviewCount: 42,
-      location: "Khandala, Maharashtra",
-      specializations: ["Sustainable Design", "Green Buildings", "Eco-friendly Materials"],
-    },
-  ]
-};
-
 export function useFeaturedProfessionals(profession?: string, limit: number = 5) {
   return useQuery<Professional[]>({
     queryKey: ["featuredProfessionals", profession, limit],
     queryFn: async () => {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const queryParams = new URLSearchParams();
       
-      let results: Professional[] = [];
-      
-      if (profession && mockProfessionals[profession as keyof typeof mockProfessionals]) {
-        results = [...mockProfessionals[profession as keyof typeof mockProfessionals]];
-      } else {
-        // If no specific profession or invalid profession, return all
-        results = Object.values(mockProfessionals).flat();
+      if (profession) {
+        queryParams.append("profession", profession);
       }
-      
-      // Apply limit
       if (limit) {
-        results = results.slice(0, limit);
+        queryParams.append("limit", limit.toString());
+      }
+      queryParams.append("featured", "true");
+      
+      const queryString = queryParams.toString();
+      const url = `/api/professionals${queryString ? `?${queryString}` : ''}`;
+      
+      const response = await fetch(url, { credentials: "include" });
+      if (!response.ok) {
+        throw new Error("Failed to fetch featured professionals");
       }
       
-      return results;
+      return response.json();
     },
   });
 }

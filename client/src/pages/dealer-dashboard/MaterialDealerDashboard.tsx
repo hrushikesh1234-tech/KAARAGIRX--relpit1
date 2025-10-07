@@ -719,18 +719,31 @@ export default function MaterialDealerDashboard() {
             </div>
             <div className="grid gap-2">
               <Label>Product Images (Up to 5)</Label>
+              <p className="text-sm text-gray-400">Select up to 5 images for your material</p>
               {[0, 1, 2, 3, 4].map((index) => (
-                <Input
-                  key={index}
-                  value={materialForm.images[index]}
-                  onChange={(e) => {
-                    const newImages = [...materialForm.images];
-                    newImages[index] = e.target.value;
-                    setMaterialForm({ ...materialForm, images: newImages, image: newImages[0] || "" });
-                  }}
-                  placeholder={`Image URL ${index + 1}${index === 0 ? ' (Main)' : ''}`}
-                  className="bg-gray-800 border-gray-700"
-                />
+                <div key={index} className="flex gap-2 items-center">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          const base64String = reader.result as string;
+                          const newImages = [...materialForm.images];
+                          newImages[index] = base64String;
+                          setMaterialForm({ ...materialForm, images: newImages, image: newImages[0] || "" });
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="bg-gray-800 border-gray-700 flex-1"
+                  />
+                  {materialForm.images[index] && (
+                    <img src={materialForm.images[index]} alt={`Preview ${index + 1}`} className="w-16 h-16 object-cover rounded" />
+                  )}
+                </div>
               ))}
             </div>
           </div>
@@ -856,18 +869,31 @@ export default function MaterialDealerDashboard() {
             </div>
             <div className="grid gap-2">
               <Label>Product Images (Up to 5)</Label>
+              <p className="text-sm text-gray-400">Select up to 5 images for your material</p>
               {[0, 1, 2, 3, 4].map((index) => (
-                <Input
-                  key={index}
-                  value={materialForm.images[index]}
-                  onChange={(e) => {
-                    const newImages = [...materialForm.images];
-                    newImages[index] = e.target.value;
-                    setMaterialForm({ ...materialForm, images: newImages, image: newImages[0] || "" });
-                  }}
-                  placeholder={`Image URL ${index + 1}${index === 0 ? ' (Main)' : ''}`}
-                  className="bg-gray-800 border-gray-700"
-                />
+                <div key={index} className="flex gap-2 items-center">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          const base64String = reader.result as string;
+                          const newImages = [...materialForm.images];
+                          newImages[index] = base64String;
+                          setMaterialForm({ ...materialForm, images: newImages, image: newImages[0] || "" });
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="bg-gray-800 border-gray-700 flex-1"
+                  />
+                  {materialForm.images[index] && (
+                    <img src={materialForm.images[index]} alt={`Preview ${index + 1}`} className="w-16 h-16 object-cover rounded" />
+                  )}
+                </div>
               ))}
             </div>
           </div>

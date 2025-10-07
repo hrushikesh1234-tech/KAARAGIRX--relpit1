@@ -27,6 +27,7 @@ interface RentalEquipment {
   quantity: number;
   available: number;
   image?: string;
+  images?: string[];
   specifications?: Record<string, string>;
   condition: "excellent" | "good" | "fair";
   minRentalPeriod?: string;
@@ -107,6 +108,7 @@ export default function RentalMerchantDashboard() {
     condition: "good" as "excellent" | "good" | "fair",
     minRentalPeriod: "",
     image: "",
+    images: ["", "", "", "", ""],
     specifications: "{}"
   });
 
@@ -244,6 +246,7 @@ export default function RentalMerchantDashboard() {
       condition: "good",
       minRentalPeriod: "",
       image: "",
+      images: ["", "", "", "", ""],
       specifications: "{}"
     });
   };
@@ -284,7 +287,8 @@ export default function RentalMerchantDashboard() {
           available: parseInt(equipmentForm.available),
           condition: equipmentForm.condition,
           minRentalPeriod: equipmentForm.minRentalPeriod,
-          image: equipmentForm.image,
+          image: equipmentForm.images?.[0] || equipmentForm.image || "",
+          images: equipmentForm.images?.filter(Boolean) || [],
           specifications
         })
       });
@@ -349,7 +353,8 @@ export default function RentalMerchantDashboard() {
           available: parseInt(equipmentForm.available),
           condition: equipmentForm.condition,
           minRentalPeriod: equipmentForm.minRentalPeriod,
-          image: equipmentForm.image,
+          image: equipmentForm.images?.[0] || equipmentForm.image || "",
+          images: equipmentForm.images?.filter(Boolean) || [],
           specifications
         })
       });
@@ -412,6 +417,9 @@ export default function RentalMerchantDashboard() {
 
   const handleEditEquipment = (eq: RentalEquipment) => {
     setSelectedEquipment(eq);
+    const existingImages = (eq.images && eq.images.length > 0) ? eq.images : (eq.image ? [eq.image] : []);
+    const paddedImages = [...existingImages, "", "", "", "", ""].slice(0, 5);
+    
     setEquipmentForm({
       name: eq.name,
       description: eq.description || "",
@@ -426,6 +434,7 @@ export default function RentalMerchantDashboard() {
       condition: eq.condition,
       minRentalPeriod: eq.minRentalPeriod || "",
       image: eq.image || "",
+      images: paddedImages,
       specifications: JSON.stringify(eq.specifications || {}, null, 2)
     });
     setIsEditModalOpen(true);
@@ -784,14 +793,33 @@ export default function RentalMerchantDashboard() {
               />
             </div>
             <div className="space-y-2 col-span-2">
-              <Label htmlFor="image">Image URL</Label>
-              <Input
-                id="image"
-                value={equipmentForm.image}
-                onChange={(e) => setEquipmentForm({ ...equipmentForm, image: e.target.value })}
-                placeholder="https://example.com/image.jpg"
-                className="bg-gray-800 border-gray-700"
-              />
+              <Label>Equipment Images (Up to 5)</Label>
+              <p className="text-sm text-gray-400">Select up to 5 images for your equipment</p>
+              {[0, 1, 2, 3, 4].map((index) => (
+                <div key={index} className="flex gap-2 items-center">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          const base64String = reader.result as string;
+                          const newImages = [...equipmentForm.images];
+                          newImages[index] = base64String;
+                          setEquipmentForm({ ...equipmentForm, images: newImages, image: newImages[0] || "" });
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="bg-gray-800 border-gray-700 flex-1"
+                  />
+                  {equipmentForm.images[index] && (
+                    <img src={equipmentForm.images[index]} alt={`Preview ${index + 1}`} className="w-16 h-16 object-cover rounded" />
+                  )}
+                </div>
+              ))}
             </div>
           </div>
           <DialogFooter>

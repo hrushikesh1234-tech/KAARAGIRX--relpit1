@@ -7,7 +7,27 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MapPin, Star, Truck, CheckCircle, ShoppingCart, Heart, ShieldCheck, Home, ShoppingBag } from 'lucide-react';
 import { cn } from "@/lib/utils";
+import { useMaterials } from "@/hooks/useMaterials";
 import { useDealers } from "@/hooks/useDealers";
+
+// Material type from API
+type Material = {
+  id: number;
+  dealerId: number;
+  name: string;
+  category: string;
+  subcategory?: string;
+  description?: string;
+  price: string | number;
+  unit: string;
+  quantity: number;
+  minOrder?: string;
+  image?: string;
+  images?: string[];
+  inStock?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
 
 // Temporary type for dealer until we update the dealers data
 type Dealer = {
@@ -45,7 +65,13 @@ const Shop = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
-  const { data: dealers = [], isLoading, error } = useDealers();
+  const { data: materials = [], isLoading, error } = useMaterials({
+    category: selectedCategory !== 'all' ? selectedCategory : undefined,
+    subcategory: selectedSubCategory || undefined,
+    inStock: true
+  });
+  
+  const { data: dealers = [] } = useDealers();
 
   // Toggle like status for a dealer
   const toggleLike = (dealer: Dealer, e: React.MouseEvent) => {

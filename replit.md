@@ -7,10 +7,12 @@ KaaragirX is a full-stack construction marketplace platform designed to connect 
 - None set yet (fresh import)
 
 ## Recent Changes
+- **October 7, 2025**: Added carousel/photo display for material dealer and rental merchant dashboards
+- **October 7, 2025**: Fixed customer registration validation - customers no longer need professional fields
+- **October 7, 2025**: Removed authentication from admin dashboard for direct access
 - **October 7, 2025**: Fixed professionals.map error with Array.isArray checks in HomePage
 - **October 7, 2025**: Added isFeatured field to professionals table for featured listings
 - **October 7, 2025**: Implemented backend filtering for featured professionals with limit parameter
-- **October 7, 2025**: Created separate customer registration form (distinct from professional registration)
 - **October 7, 2025**: Database schema updated and migrations pushed successfully
 - **October 7, 2025**: Server running without errors on ports 3001 (backend) and 5000 (frontend)
 

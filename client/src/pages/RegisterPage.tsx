@@ -136,6 +136,7 @@ const RegisterPage = () => {
       setIsProfessional(isProfessionalValue);
       
       // For customer registrations, set valid default values for professional fields to pass validation
+      // These values are not sent to the backend (see submit handler)
       if (!isProfessionalValue) {
         form.setValue("address", "N/A");
         form.setValue("city", "N/A");
@@ -144,6 +145,16 @@ const RegisterPage = () => {
         form.setValue("phone", "0000000000");
         form.setValue("experience", "1-3");
         form.setValue("professionalType", "contractor");
+      } else {
+        // Clear dummy values when switching to professional mode
+        if (form.getValues("address") === "N/A") {
+          form.setValue("address", "");
+          form.setValue("city", "Kamshet");
+          form.setValue("state", "Maharashtra");
+          form.setValue("pincode", "");
+          form.setValue("phone", "");
+          form.setValue("experience", "");
+        }
       }
       
       // If a specific professional type is provided, update the form
@@ -176,14 +187,13 @@ const RegisterPage = () => {
       
       // Check if this is a customer registration
       if (!isProfessional) {
-        // Customer registration - only send basic fields
+        // Customer registration - only send basic fields (no phone since field is not shown to customers)
         registrationData = {
           username: data.username,
           password: data.password,
           email: data.email,
           fullName: data.fullName,
           userType: 'customer',
-          phone: data.phone || '',
         };
         console.log('Registering customer:', { ...registrationData, password: '***' });
       } else {

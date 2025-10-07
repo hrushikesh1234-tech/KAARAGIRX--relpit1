@@ -99,7 +99,8 @@ export default function MaterialDealerDashboard() {
     quantity: "",
     unit: "",
     minOrder: "",
-    image: ""
+    image: "",
+    images: ["", "", "", "", ""] as string[]
   });
 
   const averageRating = reviews.length > 0 
@@ -226,7 +227,8 @@ export default function MaterialDealerDashboard() {
           unit: materialForm.unit,
           quantity: parseInt(materialForm.quantity),
           minOrder: materialForm.minOrder,
-          image: materialForm.image,
+          image: materialForm.images[0] || "",
+          images: materialForm.images.filter(img => img.trim() !== ""),
           inStock: true
         })
       });
@@ -709,14 +711,20 @@ export default function MaterialDealerDashboard() {
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="image">Image URL</Label>
-              <Input
-                id="image"
-                value={materialForm.image}
-                onChange={(e) => setMaterialForm({ ...materialForm, image: e.target.value })}
-                placeholder="https://example.com/image.jpg"
-                className="bg-gray-800 border-gray-700"
-              />
+              <Label>Product Images (Up to 5)</Label>
+              {[0, 1, 2, 3, 4].map((index) => (
+                <Input
+                  key={index}
+                  value={materialForm.images[index]}
+                  onChange={(e) => {
+                    const newImages = [...materialForm.images];
+                    newImages[index] = e.target.value;
+                    setMaterialForm({ ...materialForm, images: newImages, image: newImages[0] || "" });
+                  }}
+                  placeholder={`Image URL ${index + 1}${index === 0 ? ' (Main)' : ''}`}
+                  className="bg-gray-800 border-gray-700"
+                />
+              ))}
             </div>
           </div>
           <DialogFooter>

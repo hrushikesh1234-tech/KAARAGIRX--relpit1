@@ -189,7 +189,7 @@ const Shop = () => {
     }
     
     return result;
-  }, [selectedCategory, selectedSubCategory, locationFilter]);
+  }, [dealers, selectedCategory, selectedSubCategory, locationFilter]);
 
 
 

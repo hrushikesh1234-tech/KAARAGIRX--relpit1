@@ -3,6 +3,10 @@ import { db } from "../config/database";
 import { eq, and, desc } from "drizzle-orm";
 
 export class BookingService {
+  async getAllBookings(): Promise<Booking[]> {
+    return await db.select().from(bookings).orderBy(desc(bookings.createdAt));
+  }
+
   async getBooking(id: string): Promise<Booking | undefined> {
     const [booking] = await db.select().from(bookings).where(eq(bookings.id, id));
     return booking || undefined;

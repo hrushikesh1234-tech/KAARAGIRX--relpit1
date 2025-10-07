@@ -12,6 +12,7 @@ import rentalRoutes from "./rental.routes";
 import bookingRoutes from "./booking.routes";
 import wishlistRoutes from "./wishlist.routes";
 import notificationRoutes from "./notification.routes";
+import userRoutes from "./user.routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/auth', authRoutes);
@@ -25,6 +26,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/bookings', bookingRoutes);
   app.use('/api/wishlist', wishlistRoutes);
   app.use('/api/notifications', notificationRoutes);
+  app.use('/api/users', userRoutes);
 
   const httpServer = createServer(app);
   return httpServer;

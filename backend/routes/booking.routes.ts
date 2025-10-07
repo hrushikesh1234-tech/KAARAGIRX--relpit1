@@ -3,6 +3,7 @@ import { bookingController } from "../controllers/booking.controller";
 
 const router = Router();
 
+router.get('/', bookingController.getAllBookings.bind(bookingController));
 router.get('/merchant/:merchantId', bookingController.getBookingsByMerchant.bind(bookingController));
 router.get('/user/:userId', bookingController.getBookingsByUser.bind(bookingController));
 router.get('/equipment/:equipmentId', bookingController.getBookingsByEquipment.bind(bookingController));

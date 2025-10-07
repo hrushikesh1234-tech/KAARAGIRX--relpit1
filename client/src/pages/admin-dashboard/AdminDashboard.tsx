@@ -187,7 +187,7 @@ export default function AdminDashboard() {
   const updateOrderStatus = async (orderId: string, status: string) => {
     try {
       const response = await apiRequest(`/api/orders/${orderId}/status`, {
-        method: 'PATCH',
+        method: 'PUT',
         body: JSON.stringify({ status }),
       });
 
@@ -212,7 +212,7 @@ export default function AdminDashboard() {
   const updateBookingStatus = async (bookingId: string, status: string) => {
     try {
       const response = await apiRequest(`/api/bookings/${bookingId}/status`, {
-        method: 'PATCH',
+        method: 'PUT',
         body: JSON.stringify({ status }),
       });
 

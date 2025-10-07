@@ -2,6 +2,16 @@ import type { Request, Response } from "express";
 import { bookingService } from "../services/booking.service";
 
 export class BookingController {
+  async getAllBookings(req: Request, res: Response) {
+    try {
+      const bookings = await bookingService.getAllBookings();
+      res.json(bookings);
+    } catch (error) {
+      console.error('Error fetching all bookings:', error);
+      res.status(500).json({ error: 'Failed to fetch bookings' });
+    }
+  }
+
   async getBooking(req: Request, res: Response) {
     try {
       const id = req.params.id;

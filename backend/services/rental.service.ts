@@ -1,4 +1,4 @@
-import { rentalEquipment, type RentalEquipment } from "../../shared/schema";
+import { rentalEquipment, professionals, type RentalEquipment } from "../../shared/schema";
 import { db } from "../config/database";
 import { eq, and, like, desc } from "drizzle-orm";
 
@@ -25,7 +25,8 @@ export class RentalService {
     maxRate?: number;
     condition?: string;
     search?: string;
-  }): Promise<RentalEquipment[]> {
+    subcategory?: string;
+  }): Promise<any[]> {
     const conditions: any[] = [];
 
     if (filters.category) {
@@ -44,11 +45,78 @@ export class RentalService {
       conditions.push(like(rentalEquipment.name, `%${filters.search}%`));
     }
 
-    const query = conditions.length > 0
-      ? db.select().from(rentalEquipment).where(and(...conditions))
-      : db.select().from(rentalEquipment);
+    if (filters.subcategory) {
+      conditions.push(eq(rentalEquipment.subcategory, filters.subcategory));
+    }
 
-    return await query.orderBy(desc(rentalEquipment.createdAt));
+    const query = conditions.length > 0
+      ? db.select({
+          id: rentalEquipment.id,
+          merchantId: rentalEquipment.merchantId,
+          name: rentalEquipment.name,
+          category: rentalEquipment.category,
+          subcategory: rentalEquipment.subcategory,
+          description: rentalEquipment.description,
+          dailyRate: rentalEquipment.dailyRate,
+          weeklyRate: rentalEquipment.weeklyRate,
+          monthlyRate: rentalEquipment.monthlyRate,
+          securityDeposit: rentalEquipment.securityDeposit,
+          quantity: rentalEquipment.quantity,
+          available: rentalEquipment.available,
+          image: rentalEquipment.image,
+          images: rentalEquipment.images,
+          specifications: rentalEquipment.specifications,
+          condition: rentalEquipment.condition,
+          minRentalPeriod: rentalEquipment.minRentalPeriod,
+          createdAt: rentalEquipment.createdAt,
+          merchantName: professionals.companyName,
+          merchantLocation: professionals.location,
+          merchantRating: professionals.rating,
+          merchantReviewCount: professionals.reviewCount,
+        })
+        .from(rentalEquipment)
+        .leftJoin(professionals, eq(rentalEquipment.merchantId, professionals.id))
+        .where(and(...conditions))
+      : db.select({
+          id: rentalEquipment.id,
+          merchantId: rentalEquipment.merchantId,
+          name: rentalEquipment.name,
+          category: rentalEquipment.category,
+          subcategory: rentalEquipment.subcategory,
+          description: rentalEquipment.description,
+          dailyRate: rentalEquipment.dailyRate,
+          weeklyRate: rentalEquipment.weeklyRate,
+          monthlyRate: rentalEquipment.monthlyRate,
+          securityDeposit: rentalEquipment.securityDeposit,
+          quantity: rentalEquipment.quantity,
+          available: rentalEquipment.available,
+          image: rentalEquipment.image,
+          images: rentalEquipment.images,
+          specifications: rentalEquipment.specifications,
+          condition: rentalEquipment.condition,
+          minRentalPeriod: rentalEquipment.minRentalPeriod,
+          createdAt: rentalEquipment.createdAt,
+          merchantName: professionals.companyName,
+          merchantLocation: professionals.location,
+          merchantRating: professionals.rating,
+          merchantReviewCount: professionals.reviewCount,
+        })
+        .from(rentalEquipment)
+        .leftJoin(professionals, eq(rentalEquipment.merchantId, professionals.id));
+
+    const result = await query.orderBy(desc(rentalEquipment.createdAt));
+    
+    return result.map((item: any) => ({
+      ...item,
+      supplier: item.merchantName || 'Unknown',
+      location: item.merchantLocation || 'Unknown',
+      price: `₹${Number(item.dailyRate || 0).toLocaleString('en-IN')}`,
+      period: 'day',
+      rating: Number(item.merchantRating || 0),
+      reviews: item.merchantReviewCount || 0,
+      availability: (item.available && item.available > 0) ? 'Available' : 'Rented',
+      features: item.specifications ? Object.entries(item.specifications).map(([key, value]) => `${key}: ${value}`) : []
+    }));
   }
 
   async createRentalEquipment(data: typeof rentalEquipment.$inferInsert): Promise<RentalEquipment> {

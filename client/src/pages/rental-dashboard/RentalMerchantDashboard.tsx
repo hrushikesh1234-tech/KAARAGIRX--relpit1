@@ -870,6 +870,75 @@ export default function RentalMerchantDashboard() {
             <div className="space-y-2 col-span-2">
               <Label>Equipment Images (Up to 5)</Label>
               <p className="text-sm text-gray-400">Select up to 5 images for your equipment</p>
+              
+              {/* Bulk Upload Option */}
+              <div className="mb-3 p-3 bg-gray-800/50 border border-gray-700 rounded-lg">
+                <Label htmlFor="bulk-upload" className="text-sm text-gray-300 mb-2 block">Upload Multiple Images (Select up to 5)</Label>
+                <Input
+                  id="bulk-upload"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={async (e) => {
+                    const files = Array.from(e.target.files || []);
+                    if (files.length > 5) {
+                      toast({
+                        title: "Too many images",
+                        description: "You can only upload up to 5 images at once.",
+                        variant: "destructive"
+                      });
+                      return;
+                    }
+
+                    const newImages = [...equipmentForm.images];
+                    let uploadedCount = 0;
+                    
+                    for (const file of files) {
+                      if (file.size > 5000000) {
+                        toast({
+                          title: "Image too large",
+                          description: `${file.name} is larger than 5MB. Skipping.`,
+                          variant: "destructive"
+                        });
+                        continue;
+                      }
+
+                      const emptySlotIndex = newImages.findIndex(img => !img || img.trim() === "");
+                      if (emptySlotIndex === -1) {
+                        toast({
+                          title: "No more slots",
+                          description: "All 5 image slots are filled. Remove an image first.",
+                          variant: "destructive"
+                        });
+                        break;
+                      }
+
+                      const reader = new FileReader();
+                      await new Promise<void>((resolve) => {
+                        reader.onloadend = () => {
+                          const base64String = reader.result as string;
+                          newImages[emptySlotIndex] = base64String;
+                          uploadedCount++;
+                          resolve();
+                        };
+                        reader.readAsDataURL(file);
+                      });
+                    }
+
+                    if (uploadedCount > 0) {
+                      setEquipmentForm({ ...equipmentForm, images: newImages, image: newImages[0] || "" });
+                      toast({
+                        title: "Success",
+                        description: `${uploadedCount} image(s) uploaded successfully.`,
+                      });
+                    }
+                    e.target.value = '';
+                  }}
+                  className="bg-gray-800 border-gray-700"
+                />
+              </div>
+
+              {/* Individual Image Slots */}
               {[0, 1, 2, 3, 4].map((index) => (
                 <div key={index} className="flex gap-2 items-center">
                   <Input
@@ -878,6 +947,14 @@ export default function RentalMerchantDashboard() {
                     onChange={async (e) => {
                       const file = e.target.files?.[0];
                       if (file) {
+                        if (file.size > 5000000) {
+                          toast({
+                            title: "Image too large",
+                            description: `${file.name} is larger than 5MB.`,
+                            variant: "destructive"
+                          });
+                          return;
+                        }
                         const reader = new FileReader();
                         reader.onloadend = () => {
                           const base64String = reader.result as string;
@@ -891,7 +968,21 @@ export default function RentalMerchantDashboard() {
                     className="bg-gray-800 border-gray-700 flex-1"
                   />
                   {equipmentForm.images[index] && (
-                    <img src={equipmentForm.images[index]} alt={`Preview ${index + 1}`} className="w-16 h-16 object-cover rounded" />
+                    <>
+                      <img src={equipmentForm.images[index]} alt={`Preview ${index + 1}`} className="w-16 h-16 object-cover rounded" />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const newImages = [...equipmentForm.images];
+                          newImages[index] = "";
+                          setEquipmentForm({ ...equipmentForm, images: newImages, image: newImages.find(img => img) || "" });
+                        }}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </>
                   )}
                 </div>
               ))}

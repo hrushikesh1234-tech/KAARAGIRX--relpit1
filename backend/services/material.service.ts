@@ -1,4 +1,4 @@
-import { materials, type Material } from "../../shared/schema";
+import { materials, dealers, type Material } from "../../shared/schema";
 import { db } from "../config/database";
 import { eq, and, like, desc } from "drizzle-orm";
 
@@ -24,7 +24,7 @@ export class MaterialService {
     subcategory?: string;
     search?: string;
     inStock?: boolean;
-  }): Promise<Material[]> {
+  }): Promise<any[]> {
     const conditions: any[] = [];
 
     if (filters.dealerId) {
@@ -48,10 +48,72 @@ export class MaterialService {
     }
 
     const query = conditions.length > 0
-      ? db.select().from(materials).where(and(...conditions))
-      : db.select().from(materials);
+      ? db.select({
+          id: materials.id,
+          dealerId: materials.dealerId,
+          name: materials.name,
+          category: materials.category,
+          subcategory: materials.subcategory,
+          description: materials.description,
+          price: materials.price,
+          unit: materials.unit,
+          quantity: materials.quantity,
+          minOrder: materials.minOrder,
+          image: materials.image,
+          images: materials.images,
+          specifications: materials.specifications,
+          inStock: materials.inStock,
+          createdAt: materials.createdAt,
+          dealerName: dealers.name,
+          dealerLocation: dealers.location,
+          dealerRating: dealers.rating,
+          dealerReviewCount: dealers.reviewCount,
+          dealerVerified: dealers.verified,
+          dealerImage: dealers.logo,
+        })
+        .from(materials)
+        .leftJoin(dealers, eq(materials.dealerId, dealers.id))
+        .where(and(...conditions))
+      : db.select({
+          id: materials.id,
+          dealerId: materials.dealerId,
+          name: materials.name,
+          category: materials.category,
+          subcategory: materials.subcategory,
+          description: materials.description,
+          price: materials.price,
+          unit: materials.unit,
+          quantity: materials.quantity,
+          minOrder: materials.minOrder,
+          image: materials.image,
+          images: materials.images,
+          specifications: materials.specifications,
+          inStock: materials.inStock,
+          createdAt: materials.createdAt,
+          dealerName: dealers.name,
+          dealerLocation: dealers.location,
+          dealerRating: dealers.rating,
+          dealerReviewCount: dealers.reviewCount,
+          dealerVerified: dealers.verified,
+          dealerImage: dealers.logo,
+        })
+        .from(materials)
+        .leftJoin(dealers, eq(materials.dealerId, dealers.id));
 
-    return await query.orderBy(desc(materials.createdAt));
+    const result = await query.orderBy(desc(materials.createdAt));
+    
+    return result.map((item: any) => ({
+      ...item,
+      dealer: {
+        id: item.dealerId,
+        name: item.dealerName || 'Unknown',
+        location: item.dealerLocation || 'Unknown',
+        rating: Number(item.dealerRating || 0),
+        reviewCount: item.dealerReviewCount || 0,
+        verified: item.dealerVerified || false,
+        image: item.dealerImage || '/images/placeholder.png',
+      }
+    }));
   }
 
   async createMaterial(data: typeof materials.$inferInsert): Promise<Material> {

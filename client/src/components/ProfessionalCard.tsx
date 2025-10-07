@@ -57,69 +57,89 @@ const ProfessionalCard = ({ professional, featured = false }: ProfessionalCardPr
     );
   };
 
+  const portfolioImages = professional.projects?.slice(0, 4).map(p => {
+    const firstImage = p.images?.[0];
+    if (typeof firstImage === 'string') {
+      return p.coverImage || firstImage;
+    } else if (firstImage && typeof firstImage === 'object' && 'imageUrl' in firstImage) {
+      return p.coverImage || firstImage.imageUrl;
+    }
+    return p.coverImage;
+  }).filter((img): img is string => Boolean(img)) || [];
+  const mainImage = portfolioImages[0] || professional.profileImage || "https://via.placeholder.com/300";
+
   if (featured) {
     return (
-      <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:shadow-lg hover:-translate-y-1 cursor-pointer">
-        <div className="relative h-48">
-          <img 
-            src={professional.profileImage || "https://via.placeholder.com/300"} 
-            alt={professional.fullName || professional.companyName || ""} 
-            className="w-full h-full object-cover" 
-          />
-          <div className="absolute top-4 right-4 bg-white p-1.5 rounded-full">
-            <button 
-              onClick={toggleBookmark} 
-              aria-label={isBookmarked ? "Remove from bookmarks" : "Add to bookmarks"}
-              className="focus:outline-none"
-            >
+      <Link to={`/professionals/${professional.id}`} className="block">
+        <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:shadow-lg hover:-translate-y-1 cursor-pointer">
+          <div className="relative h-48">
+            <img 
+              src={mainImage} 
+              alt={professional.fullName || professional.companyName || ""} 
+              className="w-full h-full object-cover" 
+            />
+            <div className="absolute top-4 right-4 bg-white p-1.5 rounded-full">
+              <button 
+                onClick={toggleBookmark} 
+                aria-label={isBookmarked ? "Remove from bookmarks" : "Add to bookmarks"}
+                className="focus:outline-none"
+              >
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="20" 
+                  height="20" 
+                  viewBox="0 0 24 24" 
+                  fill={isBookmarked ? "#3b82f6" : "none"} 
+                  stroke={isBookmarked ? "#3b82f6" : "currentColor"} 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                >
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          {portfolioImages.length > 0 && (
+            <div className="flex gap-1 p-2 bg-gray-50">
+              {portfolioImages.slice(0, 4).map((img, idx) => (
+                <div key={idx} className="w-1/4 h-16 rounded overflow-hidden">
+                  <img src={img} alt={`Portfolio ${idx + 1}`} className="w-full h-full object-cover" />
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="p-5">
+            <h3 className="text-xl font-semibold mb-2">{professional.fullName || professional.companyName}</h3>
+            <p className="text-gray-600 mb-3">{professional.profession === 'contractor' ? 'Contractor' : 'Architect'}</p>
+            <div className="flex items-center mb-3">
+              {renderStars(Number(professional.rating) || 0)}
+              <span className="ml-2 text-gray-600">{Number(professional.rating || 0).toFixed(1)} ({professional.reviewCount} reviews)</span>
+            </div>
+            <div className="flex items-center text-gray-600 mb-4">
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
-                width="20" 
-                height="20" 
+                width="16" 
+                height="16" 
                 viewBox="0 0 24 24" 
-                fill={isBookmarked ? "#3b82f6" : "none"} 
-                stroke={isBookmarked ? "#3b82f6" : "currentColor"} 
+                fill="none" 
+                stroke="currentColor" 
                 strokeWidth="2" 
                 strokeLinecap="round" 
-                strokeLinejoin="round"
+                strokeLinejoin="round" 
+                className="mr-2"
               >
-                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
               </svg>
-            </button>
-          </div>
-        </div>
-        <div className="p-5">
-          <h3 className="text-xl font-semibold mb-2">{professional.fullName || professional.companyName}</h3>
-          <p className="text-gray-600 mb-3">{professional.profession === 'contractor' ? 'Contractor' : 'Architect'}</p>
-          <div className="flex items-center mb-3">
-            {renderStars(professional.rating)}
-            <span className="ml-2 text-gray-600">{professional.rating.toFixed(1)} ({professional.reviewCount} reviews)</span>
-          </div>
-          <div className="flex items-center text-gray-600 mb-4">
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              width="16" 
-              height="16" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              className="mr-2"
-            >
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-              <circle cx="12" cy="10" r="3"></circle>
-            </svg>
-            <span>{professional.location}</span>
-          </div>
-          <Link to={`/professionals/${professional.id}`} className="block">
+              <span>{professional.location}</span>
+            </div>
             <button className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded-md font-medium transition-colors duration-200">
               View Profile
             </button>
-          </Link>
+          </div>
         </div>
-      </div>
+      </Link>
     );
   }
 

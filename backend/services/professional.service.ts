@@ -30,7 +30,7 @@ export class ProfessionalService {
     search?: string;
     limit?: number;
     featured?: boolean;
-  }): Promise<Professional[]> {
+  }): Promise<any[]> {
     const conditions: any[] = [];
 
     if (filters.profession && filters.profession !== 'all') {
@@ -56,16 +56,24 @@ export class ProfessionalService {
     }
 
     let query = conditions.length > 0
-      ? db.select().from(professionals).where(and(...conditions))
-      : db.select().from(professionals);
-
-    query = query.orderBy(desc(professionals.rating));
+      ? db.select().from(professionals).where(and(...conditions)).orderBy(desc(professionals.rating))
+      : db.select().from(professionals).orderBy(desc(professionals.rating));
     
-    if (filters.limit) {
-      query = query.limit(filters.limit) as any;
-    }
+    const result = filters.limit 
+      ? await query.limit(filters.limit)
+      : await query;
+    
+    const professionalsWithProjects = await Promise.all(
+      result.map(async (prof) => {
+        const profProjects = await this.getProfessionalProjects(prof.id);
+        return {
+          ...prof,
+          projects: profProjects
+        };
+      })
+    );
 
-    return await query;
+    return professionalsWithProjects;
   }
 
   async createProfessional(data: typeof professionals.$inferInsert): Promise<Professional> {

@@ -48,6 +48,7 @@ export class RentalController {
         maxRate: req.query.maxRate ? parseFloat(req.query.maxRate as string) : undefined,
         condition: req.query.condition as string,
         search: req.query.search as string,
+        subcategory: req.query.subcategory as string,
       };
 
       const equipment = await rentalService.searchRentalEquipment(filters);

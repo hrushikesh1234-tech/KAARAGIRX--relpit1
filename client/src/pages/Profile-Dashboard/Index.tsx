@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { X, Check, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Check, ChevronLeft, ChevronRight, Plus, Pencil } from 'lucide-react';
 import ProfileHeader from '@/components/Profile-Dashboard/ProfileHeader';
 import TabNavigation from '@/components/Profile-Dashboard/TabNavigation';
 import ReelsGrid from '@/components/Profile-Dashboard/ReelsGrid';
@@ -8,6 +8,7 @@ import StarRating from '@/components/Profile-Dashboard/StarRating';
 import Carousel, { Card as CardComponent } from '@/components/ui/apple-cards-carousel';
 import ImageSlider from '@/components/ui/ImageSlider';
 import type { CardProps } from '@/components/ui/apple-cards-carousel';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface PortfolioItem {
   id: string;
@@ -59,6 +60,7 @@ interface ProfileData {
 }
 
 const Index = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('portfolio');
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [selectedReel, setSelectedReel] = useState<PortfolioItem | null>(null);
@@ -66,6 +68,10 @@ const Index = () => {
   const [reviewCount, setReviewCount] = useState(30);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [newReview, setNewReview] = useState({ rating: 5, comment: '', author: 'You' });
+  
+  // For now, assume this is always the user's own profile
+  // In the future, compare route params with user.id
+  const isOwnProfile = true;
   
   // Sample reviews data
   const [reviews, setReviews] = useState<Review[]>([
@@ -754,44 +760,6 @@ const Index = () => {
   return (
     <div className="bg-black text-white">
       <main className="max-w-7xl mx-auto px-4 relative">
-        {/* Top-right corner elements */}
-        <div className="absolute right-4 top-1 z-10 flex flex-col items-center gap-1">
-          {/* Customer badge with live indicator */}
-          <div className="relative">
-            <div className="flex items-center gap-1.5">
-              <div 
-                className="text-[10px] font-semibold text-white px-2 py-0.5 rounded-md"
-                style={{
-                  background: 'linear-gradient(135deg, #00cba9, #0df3be, #b5ffe6)',
-                  border: 'none',
-                  lineHeight: '1.2',
-                  minWidth: '60px',
-                  textAlign: 'center'
-                }}
-              >
-                Customer
-              </div>
-              {profileData.isLive && (
-                <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse absolute -top-0.5 -right-0.5"></div>
-              )}
-            </div>
-          </div>
-          
-          {/* Edit button */}
-          <button 
-            onClick={handleEditProfile}
-            className="px-1.5 py-0.5 rounded text-[9px] font-medium transition-all duration-150 transform hover:scale-[1.02] active:scale-[0.98] 
-                    bg-gradient-to-r from-gray-800 to-gray-700 hover:from-gray-700 hover:to-gray-600 
-                    text-gray-300 shadow-sm border border-gray-600/30 hover:border-gray-500/40
-                    flex items-center justify-center w-10"
-            title="Edit profile"
-          >
-            <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-            </svg>
-          </button>
-        </div>
-        
         <div id="profile-header" className="border-t border-gray-800 pt-1">
           <ProfileHeader 
             profileData={profileData} 
@@ -804,6 +772,37 @@ const Index = () => {
         <div className={`${isTabsSticky ? 'fixed top-16 left-1/2 transform -translate-x-1/2 max-w-md w-full z-40' : 'relative z-40'}`}>
           <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
         </div>
+        
+        {/* Action bar below tabs - only show for own profile */}
+        {isOwnProfile && (
+          <div className="border-b border-gray-800 bg-black">
+            <div className="max-w-7xl mx-auto px-4 py-3">
+              <div className="flex items-center justify-between">
+                {/* Left side - My Portfolio text + Edit button */}
+                <div className="flex items-center gap-3">
+                  <h2 className="text-lg font-semibold text-white">My Portfolio</h2>
+                  <button 
+                    onClick={handleEditProfile}
+                    className="p-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 transition-all duration-150 transform hover:scale-105"
+                    title="Edit profile"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                </div>
+                
+                {/* Right side - Add portfolio button (only visible on Portfolio tab) */}
+                {activeTab === 'portfolio' && (
+                  <button 
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white text-sm font-medium transition-all duration-200 transform hover:scale-105"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Portfolio
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
         
         <div className={`px-1 ${isTabsSticky ? 'pt-12' : ''}`}>
           {activeTab === 'portfolio' && (

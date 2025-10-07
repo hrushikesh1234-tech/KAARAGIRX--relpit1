@@ -14,7 +14,8 @@ const CategoryPageOR = () => {
   const [selectedSubCategory, setSelectedSubCategory] = useState("all");
   
   const { data: rentalEquipment = [], isLoading, error } = useRentalEquipment({ 
-    category: categoryId 
+    category: categoryId,
+    subcategory: selectedSubCategory !== 'all' ? selectedSubCategory : undefined
   });
 
   const categoryData: Record<string, any> = {
@@ -97,12 +98,8 @@ const CategoryPageOR = () => {
       equipment = equipment.filter(item => item.location === selectedLocation);
     }
     
-    if (selectedSubCategory && selectedSubCategory !== "all") {
-      equipment = equipment.filter(item => item.subcategory === selectedSubCategory);
-    }
-    
     return equipment;
-  }, [rentalEquipment, selectedLocation, selectedSubCategory]);
+  }, [rentalEquipment, selectedLocation]);
 
 
   const currentCategory = categoryData[categoryId || ""];
@@ -247,7 +244,7 @@ const CategoryPageOR = () => {
                 {/* All Types Button */}
                 <div className="flex-shrink-0 w-28 h-28">
                   <button
-                    onClick={() => handleSubcategorySelect('all')}
+                    onClick={() => setSelectedSubCategory('all')}
                     className={`w-full h-full relative rounded-lg overflow-hidden transition-all ${
                       selectedSubCategory === 'all' 
                         ? 'ring-2 ring-orange-500 ring-offset-2' 

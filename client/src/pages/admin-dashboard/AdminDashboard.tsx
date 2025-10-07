@@ -112,11 +112,7 @@ export default function AdminDashboard() {
   };
 
   const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
-    const baseUrl = window.location.hostname === 'localhost' 
-      ? 'http://localhost:3001' 
-      : `https://${window.location.hostname.split('.')[0]}-3001.${window.location.hostname.split('.').slice(1).join('.')}`;
-    
-    return fetch(`${baseUrl}${endpoint}`, {
+    return fetch(endpoint, {
       ...options,
       credentials: "include",
       headers: {

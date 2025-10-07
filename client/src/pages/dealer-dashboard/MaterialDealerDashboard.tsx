@@ -797,6 +797,74 @@ export default function MaterialDealerDashboard() {
             <div className="grid gap-2">
               <Label>Product Images (Up to 5)</Label>
               <p className="text-sm text-gray-400">Upload images or enter image URLs from your public folder (e.g., /images/materials/...)</p>
+              
+              {/* Bulk Upload Option */}
+              <div className="mb-3 p-3 bg-gray-800/50 border border-gray-700 rounded-lg">
+                <Label htmlFor="bulk-upload" className="text-sm text-gray-300 mb-2 block">Upload Multiple Images (Select up to 5)</Label>
+                <Input
+                  id="bulk-upload"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={async (e) => {
+                    const files = Array.from(e.target.files || []);
+                    if (files.length > 5) {
+                      toast({
+                        title: "Too many images",
+                        description: "You can only upload up to 5 images at once.",
+                        variant: "destructive"
+                      });
+                      return;
+                    }
+
+                    const newImages = [...materialForm.images];
+                    let uploadedCount = 0;
+                    
+                    for (const file of files) {
+                      if (file.size > 5000000) {
+                        toast({
+                          title: "Image too large",
+                          description: `${file.name} is larger than 5MB. Skipping.`,
+                          variant: "destructive"
+                        });
+                        continue;
+                      }
+
+                      const emptySlotIndex = newImages.findIndex(img => !img || img.trim() === "");
+                      if (emptySlotIndex === -1) {
+                        toast({
+                          title: "No more slots",
+                          description: "All 5 image slots are filled. Remove an image first.",
+                          variant: "destructive"
+                        });
+                        break;
+                      }
+
+                      const reader = new FileReader();
+                      await new Promise<void>((resolve) => {
+                        reader.onloadend = () => {
+                          const base64String = reader.result as string;
+                          newImages[emptySlotIndex] = base64String;
+                          uploadedCount++;
+                          resolve();
+                        };
+                        reader.readAsDataURL(file);
+                      });
+                    }
+
+                    if (uploadedCount > 0) {
+                      setMaterialForm({ ...materialForm, images: newImages, image: newImages[0] || "" });
+                      toast({
+                        title: "Success",
+                        description: `${uploadedCount} image(s) uploaded successfully.`,
+                      });
+                    }
+                    e.target.value = '';
+                  }}
+                  className="bg-gray-800 border-gray-700"
+                />
+              </div>
+
               <div className="space-y-2">
                 {[0, 1, 2, 3, 4].map((index) => (
                   <div key={index} className="flex gap-2 items-center">
@@ -807,10 +875,10 @@ export default function MaterialDealerDashboard() {
                         onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            if (file.size > 200000) {
+                            if (file.size > 5000000) {
                               toast({
                                 title: "Image too large",
-                                description: "Please use images under 200KB. Compress your image or use a URL to a hosted image instead.",
+                                description: "Please use images under 5MB per image.",
                                 variant: "destructive"
                               });
                               return;
@@ -978,6 +1046,74 @@ export default function MaterialDealerDashboard() {
             <div className="grid gap-2">
               <Label>Product Images (Up to 5)</Label>
               <p className="text-sm text-gray-400">Upload images or enter image URLs from your public folder (e.g., /images/materials/...)</p>
+              
+              {/* Bulk Upload Option */}
+              <div className="mb-3 p-3 bg-gray-800/50 border border-gray-700 rounded-lg">
+                <Label htmlFor="bulk-upload" className="text-sm text-gray-300 mb-2 block">Upload Multiple Images (Select up to 5)</Label>
+                <Input
+                  id="bulk-upload"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={async (e) => {
+                    const files = Array.from(e.target.files || []);
+                    if (files.length > 5) {
+                      toast({
+                        title: "Too many images",
+                        description: "You can only upload up to 5 images at once.",
+                        variant: "destructive"
+                      });
+                      return;
+                    }
+
+                    const newImages = [...materialForm.images];
+                    let uploadedCount = 0;
+                    
+                    for (const file of files) {
+                      if (file.size > 5000000) {
+                        toast({
+                          title: "Image too large",
+                          description: `${file.name} is larger than 5MB. Skipping.`,
+                          variant: "destructive"
+                        });
+                        continue;
+                      }
+
+                      const emptySlotIndex = newImages.findIndex(img => !img || img.trim() === "");
+                      if (emptySlotIndex === -1) {
+                        toast({
+                          title: "No more slots",
+                          description: "All 5 image slots are filled. Remove an image first.",
+                          variant: "destructive"
+                        });
+                        break;
+                      }
+
+                      const reader = new FileReader();
+                      await new Promise<void>((resolve) => {
+                        reader.onloadend = () => {
+                          const base64String = reader.result as string;
+                          newImages[emptySlotIndex] = base64String;
+                          uploadedCount++;
+                          resolve();
+                        };
+                        reader.readAsDataURL(file);
+                      });
+                    }
+
+                    if (uploadedCount > 0) {
+                      setMaterialForm({ ...materialForm, images: newImages, image: newImages[0] || "" });
+                      toast({
+                        title: "Success",
+                        description: `${uploadedCount} image(s) uploaded successfully.`,
+                      });
+                    }
+                    e.target.value = '';
+                  }}
+                  className="bg-gray-800 border-gray-700"
+                />
+              </div>
+
               <div className="space-y-2">
                 {[0, 1, 2, 3, 4].map((index) => (
                   <div key={index} className="flex gap-2 items-center">
@@ -988,10 +1124,10 @@ export default function MaterialDealerDashboard() {
                         onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            if (file.size > 200000) {
+                            if (file.size > 5000000) {
                               toast({
                                 title: "Image too large",
-                                description: "Please use images under 200KB. Compress your image or use a URL to a hosted image instead.",
+                                description: "Please use images under 5MB per image.",
                                 variant: "destructive"
                               });
                               return;

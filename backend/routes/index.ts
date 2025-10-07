@@ -25,6 +25,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/rental-equipment', rentalRoutes);
   app.use('/api/bookings', bookingRoutes);
   app.use('/api/wishlist', wishlistRoutes);
+  app.use('/api/bookmarks', wishlistRoutes);
   app.use('/api/notifications', notificationRoutes);
   app.use('/api/users', userRoutes);
 

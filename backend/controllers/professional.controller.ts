@@ -147,6 +147,17 @@ export class ProfessionalController {
       res.status(500).json({ error: 'Failed to fetch reviews' });
     }
   }
+
+  async getReviewsByProfessionalId(req: Request, res: Response) {
+    try {
+      const professionalId = parseInt(req.params.id);
+      const reviews = await professionalService.getProfessionalReviews(professionalId);
+      res.json(reviews);
+    } catch (error) {
+      console.error('Error fetching reviews by professional ID:', error);
+      res.status(500).json({ error: 'Failed to fetch reviews' });
+    }
+  }
 }
 
 export const professionalController = new ProfessionalController();

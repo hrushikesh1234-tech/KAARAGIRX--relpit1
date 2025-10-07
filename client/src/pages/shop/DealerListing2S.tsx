@@ -167,8 +167,8 @@ const DealerListing2S: React.FC = () => {
 
   // Log the dealers data for debugging
   useEffect(() => {
-    console.log('Dealers data:', dealers);
-  }, []);
+    console.log('Dealers data:', dealerList);
+  }, [dealerList]);
 
   // Log URL parameters for debugging (development only)
   useEffect(() => {

@@ -82,7 +82,11 @@ const CategoryPageOR = () => {
   };
 
   const locations = useMemo(() => {
-    const uniqueLocations = new Set(rentalEquipment.map(item => item.location).filter(Boolean));
+    const uniqueLocations = new Set(
+      rentalEquipment
+        .map(item => item.location)
+        .filter((loc): loc is string => Boolean(loc))
+    );
     return Array.from(uniqueLocations);
   }, [rentalEquipment]);
 
@@ -376,7 +380,7 @@ const CategoryPageOR = () => {
                     </div>
                     
                     <div className="space-y-1 mb-4">
-                      {item.features.slice(0, 2).map((feature, index) => (
+                      {(item.features || []).slice(0, 2).map((feature, index) => (
                         <div key={index} className="text-xs text-muted-foreground flex items-center">
                           <div className="w-1 h-1 bg-orange-500 rounded-full mr-2"></div>
                           {feature}

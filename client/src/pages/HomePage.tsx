@@ -756,8 +756,7 @@ const HomePage = () => {
                     ) : featuredContractors.length > 0 ? (
                       featuredContractors.map((contractor, index) => (
                         <CarouselItem key={contractor.id} className="px-2 sm:pl-2 basis-[280px] sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-                          <Link 
-                            to={`/professionals/${contractor.id}`}
+                          <div 
                             className={`block transition-all duration-300 ${
                               contractorCurrent === index ? 'scale-100' : 'scale-95 opacity-90 hover:opacity-100 hover:scale-[0.98]'
                             }`}
@@ -773,11 +772,8 @@ const HomePage = () => {
                                 isActive={contractorCurrent === index}
                                 className="h-full"
                               />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                                <span className="text-white text-sm font-medium bg-blue-600 px-3 py-1.5 rounded-full">View Profile</span>
-                              </div>
                             </div>
-                          </Link>
+                          </div>
                         </CarouselItem>
                       ))
                     ) : (
@@ -877,8 +873,7 @@ const HomePage = () => {
                     ) : featuredArchitects.length > 0 ? (
                       featuredArchitects.map((architect, index) => (
                         <CarouselItem key={architect.id} className="px-2 sm:pl-2 basis-[280px] sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-                          <Link 
-                            to={`/professionals/${architect.id}`}
+                          <div 
                             className={`block transition-all duration-300 ${
                               architectCurrent === index ? 'scale-100' : 'scale-95 opacity-90 hover:opacity-100 hover:scale-[0.98]'
                             }`}
@@ -894,11 +889,8 @@ const HomePage = () => {
                                 isActive={architectCurrent === index}
                                 className="h-full"
                               />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                                <span className="text-white text-sm font-medium bg-purple-600 px-3 py-1.5 rounded-full">View Profile</span>
-                              </div>
                             </div>
-                          </Link>
+                          </div>
                         </CarouselItem>
                       ))
                     ) : (

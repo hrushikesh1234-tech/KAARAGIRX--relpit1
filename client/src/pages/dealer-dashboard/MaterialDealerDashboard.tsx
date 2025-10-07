@@ -565,23 +565,23 @@ export default function MaterialDealerDashboard() {
         )}
 
         {false && activeTab === "reviews" && reviews.length > 0 && (
-              <div className="space-y-4">
-                {reviews.map((review) => (
-                  <div key={review.id} className="bg-gray-900/50 rounded-lg p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <p className="font-medium">{review.customerName}</p>
-                        <StarRating rating={review.rating} size={14} className="mt-1" />
-                      </div>
-                      <span className="text-xs text-gray-400">
-                        {new Date(review.createdAt).toLocaleDateString()}
-                      </span>
+          <div className="px-4 py-6">
+            <div className="space-y-4">
+              {reviews.map((review) => (
+                <div key={review.id} className="bg-gray-900/50 rounded-lg p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <p className="font-medium">{review.customerName}</p>
+                      <StarRating rating={review.rating} size={14} className="mt-1" />
                     </div>
-                    <p className="text-sm text-gray-300">{review.comment}</p>
+                    <span className="text-xs text-gray-400">
+                      {new Date(review.createdAt).toLocaleDateString()}
+                    </span>
                   </div>
-                ))}
-              </div>
-            )}
+                  <p className="text-sm text-gray-300">{review.comment}</p>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

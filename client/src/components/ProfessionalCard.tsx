@@ -59,9 +59,8 @@ const ProfessionalCard = ({ professional, featured = false }: ProfessionalCardPr
 
   if (featured) {
     return (
-      <Link to={`/professionals/${professional.id}`} className="block">
-        <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:shadow-lg hover:-translate-y-1 cursor-pointer">
-          <div className="relative h-48">
+      <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:shadow-lg hover:-translate-y-1 cursor-pointer">
+        <div className="relative h-48">
           <img 
             src={professional.profileImage || "https://via.placeholder.com/300"} 
             alt={professional.fullName || professional.companyName || ""} 
@@ -119,16 +118,14 @@ const ProfessionalCard = ({ professional, featured = false }: ProfessionalCardPr
               View Profile
             </button>
           </Link>
-          </div>
         </div>
-      </Link>
+      </div>
     );
   }
 
   return (
-    <Link to={`/professionals/${professional.id}`} className="block">
-      <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:shadow-lg hover:-translate-y-1 duration-200 cursor-pointer">
-        <div className="p-6 md:flex">
+    <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:shadow-lg hover:-translate-y-1 duration-200 cursor-pointer">
+      <div className="p-6 md:flex">
         <div className="md:w-1/4 mb-4 md:mb-0 md:mr-6">
           <div className="rounded-lg overflow-hidden h-48 md:h-full">
             <img 
@@ -215,9 +212,8 @@ const ProfessionalCard = ({ professional, featured = false }: ProfessionalCardPr
             </Link>
           </div>
         </div>
-        </div>
       </div>
-    </Link>
+    </div>
   );
 };
 

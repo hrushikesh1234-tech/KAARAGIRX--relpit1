@@ -5,10 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-// Import Lucide icons using require
 import { MapPin, Star, Truck, CheckCircle, ShoppingCart, Heart, ShieldCheck, Home, ShoppingBag } from 'lucide-react';
 import { cn } from "@/lib/utils";
-import { dealers } from "@/data/dealers";
+import { useDealers } from "@/hooks/useDealers";
 
 // Temporary type for dealer until we update the dealers data
 type Dealer = {
@@ -45,6 +44,8 @@ const Shop = () => {
   const { likedItems, addLikedItem, removeLikedItem, isLiked } = useLikedItems();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  
+  const { data: dealers = [], isLoading, error } = useDealers();
 
   // Toggle like status for a dealer
   const toggleLike = (dealer: Dealer, e: React.MouseEvent) => {

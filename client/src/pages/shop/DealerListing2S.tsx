@@ -20,7 +20,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useLikedItems } from '@/contexts/LikedItemsContext';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { dealers } from "@/data/dealers";
+import { useDealers } from "@/hooks/useDealers";
 import type { Dealer } from '@/types/dealer.types';
 import { getFallbackImage } from "@/utils/imageUtils";
 import './styles/scrollbar-hide.css';
@@ -38,9 +38,6 @@ type Subcategory = {
   image: string;
 };
 
-// Initialize dealer list with proper typing
-const dealerList: Dealer[] = [...dealers];
-
 const DealerListing2S: React.FC = () => {
   // Hooks
   const navigate = useNavigate();
@@ -54,6 +51,9 @@ const DealerListing2S: React.FC = () => {
   
   // Get URL parameters
   const { category: categoryParam = '', subcategory: subcategoryParam = '' } = useParams<RouteParams>();
+  
+  // Fetch dealers data
+  const { data: dealerList = [], isLoading, error } = useDealers();
   
   // Context hooks
   const { addToCart, removeFromCart, isItemInCart } = useCart();

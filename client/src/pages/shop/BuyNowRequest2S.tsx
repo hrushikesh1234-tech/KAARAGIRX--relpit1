@@ -5,9 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-// Import Lucide icons using require
 import { ArrowLeft, Loader2, MapPin, Package, Truck, ShoppingCart } from 'lucide-react';
-import { dealers } from "@/data/dealers";
+import { useDealer } from "@/hooks/useDealers";
 import { Dealer } from "@/types";
 import { useCart } from "@/contexts/CartContext";
 
@@ -31,8 +30,7 @@ const BuyNowRequest = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { items, getCartTotal, getItemCount, addToCart } = useCart();
-  const [dealer, setDealer] = useState<Dealer | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: dealer, isLoading } = useDealer(dealerId || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [directBuyItem, setDirectBuyItem] = useState<DirectBuyItem | null>(null);
   
@@ -79,16 +77,6 @@ const BuyNowRequest = () => {
   });
   
   const [errors] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    const foundDealer = dealers.find(d => d.id === parseInt(dealerId || '0'));
-    if (foundDealer) {
-      setDealer(foundDealer);
-    } else {
-      navigate('/dealers');
-    }
-    setIsLoading(false);
-  }, [dealerId, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

@@ -796,32 +796,63 @@ export default function MaterialDealerDashboard() {
             </div>
             <div className="grid gap-2">
               <Label>Product Images (Up to 5)</Label>
-              <p className="text-sm text-gray-400">Select up to 5 images for your material</p>
-              {[0, 1, 2, 3, 4].map((index) => (
-                <div key={index} className="flex gap-2 items-center">
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          const base64String = reader.result as string;
+              <p className="text-sm text-gray-400">Upload images or enter image URLs from your public folder (e.g., /images/materials/...)</p>
+              <div className="space-y-2">
+                {[0, 1, 2, 3, 4].map((index) => (
+                  <div key={index} className="flex gap-2 items-center">
+                    <div className="flex-1 flex gap-2">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            if (file.size > 200000) {
+                              toast({
+                                title: "Image too large",
+                                description: "Please use images under 200KB. Compress your image or use a URL to a hosted image instead.",
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              const base64String = reader.result as string;
+                              const newImages = [...materialForm.images];
+                              newImages[index] = base64String;
+                              setMaterialForm({ ...materialForm, images: newImages, image: newImages[0] || "" });
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                        className="bg-gray-800 border-gray-700 flex-1"
+                      />
+                      <span className="text-gray-500 self-center">OR</span>
+                      <Input
+                        type="text"
+                        placeholder={`URL ${index + 1}`}
+                        value={materialForm.images[index]?.startsWith('data:') ? '' : materialForm.images[index] || ""}
+                        onChange={(e) => {
                           const newImages = [...materialForm.images];
-                          newImages[index] = base64String;
+                          newImages[index] = e.target.value;
                           setMaterialForm({ ...materialForm, images: newImages, image: newImages[0] || "" });
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                    className="bg-gray-800 border-gray-700 flex-1"
-                  />
-                  {materialForm.images[index] && (
-                    <img src={materialForm.images[index]} alt={`Preview ${index + 1}`} className="w-16 h-16 object-cover rounded" />
-                  )}
-                </div>
-              ))}
+                        }}
+                        className="bg-gray-800 border-gray-700 flex-1"
+                      />
+                    </div>
+                    {materialForm.images[index] && (
+                      <img 
+                        src={materialForm.images[index]} 
+                        alt={`Preview ${index + 1}`} 
+                        className="w-16 h-16 object-cover rounded"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
           <DialogFooter>
@@ -946,32 +977,63 @@ export default function MaterialDealerDashboard() {
             </div>
             <div className="grid gap-2">
               <Label>Product Images (Up to 5)</Label>
-              <p className="text-sm text-gray-400">Select up to 5 images for your material</p>
-              {[0, 1, 2, 3, 4].map((index) => (
-                <div key={index} className="flex gap-2 items-center">
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          const base64String = reader.result as string;
+              <p className="text-sm text-gray-400">Upload images or enter image URLs from your public folder (e.g., /images/materials/...)</p>
+              <div className="space-y-2">
+                {[0, 1, 2, 3, 4].map((index) => (
+                  <div key={index} className="flex gap-2 items-center">
+                    <div className="flex-1 flex gap-2">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            if (file.size > 200000) {
+                              toast({
+                                title: "Image too large",
+                                description: "Please use images under 200KB. Compress your image or use a URL to a hosted image instead.",
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              const base64String = reader.result as string;
+                              const newImages = [...materialForm.images];
+                              newImages[index] = base64String;
+                              setMaterialForm({ ...materialForm, images: newImages, image: newImages[0] || "" });
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                        className="bg-gray-800 border-gray-700 flex-1"
+                      />
+                      <span className="text-gray-500 self-center">OR</span>
+                      <Input
+                        type="text"
+                        placeholder={`URL ${index + 1}`}
+                        value={materialForm.images[index]?.startsWith('data:') ? '' : materialForm.images[index] || ""}
+                        onChange={(e) => {
                           const newImages = [...materialForm.images];
-                          newImages[index] = base64String;
+                          newImages[index] = e.target.value;
                           setMaterialForm({ ...materialForm, images: newImages, image: newImages[0] || "" });
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                    className="bg-gray-800 border-gray-700 flex-1"
-                  />
-                  {materialForm.images[index] && (
-                    <img src={materialForm.images[index]} alt={`Preview ${index + 1}`} className="w-16 h-16 object-cover rounded" />
-                  )}
-                </div>
-              ))}
+                        }}
+                        className="bg-gray-800 border-gray-700 flex-1"
+                      />
+                    </div>
+                    {materialForm.images[index] && (
+                      <img 
+                        src={materialForm.images[index]} 
+                        alt={`Preview ${index + 1}`} 
+                        className="w-16 h-16 object-cover rounded"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
           <DialogFooter>

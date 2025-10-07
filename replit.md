@@ -7,6 +7,12 @@ KaaragirX is a full-stack construction marketplace platform designed to connect 
 - None set yet (fresh import)
 
 ## Recent Changes
+- **October 7, 2025**: Fixed material upload to support bulk uploads (up to 5 images at once, 5MB max per image)
+  - Increased Express body parser limit to 50MB to accommodate Base64-encoded images (~33MB for 5×5MB files)
+  - Improved upload logic to find next empty slot instead of overwriting existing images
+- **October 7, 2025**: Fixed professional profiles to display real database data
+  - Added missing API routes for `/api/professionals/:id/reviews` and `/api/bookmarks`
+  - Professionals listing and detail pages now show actual data from PostgreSQL
 - **October 7, 2025**: Added carousel/photo display for material dealer and rental merchant dashboards
 - **October 7, 2025**: Fixed customer registration validation - customers no longer need professional fields
 - **October 7, 2025**: Removed authentication from admin dashboard for direct access

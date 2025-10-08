@@ -159,33 +159,40 @@ const Shop = () => {
   const products: Product[] = useMemo(() => {
     const productMap = new Map<string, Product>();
     
-    dealers.forEach(dealer => {
-      const key = `${dealer.category}-${dealer.subcategory}`;
+    // Use materials data instead of dealers
+    materials.forEach(material => {
+      const key = `${material.category}-${material.subcategory || 'other'}`;
       if (!productMap.has(key)) {
         productMap.set(key, {
           id: key,
-          name: `${dealer.subcategory} ${dealer.category}`,
-          category: dealer.category,
-          subcategory: dealer.subcategory,
-          image: dealer.image,
+          name: material.subcategory ? `${material.subcategory} ${material.category}` : material.category,
+          category: material.category,
+          subcategory: material.subcategory || 'Other',
+          image: material.image || '/images/categories/default.jpg',
           dealers: []
         });
       }
       
-      const product = productMap.get(key)!;
-      const dealerData = {
-        ...dealer,
-        id: dealer.id.toString(),
-        price: dealer.price || 0,
-        rating: dealer.rating || 0,
-        verified: dealer.verified || false,
-        reviewCount: dealer.reviewCount || 0,
-        // Remove any undefined properties to avoid type errors
-        ...(dealer.deliveryTime && { deliveryTime: dealer.deliveryTime })
-      };
-      // Remove the delivery property if it exists
-      const { delivery, ...cleanDealer } = dealerData as any;
-      product.dealers.push(cleanDealer);
+      // Find the dealer for this material
+      const dealer = dealers.find(d => d.id === material.dealerId);
+      
+      if (dealer) {
+        const product = productMap.get(key)!;
+        const dealerData = {
+          ...dealer,
+          id: dealer.id.toString(),
+          price: Number(material.price) || dealer.price || 0,
+          rating: dealer.rating || 0,
+          verified: dealer.verified || false,
+          reviewCount: dealer.reviewCount || 0,
+          unit: material.unit || dealer.unit,
+          // Remove any undefined properties to avoid type errors
+          ...(dealer.deliveryTime && { deliveryTime: dealer.deliveryTime })
+        };
+        // Remove the delivery property if it exists
+        const { delivery, ...cleanDealer } = dealerData as any;
+        product.dealers.push(cleanDealer);
+      }
     });
     
     // Filter by selected location if any
@@ -208,14 +215,14 @@ const Shop = () => {
     }
     
     // Filter by selected subcategory if any
-    if (selectedSubCategory) {
+    if (selectedSubCategory && selectedSubCategory !== 'all') {
       result = result.filter(product => 
         product.subcategory.toLowerCase() === selectedSubCategory.toLowerCase()
       );
     }
     
     return result;
-  }, [dealers, selectedCategory, selectedSubCategory, locationFilter]);
+  }, [materials, dealers, selectedCategory, selectedSubCategory, locationFilter]);
 
 
 
@@ -234,6 +241,8 @@ const Shop = () => {
 
 
   const handleCategoryClick = (categoryId: string) => {
+    setSelectedCategory(categoryId);
+    setSelectedSubCategory('all'); // Reset subcategory when changing category
     const location = searchParams.get('location') || '';
     navigate(`/dealers?category=${categoryId}${location ? `&location=${location}` : ''}`);
   };
@@ -371,14 +380,38 @@ const Shop = () => {
 
           {/* Products Grid */}
           <div className="flex-1">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold">
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold mb-4">
                 {selectedCategory === "all" 
                   ? "All Materials" 
                   : (categoryData[selectedCategory as keyof typeof categoryData]?.name || 'Selected Category')}
-                {selectedSubCategory && ` - ${selectedSubCategory}`}
                 <span className="text-muted-foreground ml-2">({products.length} items)</span>
               </h2>
+              
+              {/* Subcategory Tabs */}
+              {selectedCategory !== "all" && categoryData[selectedCategory as keyof typeof categoryData]?.subcategories.length > 0 && (
+                <div className="flex gap-2 overflow-x-auto pb-2">
+                  <Button
+                    variant={!selectedSubCategory || selectedSubCategory === 'all' ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedSubCategory('all')}
+                    className="whitespace-nowrap"
+                  >
+                    All
+                  </Button>
+                  {categoryData[selectedCategory as keyof typeof categoryData]?.subcategories.map((subcat) => (
+                    <Button
+                      key={subcat}
+                      variant={selectedSubCategory === subcat ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedSubCategory(subcat)}
+                      className="whitespace-nowrap"
+                    >
+                      {subcat}
+                    </Button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

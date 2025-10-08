@@ -181,6 +181,7 @@ export const rentalEquipment = pgTable("rental_equipment", {
   merchantId: integer("merchant_id").notNull().references(() => professionals.id, { onDelete: 'cascade' }),
   name: text("name").notNull(),
   category: text("category").notNull(),
+  subcategory: text("subcategory"),
   description: text("description"),
   dailyRate: decimal("daily_rate", { precision: 10, scale: 2 }).notNull(),
   weeklyRate: decimal("weekly_rate", { precision: 10, scale: 2 }),

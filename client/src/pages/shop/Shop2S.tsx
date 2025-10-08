@@ -1,101 +1,59 @@
 import { useState, useMemo } from "react";
-import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useLikedItems } from "@/contexts/LikedItemsContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, Star, Truck, CheckCircle, ShoppingCart, Heart, ShieldCheck, Home, ShoppingBag } from 'lucide-react';
+import { MapPin, Star, Truck, CheckCircle, ShoppingCart, Heart, ShieldCheck } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { useMaterials } from "@/hooks/useMaterials";
-import { useDealers } from "@/hooks/useDealers";
 
-// Material type from API
-type Material = {
-  id: number;
-  dealerId: number;
-  name: string;
-  category: string;
-  subcategory?: string;
-  description?: string;
-  price: string | number;
-  unit: string;
-  quantity: number;
-  minOrder?: string;
-  image?: string;
-  images?: string[];
-  inStock?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-};
-
-// Temporary type for dealer until we update the dealers data
-type Dealer = {
-  id: string | number;
-  name: string;
-  price: number;
-  rating: number;
-  deliveryTime?: string;
-  location: string;
-  verified: boolean;
-  image: string;
-  reviewCount?: number;
-  category: string;
-  subcategory: string;
-  features: string[];
-  unit?: string;
-};
-
-
-
-interface Product {
-  id: string;
-  name: string;
-  category: string;
-  subcategory: string;
-  image: string;
-  dealers: Dealer[];
-}
+// Import Material type
+import type { Material } from '@/hooks/useMaterials';
 
 const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedSubCategory, setSelectedSubCategory] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
+  const [sortBy, setSortBy] = useState("newest");
   const { likedItems, addLikedItem, removeLikedItem, isLiked } = useLikedItems();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   
   const { data: materials = [], isLoading, error } = useMaterials({
     category: selectedCategory !== 'all' ? selectedCategory : undefined,
     subcategory: selectedSubCategory || undefined,
     inStock: true
   });
-  
-  const { data: dealers = [] } = useDealers();
 
-  // Toggle like status for a dealer
-  const toggleLike = (dealer: Dealer, e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent navigation when clicking the like icon
-    const id = typeof dealer.id === 'number' ? dealer.id.toString() : dealer.id;
+  // Toggle like status for a material
+  const toggleLike = (material: Material, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const id = material.id.toString();
     
     if (isLiked(id)) {
       removeLikedItem(id);
     } else {
       addLikedItem({
         id,
-        name: dealer.name,
-        price: dealer.price || 0,
-        unit: dealer.unit || 'unit',
-        image: dealer.image,
-        dealerName: dealer.name,
-        dealerId: id
+        name: material.name,
+        price: Number(material.price) || 0,
+        unit: material.unit || 'unit',
+        image: material.image || '',
+        dealerName: material.dealerName || '',
+        dealerId: material.dealerId.toString()
       });
     }
   };
 
   const locations = useMemo(() => {
-    return ['All Locations', ...new Set(dealers.map(dealer => dealer.location).filter(Boolean as any))];
-  }, [dealers]);
+    const uniqueLocations = new Set(
+      materials
+        .map(m => m.dealerLocation)
+        .filter((loc): loc is string => Boolean(loc))
+    );
+    return ['All Locations', ...Array.from(uniqueLocations)];
+  }, [materials]);
 
   const categoryData = {
     "all": { name: "All Materials", count: 45, subcategories: [], image: "/images/categories/cement.jpg" },
@@ -156,330 +114,315 @@ const Shop = () => {
       ...data
     }));
 
-  const products: Product[] = useMemo(() => {
-    const productMap = new Map<string, Product>();
+  // Filter and sort materials
+  const filteredMaterials = useMemo(() => {
+    let result = [...materials];
     
-    // Use materials data instead of dealers
-    materials.forEach(material => {
-      const key = `${material.category}-${material.subcategory || 'other'}`;
-      if (!productMap.has(key)) {
-        productMap.set(key, {
-          id: key,
-          name: material.subcategory ? `${material.subcategory} ${material.category}` : material.category,
-          category: material.category,
-          subcategory: material.subcategory || 'Other',
-          image: material.image || '/images/categories/default.jpg',
-          dealers: []
-        });
-      }
-      
-      // Find the dealer for this material
-      const dealer = dealers.find(d => d.id === material.dealerId);
-      
-      if (dealer) {
-        const product = productMap.get(key)!;
-        const dealerData = {
-          ...dealer,
-          id: dealer.id.toString(),
-          price: Number(material.price) || dealer.price || 0,
-          rating: dealer.rating || 0,
-          verified: dealer.verified || false,
-          reviewCount: dealer.reviewCount || 0,
-          unit: material.unit || dealer.unit,
-          // Remove any undefined properties to avoid type errors
-          ...(dealer.deliveryTime && { deliveryTime: dealer.deliveryTime })
-        };
-        // Remove the delivery property if it exists
-        const { delivery, ...cleanDealer } = dealerData as any;
-        product.dealers.push(cleanDealer);
-      }
-    });
-    
-    // Filter by selected location if any
-    let result = Array.from(productMap.values());
-    
-    if (locationFilter) {
-      result = result.map(product => ({
-        ...product,
-        dealers: product.dealers.filter(dealer => 
-          dealer.location.toLowerCase().includes(locationFilter.toLowerCase())
-        )
-      })).filter(product => product.dealers.length > 0);
+    // Filter by location
+    if (locationFilter && locationFilter !== 'All Locations') {
+      result = result.filter(material => 
+        material.dealerLocation?.toLowerCase().includes(locationFilter.toLowerCase())
+      );
     }
     
-    // Filter by selected category if any
+    // Filter by category
     if (selectedCategory && selectedCategory !== 'all') {
-      result = result.filter(product => 
-        product.category.toLowerCase() === selectedCategory.toLowerCase()
+      result = result.filter(material => 
+        material.category.toLowerCase() === selectedCategory.toLowerCase()
       );
     }
     
-    // Filter by selected subcategory if any
+    // Filter by subcategory
     if (selectedSubCategory && selectedSubCategory !== 'all') {
-      result = result.filter(product => 
-        product.subcategory.toLowerCase() === selectedSubCategory.toLowerCase()
+      result = result.filter(material => 
+        material.subcategory?.toLowerCase() === selectedSubCategory.toLowerCase()
       );
+    }
+    
+    // Sort materials
+    switch (sortBy) {
+      case 'price-low':
+        result.sort((a, b) => Number(a.price) - Number(b.price));
+        break;
+      case 'price-high':
+        result.sort((a, b) => Number(b.price) - Number(a.price));
+        break;
+      case 'dealer-name':
+        result.sort((a, b) => (a.dealerName || '').localeCompare(b.dealerName || ''));
+        break;
+      case 'rating':
+        result.sort((a, b) => Number(b.dealerRating || 0) - Number(a.dealerRating || 0));
+        break;
+      case 'newest':
+      default:
+        result.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        });
     }
     
     return result;
-  }, [materials, dealers, selectedCategory, selectedSubCategory, locationFilter]);
+  }, [materials, selectedCategory, selectedSubCategory, locationFilter, sortBy]);
 
-
-
-  const handleBuyRequest = (product: Product, dealer: Dealer) => {
-    const dealerId = typeof dealer.id === 'number' ? dealer.id.toString() : dealer.id;
-    navigate(`/dealer/${dealerId}`);
-  };
-  
-
-
-  // Location filter is handled by the Select component
   const handleLocationChange = (value: string) => {
     setLocationFilter(value === "All Locations" ? "" : value);
   };
 
-
-
   const handleCategoryClick = (categoryId: string) => {
     setSelectedCategory(categoryId);
-    setSelectedSubCategory('all'); // Reset subcategory when changing category
-    const location = searchParams.get('location') || '';
-    navigate(`/dealers?category=${categoryId}${location ? `&location=${location}` : ''}`);
+    setSelectedSubCategory('all');
+  };
+
+  const handleMaterialClick = (material: Material) => {
+    navigate(`/dealer/${material.dealerId}`);
   };
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Main Content */}
       <div className="flex-1 overflow-y-auto w-full">
         {/* Floating Cart and Heart Icons */}
         <div className="fixed top-20 right-4 z-50 flex flex-col gap-2">
-        <Button 
-          size="icon" 
-          className="rounded-full shadow-lg bg-primary hover:bg-primary/90 relative"
-          onClick={() => navigate('/cart')}
-        >
-          <ShoppingCart className="h-5 w-5" />
-        </Button>
-        <Button 
-          size="icon" 
-          variant="outline" 
-          className="rounded-full shadow-lg bg-white hover:bg-gray-50 relative"
-          onClick={() => navigate('/liked-items')}
-        >
-          <Heart className="h-5 w-5" />
-          {likedItems.length > 0 && (
-            <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500">
-              {likedItems.length}
-            </Badge>
-          )}
-        </Button>
-      </div>
+          <Button 
+            size="icon" 
+            className="rounded-full shadow-lg bg-primary hover:bg-primary/90 relative"
+            onClick={() => navigate('/cart')}
+          >
+            <ShoppingCart className="h-5 w-5" />
+          </Button>
+          <Button 
+            size="icon" 
+            variant="outline" 
+            className="rounded-full shadow-lg bg-white hover:bg-gray-50 relative"
+            onClick={() => navigate('/liked-items')}
+          >
+            <Heart className="h-5 w-5" />
+            {likedItems.length > 0 && (
+              <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500">
+                {likedItems.length}
+              </Badge>
+            )}
+          </Button>
+        </div>
 
-      {/* Hero Section with Background Image */}
-      <div 
-        className="relative h-96 flex items-center justify-center bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: "url('/images/hero/shop-hero-section.png')",
-        }}
-      >
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-black/40"></div>
-        
-        {/* Hero Content */}
-        <div className="relative z-10 w-full max-w-4xl px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-12">
-            Find Construction Materials
-          </h1>
+        {/* Hero Section */}
+        <div 
+          className="relative h-96 flex items-center justify-center bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: "url('/images/hero/shop-hero-section.png')",
+          }}
+        >
+          <div className="absolute inset-0 bg-black/40"></div>
           
-          {/* Location Selector */}
-          <div className="max-w-xs mx-auto space-y-2">
-            <p className="text-white text-lg font-medium mb-2">Select your location</p>
-            <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-200 h-5 w-5" />
-              <Select value={locationFilter || 'All Locations'} onValueChange={handleLocationChange}>
-                <SelectTrigger className="pl-10 bg-white/10 border-white/30 text-white backdrop-blur-sm h-12 w-full">
-                  <SelectValue placeholder="Choose location..." className="text-white placeholder-gray-300" />
-                </SelectTrigger>
-                <SelectContent className="bg-white">
-                  {locations.map((location) => (
-                    <SelectItem key={location} value={location}>
-                      {location}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <div className="relative z-10 w-full max-w-4xl px-4 text-center">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-12">
+              Find Construction Materials
+            </h1>
+            
+            <div className="max-w-xs mx-auto space-y-2">
+              <p className="text-white text-lg font-medium mb-2">Select your location</p>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-200 h-5 w-5" />
+                <Select value={locationFilter || 'All Locations'} onValueChange={handleLocationChange}>
+                  <SelectTrigger className="pl-10 bg-white/10 border-white/30 text-white backdrop-blur-sm h-12 w-full">
+                    <SelectValue placeholder="Choose location..." className="text-white placeholder-gray-300" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    {locations.map((location) => (
+                      <SelectItem key={location} value={location}>
+                        {location}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-8 pb-24">
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Categories Sidebar */}
-          <div className="lg:w-80 space-y-4">
-            <Card>
-              <CardHeader>
-                <h3 className="font-semibold">Categories</h3>
-              </CardHeader>
-              <CardContent className="p-4">
-                <div className="grid grid-cols-2 gap-3">
-                  {categories.map((category) => (
-                    <div key={category.id} className="space-y-2">
-                      <button
-                        onClick={() => handleCategoryClick(category.id)}
-                        className={cn(
-                          "w-full rounded-lg border-2 overflow-hidden hover:shadow-md transition-all",
-                          selectedCategory === category.id ? "border-blue-600" : "border-gray-200"
-                        )}
-                      >
-                        <div className="aspect-square bg-gray-100 flex items-center justify-center">
-                          {category.image ? (
-                            <img
-                              src={category.image}
-                              alt={category.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="text-gray-400 text-2xl">📦</div>
+        {/* Main Content */}
+        <div className="container mx-auto px-4 py-8 pb-24">
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Categories Sidebar */}
+            <div className="lg:w-80 space-y-4">
+              <Card>
+                <CardHeader>
+                  <h3 className="font-semibold">Categories</h3>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    {categories.map((category) => (
+                      <div key={category.id} className="space-y-2">
+                        <button
+                          onClick={() => handleCategoryClick(category.id)}
+                          className={cn(
+                            "w-full rounded-lg border-2 overflow-hidden hover:shadow-md transition-all",
+                            selectedCategory === category.id ? "border-blue-600" : "border-gray-200"
                           )}
-                        </div>
-                        <div className="p-2 bg-white">
-                          <div className="flex items-center justify-center">
-                            <span className="text-xs font-medium">{category.name}</span>
+                        >
+                          <div className="aspect-square bg-gray-100 flex items-center justify-center">
+                            {category.image ? (
+                              <img
+                                src={category.image}
+                                alt={category.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="text-gray-400 text-2xl">📦</div>
+                            )}
                           </div>
-                        </div>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-            
-            {/* Trust Badges - Hidden on mobile */}
-            <Card className="hidden lg:block">
-              <CardHeader>
-                <h3 className="font-semibold">Why Choose Us?</h3>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-green-600" />
-                  <span className="text-sm">Verified Dealers</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Truck className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm">Fast Delivery</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Star className="h-4 w-4 text-yellow-600" />
-                  <span className="text-sm">Quality Assured</span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Products Grid */}
-          <div className="flex-1">
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-4">
-                {selectedCategory === "all" 
-                  ? "All Materials" 
-                  : (categoryData[selectedCategory as keyof typeof categoryData]?.name || 'Selected Category')}
-                <span className="text-muted-foreground ml-2">({products.length} items)</span>
-              </h2>
+                          <div className="p-2 bg-white">
+                            <div className="flex items-center justify-center">
+                              <span className="text-xs font-medium">{category.name}</span>
+                            </div>
+                          </div>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
               
-              {/* Subcategory Tabs */}
-              {selectedCategory !== "all" && categoryData[selectedCategory as keyof typeof categoryData]?.subcategories.length > 0 && (
-                <div className="flex gap-2 overflow-x-auto pb-2">
-                  <Button
-                    variant={!selectedSubCategory || selectedSubCategory === 'all' ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedSubCategory('all')}
-                    className="whitespace-nowrap"
-                  >
-                    All
-                  </Button>
-                  {categoryData[selectedCategory as keyof typeof categoryData]?.subcategories.map((subcat) => (
-                    <Button
-                      key={subcat}
-                      variant={selectedSubCategory === subcat ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setSelectedSubCategory(subcat)}
-                      className="whitespace-nowrap"
-                    >
-                      {subcat}
-                    </Button>
-                  ))}
-                </div>
-              )}
+              <Card className="hidden lg:block">
+                <CardHeader>
+                  <h3 className="font-semibold">Why Choose Us?</h3>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4 text-green-600" />
+                    <span className="text-sm">Verified Dealers</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Truck className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm">Fast Delivery</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="h-4 w-4 text-yellow-600" />
+                    <span className="text-sm">Quality Assured</span>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {products.length > 0 ? (
-                products.map((product) => (
-                  <Card 
-                    key={product.id} 
-                    className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-200"
-                    onClick={() => navigate(`/dealers?category=${product.category}&subcategory=${product.subcategory}`)}
-                  >
-                    <div className="relative h-48 overflow-hidden group">
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <button 
-                        className="absolute top-2 right-2 p-2 bg-white/80 rounded-full hover:bg-white transition-colors"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // Toggle like for all dealers in this product
-                          product.dealers.forEach(dealer => {
-                            toggleLike(dealer, e);
-                          });
-                        }}
+            {/* Materials Grid */}
+            <div className="flex-1">
+              <div className="mb-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold">
+                    {selectedCategory === "all" 
+                      ? "All Materials" 
+                      : (categoryData[selectedCategory as keyof typeof categoryData]?.name || 'Selected Category')}
+                    <span className="text-muted-foreground ml-2">({filteredMaterials.length} items)</span>
+                  </h2>
+                  
+                  {/* Sort By */}
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Sort by..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="newest">Newest First</SelectItem>
+                      <SelectItem value="price-low">Price: Low to High</SelectItem>
+                      <SelectItem value="price-high">Price: High to Low</SelectItem>
+                      <SelectItem value="dealer-name">Dealer Name</SelectItem>
+                      <SelectItem value="rating">Highest Rated</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {/* Subcategory Tabs */}
+                {selectedCategory !== "all" && categoryData[selectedCategory as keyof typeof categoryData]?.subcategories.length > 0 && (
+                  <div className="flex gap-2 overflow-x-auto pb-2">
+                    <Button
+                      variant={!selectedSubCategory || selectedSubCategory === 'all' ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedSubCategory('all')}
+                      className="whitespace-nowrap"
+                    >
+                      All
+                    </Button>
+                    {categoryData[selectedCategory as keyof typeof categoryData]?.subcategories.map((subcat) => (
+                      <Button
+                        key={subcat}
+                        variant={selectedSubCategory === subcat ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setSelectedSubCategory(subcat)}
+                        className="whitespace-nowrap"
                       >
-                        <Heart 
-                          className={`h-5 w-5 ${product.dealers.some(d => isLiked(d.id.toString())) ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} 
+                        {subcat}
+                      </Button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredMaterials.length > 0 ? (
+                  filteredMaterials.map((material) => (
+                    <Card 
+                      key={material.id} 
+                      className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-200"
+                      onClick={() => handleMaterialClick(material)}
+                    >
+                      <div className="relative h-48 overflow-hidden group">
+                        <img
+                          src={material.image || '/images/categories/default.jpg'}
+                          alt={material.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
-                      </button>
-                    </div>
-                    <CardHeader>
-                      <h3 className="text-lg font-semibold">{product.name}</h3>
-                      <div className="flex items-center text-sm text-gray-500">
-                        <MapPin className="h-4 w-4 mr-1" />
-                        {product.dealers.length} Dealers Available
+                        <button 
+                          className="absolute top-2 right-2 p-2 bg-white/80 rounded-full hover:bg-white transition-colors"
+                          onClick={(e) => toggleLike(material, e)}
+                        >
+                          <Heart 
+                            className={`h-5 w-5 ${isLiked(material.id.toString()) ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} 
+                          />
+                        </button>
+                        {material.subcategory && (
+                          <Badge className="absolute top-2 left-2 bg-white/90 text-gray-800">
+                            {material.subcategory}
+                          </Badge>
+                        )}
                       </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        {product.dealers.slice(0, 2).map((dealer) => (
-                          <div 
-                            key={dealer.id} 
-                            className="flex items-center justify-between p-2 border rounded hover:bg-gray-50 cursor-pointer transition-colors"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const dealerId = typeof dealer.id === 'number' ? dealer.id.toString() : dealer.id;
-                              navigate(`/dealer/${dealerId}`);
-                            }}
-                          >
+                      <CardHeader className="pb-3">
+                        <h3 className="text-lg font-semibold">{material.name}</h3>
+                        <div className="flex items-center justify-between mt-2">
+                          <div className="text-2xl font-bold text-green-600">
+                            ₹{Number(material.price).toLocaleString()}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            per {material.unit}
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0 space-y-3">
+                        {material.minOrder && (
+                          <div className="text-sm text-gray-600">
+                            Min Order: {material.minOrder}
+                          </div>
+                        )}
+                        
+                        {/* Dealer Information */}
+                        <div className="pt-3 border-t">
+                          <div className="flex items-start justify-between">
                             <div className="flex-1">
-                              <div className="flex items-center">
-                                <span className="font-medium">{dealer.name}</span>
-                                {dealer.verified && (
-                                  <CheckCircle className="h-4 w-4 ml-1 text-green-500" />
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium text-sm">{material.dealerName || 'Unknown Dealer'}</span>
+                                {material.dealerVerified && (
+                                  <CheckCircle className="h-4 w-4 text-green-500" />
                                 )}
                               </div>
-                              <div className="flex items-center text-sm text-gray-500">
+                              <div className="flex items-center text-xs text-gray-500 mt-1">
                                 <MapPin className="h-3 w-3 mr-1" />
-                                {dealer.location}
+                                {material.dealerLocation || 'Location not specified'}
                               </div>
-                              <div className="flex items-center">
+                              <div className="flex items-center mt-1">
                                 <div className="flex">
                                   {[...Array(5)].map((_, i) => (
                                     <Star
                                       key={i}
-                                      className={`h-4 w-4 ${
-                                        i < Math.floor(dealer.rating || 0)
+                                      className={`h-3 w-3 ${
+                                        i < Math.floor(Number(material.dealerRating) || 0)
                                           ? 'text-yellow-400 fill-current'
                                           : 'text-gray-300'
                                       }`}
@@ -487,100 +430,78 @@ const Shop = () => {
                                   ))}
                                 </div>
                                 <span className="text-xs text-gray-500 ml-1">
-                                  ({dealer.reviewCount || 0})
+                                  ({material.dealerReviewCount || 0})
                                 </span>
                               </div>
                             </div>
-                            <div className="text-right ml-2">
-                              <div className="flex items-center justify-end gap-2">
-                                <button 
-                                  className="p-1 hover:bg-gray-100 rounded-full"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleLike(dealer, e);
-                                  }}
-                                >
-                                  <Heart 
-                                    className={`h-4 w-4 ${isLiked(dealer.id.toString()) ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} 
-                                  />
-                                </button>
-                                <div>
-                                  <div className="font-bold">₹{dealer.price}</div>
-                                  <div className="text-xs text-gray-500">per unit</div>
-                                </div>
-                              </div>
-                              <Button 
-                                size="sm" 
-                                className="mt-2"
-                                variant="outline"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleBuyRequest(product, dealer);
-                                }}
-                              >
-                                View Details
-                              </Button>
-                            </div>
                           </div>
-                        ))}
-                      </div>
-                      {product.dealers.length > 2 && (
-                        <div className="text-center text-sm text-blue-600">
-                          +{product.dealers.length - 2} more dealers available
                         </div>
-                      )}
-                    </CardContent>
-                    <CardFooter className="border-t pt-4">
-                      <Link to={`/dealers?category=${product.category}&subcategory=${product.subcategory}`} className="w-full">
-                        <Button variant="outline" className="w-full">
-                          View All Dealers
+                      </CardContent>
+                      <CardFooter className="border-t pt-4 gap-2">
+                        <Button 
+                          variant="outline" 
+                          className="flex-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate('/cart');
+                          }}
+                        >
+                          <ShoppingCart className="h-4 w-4 mr-2" />
+                          Add to Cart
                         </Button>
-                      </Link>
-                    </CardFooter>
-                  </Card>
-                ))
-              ) : (
-                <div className="col-span-full text-center py-12">
-                  <p className="text-gray-500">No products found matching your criteria.</p>
-                  <Button 
-                    variant="outline" 
-                    className="mt-4"
-                    onClick={() => {
-                      setSelectedCategory('all');
-                      setSelectedSubCategory('');
-                      setLocationFilter('');
-                    }}
-                  >
-                    Clear Filters
-                  </Button>
-                </div>
-              )}
+                        <Button 
+                          className="flex-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMaterialClick(material);
+                          }}
+                        >
+                          View Details
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-12">
+                    <p className="text-gray-500">No materials found matching your criteria.</p>
+                    <Button 
+                      variant="outline" 
+                      className="mt-4"
+                      onClick={() => {
+                        setSelectedCategory('all');
+                        setSelectedSubCategory('');
+                        setLocationFilter('');
+                      }}
+                    >
+                      Clear Filters
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
+
+          {/* Trust Badges for Mobile */}
+          <Card className="lg:hidden mt-8">
+            <CardHeader>
+              <h3 className="font-semibold">Why Choose Us?</h3>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-green-600" />
+                <span className="text-sm">Verified Dealers</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Truck className="h-4 w-4 text-blue-600" />
+                <span className="text-sm">Fast Delivery</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Star className="h-4 w-4 text-yellow-600" />
+                <span className="text-sm">Quality Assured</span>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-
-        {/* Trust Badges for Mobile - at bottom */}
-        <Card className="lg:hidden mt-8">
-          <CardHeader>
-            <h3 className="font-semibold">Why Choose Us?</h3>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-green-600" />
-              <span className="text-sm">Verified Dealers</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Truck className="h-4 w-4 text-blue-600" />
-              <span className="text-sm">Fast Delivery</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Star className="h-4 w-4 text-yellow-600" />
-              <span className="text-sm">Quality Assured</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       </div>
     </div>
   );

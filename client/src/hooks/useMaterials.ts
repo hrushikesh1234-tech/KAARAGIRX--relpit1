@@ -1,18 +1,29 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-interface Material {
+export interface Material {
   id: number;
   dealerId: number;
   name: string;
   category: string;
-  subcategory: string;
-  price: number;
+  subcategory?: string;
+  price: number | string;
   unit: string;
+  quantity?: number;
+  minOrder?: string;
   description?: string;
-  inStock: boolean;
+  inStock?: boolean;
   image?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+  images?: string[];
+  specifications?: Record<string, string>;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+  // Dealer info from API join
+  dealerName?: string;
+  dealerLocation?: string;
+  dealerRating?: string | number;
+  dealerReviewCount?: number;
+  dealerVerified?: boolean;
+  dealerImage?: string;
 }
 
 interface MaterialFilters {

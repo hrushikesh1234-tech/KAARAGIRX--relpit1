@@ -1,25 +1,39 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-interface RentalEquipment {
+export interface RentalEquipment {
   id: number;
   merchantId: number;
   name: string;
   category: string;
-  subcategory: string;
-  price: number | string;
-  period: string;
+  subcategory?: string;
   description?: string;
-  available?: boolean;
+  dailyRate: string | number;
+  weeklyRate?: string | number;
+  monthlyRate?: string | number;
+  securityDeposit?: string | number;
+  quantity?: number;
+  available?: number;
   availability?: string;
   image?: string;
-  features?: string[];
-  location?: string;
+  images?: string[];
+  specifications?: Record<string, string>;
+  condition?: string;
+  minRentalPeriod?: string;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+  // Merchant info from API join
+  merchantName?: string;
+  merchantLocation?: string;
+  merchantRating?: string | number;
+  merchantReviewCount?: number;
+  // Formatted fields from API
   supplier?: string;
-  supplierName?: string;
+  location?: string;
+  price?: string;
+  period?: string;
   rating?: number;
   reviews?: number;
-  createdAt?: Date;
-  updatedAt?: Date;
+  features?: string[];
 }
 
 interface RentalEquipmentFilters {

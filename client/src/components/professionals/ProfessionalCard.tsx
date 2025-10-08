@@ -96,9 +96,11 @@ export function ProfessionalCard({
         </div>
         
         {/* About */}
-        <p className="text-xs text-gray-600 line-clamp-2 mb-3 flex-grow">
-          {professional.about || 'Experienced professional with a proven track record of quality work.'}
-        </p>
+        {professional.about && (
+          <p className="text-xs text-gray-600 line-clamp-2 mb-3 flex-grow">
+            {professional.about}
+          </p>
+        )}
         
         {/* Stats */}
         <div className="grid grid-cols-3 gap-2 text-center mb-3 bg-gray-50 p-2 rounded-lg">
@@ -108,7 +110,7 @@ export function ProfessionalCard({
           </div>
           <div className="border-x border-gray-200">
             <div className="text-sm font-semibold text-gray-900">
-              {professional.reviewCount || '24'}
+              {professional.reviewCount || 0}
             </div>
             <div className="text-[10px] text-gray-500">Reviews</div>
           </div>

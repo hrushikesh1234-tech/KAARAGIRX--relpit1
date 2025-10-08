@@ -324,8 +324,8 @@ const ProfessionalsListingPage = () => {
         
         {/* Results List */}
         <div className="grid gap-6 md:grid-cols-2">
-          {professionals.length > 0 ? (
-            professionals.map((professional) => (
+          {filteredProfessionals.length > 0 ? (
+            filteredProfessionals.map((professional) => (
               <ProfessionalCard 
                 key={professional.id} 
                 professional={professional}

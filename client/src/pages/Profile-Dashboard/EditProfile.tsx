@@ -1,9 +1,12 @@
 
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChevronDown, ArrowLeft, Camera, X, Plus, Trash2, Star } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
+import { useAuth } from '@/contexts/AuthContext';
+import { useProfessionalProjects, useCreateProject, useDeleteProject } from '@/hooks/useProjects';
+import { useToast } from '@/hooks/use-toast';
 
 interface Portfolio {
   id: number;
@@ -35,31 +38,46 @@ interface EditProfileProps {
 }
 
 const EditProfile: React.FC<EditProfileProps> = ({ onBack, onSave, initialData }) => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [professionalId, setProfessionalId] = useState<number | null>(null);
+  
   const [profileImage, setProfileImage] = useState(initialData?.profileImage || '/lovable-uploads/1c8904bf-5b78-4e55-88ea-dc5028083eef.png');
   const [bio, setBio] = useState(initialData?.bio || '💫 ✨🎵✨ Hrushikesh More ✨🎵✨ 💫');
   const [occupation, setOccupation] = useState(initialData?.occupation || '👨‍💻 Computer Engineer');
   const [additionalInfo, setAdditionalInfo] = useState(initialData?.additionalInfo || '🎧 Music in My Soul... more');
   
-  const [portfolios, setPortfolios] = useState<Portfolio[]>(initialData?.portfolios || [
-    {
-      id: 1,
-      title: 'Hrushi Live Part-1',
-      views: '1,311',
-      thumbnail: 'https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=600&fit=crop',
-      mediaCount: 5,
-      description: 'Live performance featuring acoustic guitar and vocals with audience interaction.',
-      category: 'Live Performance'
-    },
-    {
-      id: 2,
-      title: 'Hrushi Live Part-2',
-      views: '1,449',
-      thumbnail: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=400&h=600&fit=crop',
-      mediaCount: 3,
-      description: 'Continuation of the live session with electronic music elements.',
-      category: 'Live Performance'
-    }
-  ]);
+  const { data: projects = [], isLoading: projectsLoading } = useProfessionalProjects(professionalId || undefined);
+  const createProjectMutation = useCreateProject();
+  const deleteProjectMutation = useDeleteProject();
+  
+  useEffect(() => {
+    const fetchProfessional = async () => {
+      if (user && (user.userType === 'contractor' || user.userType === 'architect')) {
+        try {
+          const response = await fetch(`/api/professionals/user/${user.id}`);
+          if (response.ok) {
+            const professional = await response.json();
+            setProfessionalId(professional.id);
+          }
+        } catch (error) {
+          console.error('Error fetching professional:', error);
+        }
+      }
+    };
+    
+    fetchProfessional();
+  }, [user]);
+  
+  const portfolios = projects.map(p => ({
+    id: p.id,
+    title: p.title,
+    views: '0',
+    thumbnail: p.coverImage || '',
+    mediaCount: p.images?.length || 0,
+    description: p.description || '',
+    category: p.type
+  }));
 
   const [aboutInfo, setAboutInfo] = useState<AboutInfo>(initialData?.aboutInfo || {
     profession: '🎵 Music Producer & Sound Engineer',
@@ -110,35 +128,49 @@ const EditProfile: React.FC<EditProfileProps> = ({ onBack, onSave, initialData }
     setProfileImage('');
   };
 
-  const handleAddPortfolio = () => {
-    if (newPortfolio.title && newPortfolio.thumbnail) {
-      const portfolio: Portfolio = {
-        id: Date.now(),
-        title: newPortfolio.title,
-        views: '0',
-        thumbnail: newPortfolio.thumbnail,
-        mediaCount: newPortfolio.mediaCount,
-        description: newPortfolio.description,
-        category: newPortfolio.category,
-        bhk: newPortfolio.bhk,
-        buildDate: newPortfolio.buildDate,
-        budget: newPortfolio.budget,
-        specifications: [...newPortfolio.specifications]
-      };
-      setPortfolios(prev => [...prev, portfolio]);
-      setNewPortfolio({ 
-        title: '', 
-        thumbnail: '', 
-        mediaCount: 1, 
-        description: '', 
-        category: '',
-        bhk: '',
-        buildDate: '',
-        budget: '',
-        specifications: [],
-        specificationInput: ''
-      });
-      setShowAddPortfolio(false);
+  const handleAddPortfolio = async () => {
+    if (newPortfolio.title && newPortfolio.thumbnail && professionalId) {
+      try {
+        await createProjectMutation.mutateAsync({
+          professionalId,
+          title: newPortfolio.title,
+          name: newPortfolio.title,
+          description: newPortfolio.description,
+          propertyType: 'Residential',
+          type: newPortfolio.category || 'General',
+          budget: newPortfolio.budget,
+          completionYear: newPortfolio.buildDate,
+          completionDate: newPortfolio.buildDate,
+          bhk: newPortfolio.bhk ? parseInt(newPortfolio.bhk) : undefined,
+          coverImage: newPortfolio.thumbnail,
+          images: [newPortfolio.thumbnail]
+        });
+        
+        setNewPortfolio({ 
+          title: '', 
+          thumbnail: '', 
+          mediaCount: 1, 
+          description: '', 
+          category: '',
+          bhk: '',
+          buildDate: '',
+          budget: '',
+          specifications: [],
+          specificationInput: ''
+        });
+        setShowAddPortfolio(false);
+        
+        toast({
+          title: "Success",
+          description: "Portfolio added successfully",
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to add portfolio",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -159,8 +191,23 @@ const EditProfile: React.FC<EditProfileProps> = ({ onBack, onSave, initialData }
     }));
   };
 
-  const handleDeletePortfolio = (id: number) => {
-    setPortfolios(prev => prev.filter(p => p.id !== id));
+  const handleDeletePortfolio = async (id: number) => {
+    if (professionalId) {
+      try {
+        await deleteProjectMutation.mutateAsync({ id, professionalId });
+        
+        toast({
+          title: "Success",
+          description: "Portfolio deleted successfully",
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to delete portfolio",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   const handleSave = () => {

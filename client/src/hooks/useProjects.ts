@@ -96,14 +96,11 @@ export const useProfessionalProjects = (professionalId?: string | number) => {
     queryFn: async () => {
       if (!professionalId) return [];
       
-      // For now, return mock data
-      return Object.values(mockProjects).filter(
-        project => project.professionalId === Number(professionalId)
-      );
-      
-      // In the future, this would be an API call
-      // const response = await api.get(`/professionals/${professionalId}/projects`);
-      // return response.data;
+      const response = await fetch(`/api/projects/professional/${professionalId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch professional projects');
+      }
+      return response.json() as Promise<Project[]>;
     },
     enabled: !!professionalId
   });
@@ -115,12 +112,19 @@ export const useCreateProject = () => {
   
   return useMutation({
     mutationFn: async (projectData: Partial<Project>) => {
-      // This would be an API call in the future
-      // const response = await api.post('/projects', projectData);
-      // return response.data;
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(projectData),
+      });
       
-      // For now, just return the data
-      return { ...projectData, id: Date.now() };
+      if (!response.ok) {
+        throw new Error('Failed to create project');
+      }
+      
+      return response.json() as Promise<Project>;
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['professionalProjects', data.professionalId] });
@@ -134,12 +138,19 @@ export const useUpdateProject = () => {
   
   return useMutation({
     mutationFn: async ({ id, ...projectData }: Partial<Project> & { id: number }) => {
-      // This would be an API call in the future
-      // const response = await api.put(`/projects/${id}`, projectData);
-      // return response.data;
+      const response = await fetch(`/api/projects/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(projectData),
+      });
       
-      // For now, just return the data
-      return { ...projectData, id };
+      if (!response.ok) {
+        throw new Error('Failed to update project');
+      }
+      
+      return response.json() as Promise<Project>;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['project', String(data.id)] });
@@ -154,10 +165,14 @@ export const useDeleteProject = () => {
   
   return useMutation({
     mutationFn: async ({ id, professionalId }: { id: number, professionalId: number }) => {
-      // This would be an API call in the future
-      // await api.delete(`/projects/${id}`);
+      const response = await fetch(`/api/projects/${id}`, {
+        method: 'DELETE',
+      });
       
-      // For now, just return success
+      if (!response.ok) {
+        throw new Error('Failed to delete project');
+      }
+      
       return { success: true, id, professionalId };
     },
     onSuccess: (data) => {

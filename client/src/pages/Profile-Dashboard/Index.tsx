@@ -9,6 +9,7 @@ import Carousel, { Card as CardComponent } from '@/components/ui/apple-cards-car
 import ImageSlider from '@/components/ui/ImageSlider';
 import type { CardProps } from '@/components/ui/apple-cards-carousel';
 import { useAuth } from '@/contexts/AuthContext';
+import { apiRequest } from '@/lib/queryClient';
 
 interface PortfolioItem {
   id: string;
@@ -65,197 +66,18 @@ const Index = () => {
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [selectedReel, setSelectedReel] = useState<PortfolioItem | null>(null);
   const [isTabsSticky, setIsTabsSticky] = useState(false);
-  const [reviewCount, setReviewCount] = useState(30);
+  const [reviewCount, setReviewCount] = useState(0);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [newReview, setNewReview] = useState({ rating: 5, comment: '', author: 'You' });
+  const [loading, setLoading] = useState(true);
+  const [professionalData, setProfessionalData] = useState<any>(null);
   
   // For now, assume this is always the user's own profile
   // In the future, compare route params with user.id
   const isOwnProfile = true;
   
-  // Sample reviews data
-  const [reviews, setReviews] = useState<Review[]>([
-    {
-      id: 1,
-      author: 'Sarah M.',
-      rating: 5,
-      comment: 'Amazing live performance! Energy was incredible.'
-    },
-    {
-      id: 2,
-      author: 'Mike R.',
-      rating: 5,
-      comment: 'Professional sound engineering. Highly recommended!'
-    },
-    {
-      id: 3,
-      author: 'Lisa K.',
-      rating: 4,
-      comment: 'Great music production quality. Will work with again!'
-    },
-    {
-      id: 4,
-      author: 'James D.',
-      rating: 5,
-      comment: 'Exceptional talent and professionalism. The studio session was perfectly managed.'
-    },
-    {
-      id: 5,
-      author: 'Alex T.',
-      rating: 5,
-      comment: 'Incredible musician with a unique sound. Loved every performance!'
-    },
-    {
-      id: 6,
-      author: 'Priya K.',
-      rating: 5,
-      comment: 'The energy in their live shows is unmatched. A must-see artist!'
-    },
-    {
-      id: 7,
-      author: 'Carlos M.',
-      rating: 4,
-      comment: 'Great stage presence and connection with the audience.'
-    },
-    {
-      id: 8,
-      author: 'Emma W.',
-      rating: 5,
-      comment: 'Their music speaks to the soul. Truly talented artist!'
-    },
-    {
-      id: 9,
-      author: 'David L.',
-      rating: 5,
-      comment: 'Professional and talented. The studio quality is top-notch.'
-    },
-    {
-      id: 10,
-      author: 'Nina P.',
-      rating: 4,
-      comment: 'Love the creativity in their compositions. Always fresh and exciting!'
-    },
-    {
-      id: 11,
-      author: 'Raj K.',
-      rating: 5,
-      comment: 'One of the best live performers I\'ve ever seen. The energy is electric!'
-    },
-    {
-      id: 12,
-      author: 'Sophia M.',
-      rating: 5,
-      comment: 'Their music has been the soundtrack to my life lately. Absolutely brilliant!'
-    },
-    {
-      id: 13,
-      author: 'Miguel R.',
-      rating: 4,
-      comment: 'Great technical skills and stage presence. A true professional.'
-    },
-    {
-      id: 14,
-      author: 'Aisha B.',
-      rating: 5,
-      comment: 'The way they connect with the audience is magical. Never disappoints!'
-    },
-    {
-      id: 15,
-      author: 'Ethan K.',
-      rating: 5,
-      comment: 'Incredible talent and versatility. Every track is a masterpiece!'
-    },
-    {
-      id: 16,
-      author: 'Lena M.',
-      rating: 4,
-      comment: 'Love their unique sound and style. Always pushing boundaries!'
-    },
-    {
-      id: 17,
-      author: 'Oliver T.',
-      rating: 5,
-      comment: 'The production quality is always top-notch. A true professional!'
-    },
-    {
-      id: 18,
-      author: 'Zoe W.',
-      rating: 5,
-      comment: 'Their music has a way of touching your soul. Absolutely beautiful!'
-    },
-    {
-      id: 19,
-      author: 'Daniel K.',
-      rating: 4,
-      comment: 'Great energy and stage presence. Always a pleasure to watch!'
-    },
-    {
-      id: 20,
-      author: 'Maya P.',
-      rating: 5,
-      comment: 'The way they blend different genres is simply amazing!'
-    },
-    {
-      id: 21,
-      author: 'Leo M.',
-      rating: 5,
-      comment: 'A true artist in every sense of the word. Always delivers!'
-    },
-    {
-      id: 22,
-      author: 'Ivy L.',
-      rating: 4,
-      comment: 'Love the creativity and passion in every performance.'
-    },
-    {
-      id: 23,
-      author: 'Max R.',
-      rating: 5,
-      comment: 'Their music has a way of making you feel things. Absolutely brilliant!'
-    },
-    {
-      id: 24,
-      author: 'Luna S.',
-      rating: 5,
-      comment: 'The energy they bring to the stage is contagious!'
-    },
-    {
-      id: 25,
-      author: 'Noah K.',
-      rating: 4,
-      comment: 'Great sound and stage presence. Always a pleasure to watch!'
-    },
-    {
-      id: 26,
-      author: 'Mia T.',
-      rating: 5,
-      comment: 'Their music speaks to my soul. Absolutely love it!'
-    },
-    {
-      id: 27,
-      author: 'Eli J.',
-      rating: 5,
-      comment: 'Incredible talent and professionalism. Always delivers!'
-    },
-    {
-      id: 28,
-      author: 'Ava M.',
-      rating: 4,
-      comment: 'Love the energy and passion in their performances!'
-    },
-    {
-      id: 29,
-      author: 'Liam C.',
-      rating: 5,
-      comment: 'One of the most talented artists I\'ve come across. Amazing!'
-    },
-    {
-      id: 30,
-      author: 'Isla R.',
-      rating: 5,
-      comment: 'Their music has been on repeat all week. Absolutely love it!'
-    }
-  ]);
+  // Reviews data - fetched from database
+  const [reviews, setReviews] = useState<Review[]>([]);
   
   // Calculate average rating
   const calculateAverageRating = (reviews: Review[]): number => {
@@ -297,285 +119,107 @@ const Index = () => {
   };
 
   const [profileData, setProfileData] = useState(() => updateMediaCounts({
-    username: 'hrushikesh_mo...',
-    displayName: 'hrushikesh0️⃣0️⃣2️⃣5️⃣',
-    bio: '💫 ✨🎵✨ Hrushikesh More ✨🎵✨ 💫',
-    occupation: '👨‍💻 Computer Engineer',
-    additionalInfo: '🎧 Music in My Soul... more',
+    username: user?.username || '',
+    displayName: user?.fullName || '',
+    bio: '',
+    occupation: '',
+    additionalInfo: '',
     stats: {
-      posts: 69,
-      followers: 431,
-      following: 451
+      posts: 0,
+      followers: 0,
+      following: 0
     },
-    profileImage: '/profile-pic-/1.jpg',
-    isLive: true,
-    portfolios: [
-      {
-        id: 1,
-        title: 'Modern Bungalow Design',
-        views: '1,234',
-        thumbnail: '/Portfolio-banglow-images/1-A.png',
-        mediaCount: 0, // Will be calculated automatically
-        images: [
-          '/Portfolio-banglow-images/1-A.png',
-          '/Portfolio-banglow-images/1-B.png',
-          '/Portfolio-banglow-images/1-C.png',
-          '/Portfolio-banglow-images/1-D.png',
-          
-        ],
-        description: 'A stunning modern bungalow design featuring clean lines, large windows, and an open floor plan. This 4,500 sq.ft. residence includes 4 bedrooms, 5.5 bathrooms, a gourmet kitchen, infinity pool, and smart home automation throughout.',
-        category: 'Modern Architecture',
-        bhk: '4 BHK',
-        buildDate: 'March 2023',
-        budget: '₹4.5 Cr',
-        specifications: [
-          'Plot Area: 10,000 sq.ft',
-          'Built-up Area: 4,500 sq.ft',
-          '4 Bedrooms with Ensuite Bathrooms',
-          'Home Theater & Gym',
-          'Infinity Pool with Deck',
-          'Smart Home Automation',
-          'Solar Panel System',
-          'Landscaped Garden',
-          '3-Car Garage',
-          'Rainwater Harvesting System'
-        ]
-      },
-      {
-        id: 2,
-        title: 'Luxury Villa Project',
-        views: '2,345',
-        thumbnail: '/Portfolio-banglow-images/2-A.png',
-        mediaCount: 0, // Will be calculated automatically
-        images: [
-          '/Portfolio-banglow-images/2-A.png',
-          '/Portfolio-banglow-images/2-B.png',
-          '/Portfolio-banglow-images/2-C.png',
-          '/Portfolio-banglow-images/2-D.png',
-          '/Portfolio-banglow-images/2-E.png',
-        
-        ],
-        description: 'This elegant 8,000 sq.ft luxury villa showcases contemporary design elements with premium finishes throughout. The property features 5 spacious bedrooms, a private home theater, temperature-controlled wine cellar, and a stunning rooftop terrace with panoramic views.',
-        category: 'Luxury Villa',
-        bhk: '5 BHK',
-        buildDate: 'November 2022',
-        budget: '₹8.2 Cr',
-        specifications: [
-          'Plot Area: 15,000 sq.ft',
-          'Built-up Area: 8,000 sq.ft',
-          '5 Bedrooms with Walk-in Closets',
-          'Private Home Theater',
-          'Temperature-Controlled Wine Cellar',
-          'Rooftop Terrace with Jacuzzi',
-          'Smart Home System',
-          'Landscaped Gardens with Water Features',
-          '4-Car Garage',
-          'Staff Quarters'
-        ]
-      },
-      {
-        id: 3,
-        title: 'Beachfront Property',
-        views: '3,456',
-        thumbnail: '/Portfolio-banglow-images/3-A.png',
-        mediaCount: 0, // Will be calculated automatically
-        images: [
-          '/Portfolio-banglow-images/3-A.png',
-          '/Portfolio-banglow-images/3-B.png',
-          '/Portfolio-banglow-images/3-C.png',
-          '/Portfolio-banglow-images/3-D.png',
-          '/Portfolio-banglow-images/3-E.png',
-          '/Portfolio-banglow-images/3-F.png',
-          
-        ],
-        description: 'Experience luxury coastal living in this 6,500 sq.ft beachfront property featuring panoramic ocean views, floor-to-ceiling windows, and seamless indoor-outdoor living spaces. The property includes 6 bedrooms, an infinity pool overlooking the sea, and direct beach access.',
-        category: 'Beach House',
-        bhk: '6 BHK',
-        buildDate: 'August 2022',
-        budget: '₹12.75 Cr',
-        specifications: [
-          'Beachfront Plot: 20,000 sq.ft',
-          'Built-up Area: 6,500 sq.ft',
-          '6 Bedrooms with Ocean Views',
-          'Infinity Pool with Beach Access',
-          'Outdoor Dining & Bar Area',
-          'Storm-Proof Glass Windows',
-          'Private Boat Dock',
-          'Solar & Wind Power System',
-          'Underground Parking for 6 Cars',
-          'Private Beach Deck'
-        ]
-      },
-      {
-        id: 4,
-        title: 'Mountain View Cabin',
-        views: '1,890',
-        thumbnail: '/Portfolio-banglow-images/4-A.png',
-        mediaCount: 0, // Will be calculated automatically
-        images: [
-          '/Portfolio-banglow-images/4-A.png',
-          '/Portfolio-banglow-images/4-B.png',
-          '/Portfolio-banglow-images/4-C.png',
-          '/Portfolio-banglow-images/4-D.png',
-          
-        ],
-        description: 'Escape to this 3,200 sq.ft mountain retreat featuring a perfect blend of rustic charm and modern amenities. The cabin offers 3 bedrooms, floor-to-ceiling windows showcasing mountain vistas, a stone fireplace, and a wrap-around deck for ultimate relaxation.',
-        category: 'Mountain Cabin',
-        bhk: '3 BHK',
-        buildDate: 'June 2023',
-        budget: '₹3.8 Cr',
-        specifications: [
-          'Plot Area: 25,000 sq.ft',
-          'Built-up Area: 3,200 sq.ft',
-          '3 Bedrooms with Fireplace',
-          'Great Room with Vaulted Ceiling',
-          'Hot Tub on Deck',
-          'Energy-Efficient Design',
-          'Wood-Burning Fireplace',
-          'Garage & Workshop',
-          'Hiking Trails Access',
-          'Solar Power System'
-        ]
-      },
-      {
-        id: 5,
-        title: 'Urban Penthouse',
-        views: '3,210',
-        thumbnail: '/Portfolio-banglow-images/5-A.png',
-        mediaCount: 0, // Will be calculated automatically
-        images: [
-          '/Portfolio-banglow-images/5-A.png',
-          '/Portfolio-banglow-images/5-B.png',
-          '/Portfolio-banglow-images/5-C.png',
-          '/Portfolio-banglow-images/5-D.png',
-          '/Portfolio-banglow-images/5-E.png',
-          
-        ],
-        description: 'This 2,800 sq.ft urban penthouse offers luxurious city living with floor-to-ceiling windows, high-end finishes, and panoramic city views. The open-concept design features 2 bedrooms, a chef\'s kitchen, and a spacious terrace with an outdoor kitchen and hot tub.',
-        category: 'Penthouse',
-        bhk: '2 BHK',
-        buildDate: 'January 2023',
-        budget: '₹5.9 Cr',
-        specifications: [
-          'Total Area: 2,800 sq.ft',
-          '2 Bedrooms with Ensuite Bathrooms',
-          'Open-Concept Living Area',
-          'Chef\'s Kitchen with Island',
-          'Floor-to-Ceiling Windows',
-          'Smart Home Technology',
-          'Building Amenities Access',
-          '24/7 Security & Concierge',
-          'Underground Parking (2 Spaces)',
-          'Private Balcony with City Views'
-        ]
-      },
-      {
-        id: 6,
-        title: 'Countryside Estate',
-        views: '2,100',
-        thumbnail: '/Portfolio-banglow-images/6-A.png',
-        mediaCount: 0, // Will be calculated automatically
-        images: [
-          '/Portfolio-banglow-images/6-A.png',
-          '/Portfolio-banglow-images/6-B.png',
-          '/Portfolio-banglow-images/6-C.png',
-          '/Portfolio-banglow-images/6-D.png',
-          '/Portfolio-banglow-images/6-E.png',
-          '/Portfolio-banglow-images/6-F.png',
-          '/Portfolio-banglow-images/6-G.png'
-        ],
-        description: 'This 7,500 sq.ft countryside estate combines traditional farmhouse aesthetics with modern luxury. The property features 5 bedrooms, a chef\'s kitchen, wraparound porch, and sits on 5 acres of landscaped gardens with a private lake and guest cottage.',
-        category: 'Farmhouse',
-        bhk: '5 BHK',
-        buildDate: 'September 2022',
-        budget: '₹9.8 Cr',
-        specifications: [
-          'Land Area: 5 Acres',
-          'Main House: 7,500 sq.ft',
-          'Guest Cottage: 1,200 sq.ft',
-          '5 Bedrooms with Ensuite Baths',
-          'Chef\'s Kitchen with Butlers Pantry',
-          'Private Lake with Dock',
-          'Wraparound Porch',
-          'Heated Pool & Pool House',
-          '6-Car Garage',
-          'Orchard & Vegetable Garden'
-        ]
-      },
-      {
-        id: 7,
-        title: 'Hilltop Retreat',
-        views: '2,455',
-        thumbnail: '/Portfolio-banglow-images/7-A.png',
-        mediaCount: 0, // Will be calculated automatically
-        images: [
-          '/Portfolio-banglow-images/7-A.png',
-          '/Portfolio-banglow-images/7-B.png',
-          '/Portfolio-banglow-images/7-C.png',
-          '/Portfolio-banglow-images/7-D.png',
-          '/Portfolio-banglow-images/7-E.png'
-        ],
-        description: 'Perched on a private hilltop, this 6,800 sq.ft retreat offers 360-degree views of the surrounding landscape. The property features 4 en-suite bedrooms, a home theater, wine cellar, and an infinity pool that appears to merge with the horizon.',
-        category: 'Luxury Villa',
-        bhk: '4 BHK',
-        buildDate: 'May 2023',
-        budget: '₹11.2 Cr',
-        specifications: [
-          'Plot Area: 3 Acres',
-          'Built-up Area: 6,800 sq.ft',
-          '4 Bedroom Suites',
-          'Infinity Pool with Glass Walls',
-          'Home Theater & Game Room',
-          'Temperature-Controlled Wine Cellar',
-          'Panoramic Elevator',
-          'Helipad Access',
-          '4-Car Garage',
-          'Smart Home System'
-        ]
-      },
-      {
-        id: 8,
-        title: 'Minimalist Bungalow',
-        views: '4,120',
-        thumbnail: '/Portfolio-banglow-images/8-A.png',
-        mediaCount: 0, // Will be calculated automatically
-        images: [
-          '/Portfolio-banglow-images/8-A.png',
-          '/Portfolio-banglow-images/8-B.png',
-          '/Portfolio-banglow-images/8-C.png',
-          '/Portfolio-banglow-images/8-D.png',
-          '/Portfolio-banglow-images/8-F.png',
-          '/Portfolio-banglow-images/8-G.png',
-          '/Portfolio-banglow-images/8-H.png',
-        
-        ],
-        description: 'This 3,500 sq.ft minimalist bungalow is a study in clean lines, open spaces, and natural materials. The home features 3 bedrooms, an open-plan living area, floor-to-ceiling windows, and a seamless connection to the outdoor living spaces and koi pond.',
-        category: 'Minimalist Design',
-        bhk: '3 BHK',
-        buildDate: 'February 2023',
-        budget: '₹4.9 Cr',
-        specifications: [
-          'Plot Area: 8,000 sq.ft',
-          'Built-up Area: 3,500 sq.ft',
-          '3 Bedrooms with Built-in Storage',
-          'Open-Plan Living Area',
-          'Japanese-Inspired Garden',
-          'Solar Panel System',
-          'Underfloor Heating',
-          '2-Car Carport',
-          'Outdoor Shower',
-          'Smart Lighting System'
-        ]
-      }
-    ],
+    profileImage: '/api/placeholder/100/100',
+    isLive: false,
+    portfolios: [],
     aboutInfo: {
-      profession: '🎵 Music Producer & Sound Engineer',
-      experience: '5+ years in music production and live performances',
-      skills: ['Music Production', 'Sound Engineering', 'Live Performance', 'Multi-instrumentalist'],
-      location: '📍 Based in Mumbai, India',
-      contact: 'hrushikesh.more@email.com'
+      profession: '',
+      experience: '',
+      skills: [],
+      location: '',
+      contact: ''
     }
   }));
+
+  // Fetch professional data and reviews from database
+  useEffect(() => {
+    const fetchProfessionalData = async () => {
+      if (!user?.id) return;
+
+      try {
+        setLoading(true);
+
+        // Fetch professional profile
+        const professionalResponse = await apiRequest('GET', `/api/professionals/user/${user.id}`);
+        const professional = await professionalResponse.json();
+        
+        // Fetch projects (portfolio)
+        const projectsResponse = await apiRequest('GET', `/api/projects/professional/${professional.id}`);
+        const projects = await projectsResponse.json() || [];
+
+        // Fetch reviews
+        const reviewsResponse = await apiRequest('GET', `/api/professionals/reviews/user/${user.id}`);
+        const fetchedReviews = await reviewsResponse.json() || [];
+
+        // Transform projects data to portfolio format
+        const portfolios = projects.map((project: any) => ({
+          id: project.id.toString(),
+          title: project.title || project.name,
+          views: '0',
+          thumbnail: project.coverImage || (project.images?.[0]) || '/api/placeholder/400/300',
+          mediaCount: project.images?.length || 0,
+          images: project.images || [],
+          description: project.description || '',
+          category: project.propertyType || project.type || '',
+          bhk: project.bhk ? `${project.bhk} BHK` : '',
+          buildDate: project.completionDate || project.completionYear || '',
+          budget: project.budget || '',
+          specifications: []
+        }));
+
+        // Transform reviews data
+        const transformedReviews = fetchedReviews.map((review: any) => ({
+          id: review.id,
+          author: review.user?.fullName || 'Anonymous',
+          rating: review.rating,
+          comment: review.content || ''
+        }));
+
+        // Update profile data
+        setProfileData(updateMediaCounts({
+          username: user.username || '',
+          displayName: user.fullName || '',
+          bio: professional.about || '',
+          occupation: professional.profession || '',
+          additionalInfo: `Experience: ${professional.experience || 0} years`,
+          stats: {
+            posts: projects.length,
+            followers: 0,
+            following: 0
+          },
+          profileImage: professional.profileImage || '/api/placeholder/100/100',
+          isLive: professional.availability === 'Available',
+          portfolios: portfolios,
+          aboutInfo: {
+            profession: professional.profession || '',
+            experience: professional.experience ? `${professional.experience} years` : '',
+            skills: professional.specializations || [],
+            location: professional.location || '',
+            contact: professional.phone || user.email || ''
+          }
+        }));
+
+        setReviews(transformedReviews);
+        setReviewCount(transformedReviews.length);
+      } catch (error) {
+        console.error('Error fetching professional data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfessionalData();
+  }, [user?.id]);
 
   // Handle scroll to make tabs sticky
   useEffect(() => {
@@ -766,6 +410,7 @@ const Index = () => {
             onEditProfile={handleEditProfile}
             averageRating={averageRating}
             reviewCount={reviewCount}
+            isOwnProfile={isOwnProfile}
           />
         </div>
         
@@ -845,16 +490,7 @@ const Index = () => {
                   <StarRating rating={averageRating} maxRating={5} size={24} />
                   <span className="text-white font-semibold">{averageRating.toFixed(1)} out of 5</span>
                 </div>
-                <p className="text-gray-400 text-sm mb-4">Based on {reviewCount} reviews</p>
-                <button 
-                  onClick={() => setShowReviewForm(true)}
-                  className="px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2 mx-auto"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                  Give your review
-                </button>
+                <p className="text-gray-400 text-sm">Based on {reviewCount} reviews</p>
               </div>
               
               {/* Review Form Modal */}

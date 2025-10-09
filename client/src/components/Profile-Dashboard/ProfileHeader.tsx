@@ -23,13 +23,15 @@ interface ProfileHeaderProps {
   onEditProfile: () => void;
   averageRating: number;
   reviewCount: number;
+  isOwnProfile?: boolean;
 }
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({ 
   profileData, 
   onEditProfile,
   averageRating,
-  reviewCount 
+  reviewCount,
+  isOwnProfile = false
 }) => {
   const [isFollowing, setIsFollowing] = useState(false);
 
@@ -108,10 +110,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           {/* Action buttons */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full">
             <div className="flex w-full sm:w-auto items-center gap-8">
-            <div className="text-center">
-              <div className="text-base font-semibold text-gray-100">{profileData.stats.followers}</div>
-              <div className="text-[11px] text-gray-400 font-medium">followers</div>
-            </div>
+            {/* Only show friends for own profile */}
             <div className="flex items-center gap-2">
               <div className="text-center">
                 <div className="text-base font-semibold text-gray-100">{profileData.stats.following}</div>
@@ -156,32 +155,35 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               </div>
             </div>
             </div>
-            <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-end">
-              <button
-                onClick={handleFollowClick}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap flex-1 sm:flex-none text-center ${
-                  isFollowing
-                    ? 'bg-gradient-to-r from-gray-700 to-gray-600 hover:from-gray-600 hover:to-gray-500 text-gray-100 shadow-md'
-                    : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white shadow-lg shadow-blue-500/30'
-                }`}
-              >
-                {isFollowing ? (
-                  <span className="flex items-center justify-center gap-1">
-                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                    Friends
-                  </span>
-                ) : 'Follow'}
-              </button>
-              <button
-                onClick={handleMessageClick}
-                className="px-3.5 py-1.5 rounded-lg text-xs font-medium bg-gradient-to-r from-gray-800 to-gray-700 hover:from-gray-700 hover:to-gray-600 text-gray-100 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-1.5 shadow-md flex-1 sm:flex-none"
-              >
-                <MessageSquare size={13} className="flex-shrink-0" />
-                <span>Message</span>
-              </button>
-            </div>
+            {/* Only show follow and message buttons if not own profile */}
+            {!isOwnProfile && (
+              <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-end">
+                <button
+                  onClick={handleFollowClick}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap flex-1 sm:flex-none text-center ${
+                    isFollowing
+                      ? 'bg-gradient-to-r from-gray-700 to-gray-600 hover:from-gray-600 hover:to-gray-500 text-gray-100 shadow-md'
+                      : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white shadow-lg shadow-blue-500/30'
+                  }`}
+                >
+                  {isFollowing ? (
+                    <span className="flex items-center justify-center gap-1">
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      Friends
+                    </span>
+                  ) : 'Follow'}
+                </button>
+                <button
+                  onClick={handleMessageClick}
+                  className="px-3.5 py-1.5 rounded-lg text-xs font-medium bg-gradient-to-r from-gray-800 to-gray-700 hover:from-gray-700 hover:to-gray-600 text-gray-100 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-1.5 shadow-md flex-1 sm:flex-none"
+                >
+                  <MessageSquare size={13} className="flex-shrink-0" />
+                  <span>Message</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

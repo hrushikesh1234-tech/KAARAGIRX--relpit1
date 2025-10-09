@@ -1,4 +1,4 @@
-import { professionals, projects, reviews, type Professional, type Project } from "../../shared/schema";
+import { professionals, projects, reviews, users, type Professional, type Project } from "../../shared/schema";
 import { db } from "../config/database";
 import { eq, and, or, like, desc } from "drizzle-orm";
 
@@ -56,8 +56,59 @@ export class ProfessionalService {
     }
 
     let query = conditions.length > 0
-      ? db.select().from(professionals).where(and(...conditions)).orderBy(desc(professionals.rating))
-      : db.select().from(professionals).orderBy(desc(professionals.rating));
+      ? db.select({
+          id: professionals.id,
+          userId: professionals.userId,
+          companyName: professionals.companyName,
+          address: professionals.address,
+          pincode: professionals.pincode,
+          phone: professionals.phone,
+          profession: professionals.profession,
+          experience: professionals.experience,
+          profileImage: professionals.profileImage,
+          about: professionals.about,
+          rating: professionals.rating,
+          reviewCount: professionals.reviewCount,
+          location: professionals.location,
+          specializations: professionals.specializations,
+          isVerified: professionals.isVerified,
+          isFeatured: professionals.isFeatured,
+          availability: professionals.availability,
+          completedProjects: professionals.completedProjects,
+          responseTime: professionals.responseTime,
+          createdAt: professionals.createdAt,
+          updatedAt: professionals.updatedAt,
+          fullName: users.fullName
+        }).from(professionals)
+          .leftJoin(users, eq(professionals.userId, users.id))
+          .where(and(...conditions))
+          .orderBy(desc(professionals.rating))
+      : db.select({
+          id: professionals.id,
+          userId: professionals.userId,
+          companyName: professionals.companyName,
+          address: professionals.address,
+          pincode: professionals.pincode,
+          phone: professionals.phone,
+          profession: professionals.profession,
+          experience: professionals.experience,
+          profileImage: professionals.profileImage,
+          about: professionals.about,
+          rating: professionals.rating,
+          reviewCount: professionals.reviewCount,
+          location: professionals.location,
+          specializations: professionals.specializations,
+          isVerified: professionals.isVerified,
+          isFeatured: professionals.isFeatured,
+          availability: professionals.availability,
+          completedProjects: professionals.completedProjects,
+          responseTime: professionals.responseTime,
+          createdAt: professionals.createdAt,
+          updatedAt: professionals.updatedAt,
+          fullName: users.fullName
+        }).from(professionals)
+          .leftJoin(users, eq(professionals.userId, users.id))
+          .orderBy(desc(professionals.rating));
     
     const result = filters.limit 
       ? await query.limit(filters.limit)

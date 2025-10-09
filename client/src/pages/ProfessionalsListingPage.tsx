@@ -325,12 +325,20 @@ const ProfessionalsListingPage = () => {
         {/* Results List */}
         <div className="grid gap-6 md:grid-cols-2">
           {filteredProfessionals.length > 0 ? (
-            filteredProfessionals.map((professional) => (
-              <ProfessionalCard 
-                key={professional.id} 
-                professional={professional}
-              />
-            ))
+            filteredProfessionals.map((professional) => {
+              const portfolioImages = professional.projects
+                ?.filter(p => p.coverImage)
+                .map(p => p.coverImage as string)
+                .slice(0, 3) || [];
+              
+              return (
+                <ProfessionalCard 
+                  key={professional.id} 
+                  professional={professional}
+                  portfolioImages={portfolioImages}
+                />
+              );
+            })
           ) : (
             <div className="bg-gray-800/30 p-6 rounded-xl border border-gray-700/50 col-span-2 text-center">
               <p className="text-gray-300">No professionals found matching your criteria.</p>

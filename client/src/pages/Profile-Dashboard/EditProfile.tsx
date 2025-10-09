@@ -2,10 +2,10 @@
 import React, { useState, ChangeEvent, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown, ArrowLeft, Camera, X, Plus, Trash2, Star } from 'lucide-react';
+import { ChevronDown, ArrowLeft, Camera, X, Plus, Trash2, Star, Edit } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
-import { useProfessionalProjects, useCreateProject, useDeleteProject } from '@/hooks/useProjects';
+import { useProfessionalProjects, useCreateProject, useDeleteProject, useUpdateProject } from '@/hooks/useProjects';
 import { useToast } from '@/hooks/use-toast';
 
 interface Portfolio {
@@ -50,6 +50,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ onBack, onSave, initialData }
   const { data: projects = [], isLoading: projectsLoading } = useProfessionalProjects(professionalId || undefined);
   const createProjectMutation = useCreateProject();
   const deleteProjectMutation = useDeleteProject();
+  const updateProjectMutation = useUpdateProject();
   
   useEffect(() => {
     const fetchProfessional = async () => {
@@ -101,6 +102,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ onBack, onSave, initialData }
   });
 
   const [showAddPortfolio, setShowAddPortfolio] = useState(false);
+  const [editingPortfolioId, setEditingPortfolioId] = useState<number | null>(null);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -208,6 +210,91 @@ const EditProfile: React.FC<EditProfileProps> = ({ onBack, onSave, initialData }
         });
       }
     }
+  };
+
+  const handleEditPortfolio = (portfolio: Portfolio) => {
+    const project = projects.find(p => p.id === portfolio.id);
+    if (project) {
+      setNewPortfolio({
+        title: project.title,
+        thumbnail: project.coverImage || '',
+        mediaCount: project.images?.length || 1,
+        description: project.description || '',
+        category: project.type,
+        bhk: project.bhk?.toString() || '',
+        buildDate: project.completionDate || '',
+        budget: typeof project.budget === 'number' ? project.budget.toString() : (project.budget || ''),
+        specifications: [],
+        specificationInput: ''
+      });
+      setEditingPortfolioId(portfolio.id);
+      setShowAddPortfolio(true);
+    }
+  };
+
+  const handleUpdatePortfolio = async () => {
+    if (editingPortfolioId && newPortfolio.title && newPortfolio.thumbnail && professionalId) {
+      try {
+        await updateProjectMutation.mutateAsync({
+          id: editingPortfolioId,
+          professionalId,
+          title: newPortfolio.title,
+          name: newPortfolio.title,
+          description: newPortfolio.description,
+          propertyType: 'Residential',
+          type: newPortfolio.category || 'General',
+          budget: newPortfolio.budget,
+          completionYear: newPortfolio.buildDate,
+          completionDate: newPortfolio.buildDate,
+          bhk: newPortfolio.bhk ? parseInt(newPortfolio.bhk) : undefined,
+          coverImage: newPortfolio.thumbnail,
+          images: [newPortfolio.thumbnail]
+        });
+        
+        setNewPortfolio({ 
+          title: '', 
+          thumbnail: '', 
+          mediaCount: 1, 
+          description: '', 
+          category: '',
+          bhk: '',
+          buildDate: '',
+          budget: '',
+          specifications: [],
+          specificationInput: ''
+        });
+        setShowAddPortfolio(false);
+        setEditingPortfolioId(null);
+        
+        toast({
+          title: "Success",
+          description: "Portfolio updated successfully",
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to update portfolio",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setNewPortfolio({ 
+      title: '', 
+      thumbnail: '', 
+      mediaCount: 1, 
+      description: '', 
+      category: '',
+      bhk: '',
+      buildDate: '',
+      budget: '',
+      specifications: [],
+      specificationInput: ''
+    });
+    setShowAddPortfolio(false);
+    setEditingPortfolioId(null);
   };
 
   const handleSave = () => {
@@ -363,11 +450,17 @@ const EditProfile: React.FC<EditProfileProps> = ({ onBack, onSave, initialData }
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold">Portfolio Management</h3>
               <Button
-                onClick={() => setShowAddPortfolio(!showAddPortfolio)}
+                onClick={() => {
+                  if (showAddPortfolio) {
+                    handleCancelEdit();
+                  } else {
+                    setShowAddPortfolio(true);
+                  }
+                }}
                 className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 text-sm flex items-center gap-2"
               >
                 <Plus size={16} />
-                {showAddPortfolio ? 'Close' : 'Add Portfolio'}
+                {showAddPortfolio ? 'Close' : (editingPortfolioId ? 'Close Edit' : 'Add Portfolio')}
               </Button>
             </div>
             
@@ -375,7 +468,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ onBack, onSave, initialData }
             {showAddPortfolio && (
               <div className="mt-4 w-full">
                 <div className="bg-gray-800 p-4 rounded-lg space-y-4 border border-gray-700 shadow-lg">
-                  <h4 className="font-medium">Add New Portfolio</h4>
+                  <h4 className="font-medium">{editingPortfolioId ? 'Edit Portfolio' : 'Add New Portfolio'}</h4>
                   
                   <div className="space-y-4">
                     <div>
@@ -498,13 +591,13 @@ const EditProfile: React.FC<EditProfileProps> = ({ onBack, onSave, initialData }
 
                     <div className="flex gap-2 pt-4">
                       <Button
-                        onClick={handleAddPortfolio}
+                        onClick={editingPortfolioId ? handleUpdatePortfolio : handleAddPortfolio}
                         className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm"
                       >
-                        Add Portfolio
+                        {editingPortfolioId ? 'Update Portfolio' : 'Add Portfolio'}
                       </Button>
                       <Button
-                        onClick={() => setShowAddPortfolio(false)}
+                        onClick={handleCancelEdit}
                         className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 text-sm"
                       >
                         Cancel
@@ -530,12 +623,20 @@ const EditProfile: React.FC<EditProfileProps> = ({ onBack, onSave, initialData }
                   <p className="text-sm text-gray-400">{portfolio.category}</p>
                   <p className="text-xs text-gray-500">{portfolio.mediaCount} media files</p>
                 </div>
-                <button
-                  onClick={() => handleDeletePortfolio(portfolio.id)}
-                  className="p-2 hover:bg-red-500 rounded-full text-red-400 hover:text-white"
-                >
-                  <Trash2 size={16} />
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEditPortfolio(portfolio)}
+                    className="p-2 hover:bg-blue-500 rounded-full text-blue-400 hover:text-white"
+                  >
+                    <Edit size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleDeletePortfolio(portfolio.id)}
+                    className="p-2 hover:bg-red-500 rounded-full text-red-400 hover:text-white"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>

@@ -45,6 +45,7 @@ const BookingsListOR = lazy(() => import("@/pages/onrent/BookingsListOR"));
 const HomePage = lazy(() => import("@/pages/HomePage"));
 const ProfileDashboard = lazy(() => import("@/pages/Profile-Dashboard/Index"));
 const ProfessionalsListingPage = lazy(() => import("@/pages/ProfessionalsListingPage"));
+const PublicProfessionalProfile = lazy(() => import("@/pages/PublicProfessionalProfile"));
 const LoginPage = lazy(() => import("@/pages/LoginPage"));
 const RegisterPage = lazy(() => import("@/pages/RegisterPage"));
 const AboutUsPage = lazy(() => import("@/pages/AboutUsPage"));
@@ -162,7 +163,7 @@ function AppRoutes() {
           
           {/* Professionals */}
           <Route path="/professionals" element={<ProfessionalsListingPage />} />
-          <Route path="/professionals/:id" element={<ProfessionalProfilePage />} />
+          <Route path="/professionals/:id" element={<PublicProfessionalProfile />} />
           <Route path="/projects/:id/:professionalId" element={<ProjectPage />} />
           
           {/* Authentication */}

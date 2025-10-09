@@ -7,8 +7,10 @@ import ReelsGrid from '@/components/Profile-Dashboard/ReelsGrid';
 import StarRating from '@/components/Profile-Dashboard/StarRating';
 import ImageSlider from '@/components/ui/ImageSlider';
 import { useAuth } from '@/contexts/AuthContext';
-import { useProfessional, useProfessionalReviews } from '@/hooks/useProfessionals';
+import { useProfessional, useProfessionalReviews, useCreateReview } from '@/hooks/useProfessionals';
 import { useProfessionalProjects } from '@/hooks/useProjects';
+import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
 
 interface PortfolioItem {
   id: string;
@@ -33,14 +35,20 @@ interface Review {
 const PublicProfessionalProfile = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('portfolio');
   const [selectedReel, setSelectedReel] = useState<PortfolioItem | null>(null);
   const [reviewCount, setReviewCount] = useState(0);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
 
   // Fetch professional data
   const { data: professional, isLoading: loadingProfessional } = useProfessional(id);
   const { data: professionalReviews = [], isLoading: loadingReviews } = useProfessionalReviews(id);
   const { data: projects = [], isLoading: loadingProjects } = useProfessionalProjects(id);
+  
+  // Create review mutation
+  const createReviewMutation = useCreateReview();
 
   // Determine if this is the user's own profile
   const isOwnProfile = user?.id === professional?.userId;
@@ -139,31 +147,126 @@ const PublicProfessionalProfile = () => {
     );
   };
 
-  const renderReviewsTab = () => {
-    if (professionalReviews.length === 0) {
-      return (
-        <div className="text-center py-12 text-gray-400">
-          <p>No reviews yet</p>
-        </div>
-      );
-    }
+  const handleAddReview = async () => {
+    if (!id || !user) return;
 
+    try {
+      await createReviewMutation.mutateAsync({
+        professionalId: Number(id),
+        data: {
+          rating: newReview.rating,
+          comment: newReview.comment
+        }
+      });
+
+      toast({
+        title: "Success",
+        description: "Review submitted successfully",
+      });
+
+      setShowReviewForm(false);
+      setNewReview({ rating: 5, comment: '' });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit review",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const renderReviewsTab = () => {
     return (
       <div className="px-4 pb-20 space-y-4">
-        {professionalReviews.map((review: any) => (
-          <div key={review.id} className="bg-gray-900 p-4 rounded-lg border border-gray-800">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-semibold">
-                  {review.userFullName?.[0] || 'A'}
-                </div>
-                <span className="font-medium text-white">{review.userFullName || 'Anonymous'}</span>
-              </div>
-              <StarRating rating={review.rating} />
-            </div>
-            <p className="text-gray-300 text-sm">{review.comment}</p>
+        {/* Give Review Button - only for logged-in users who are not viewing their own profile */}
+        {user && !isOwnProfile && (
+          <div className="flex justify-end mb-4">
+            <Button
+              onClick={() => setShowReviewForm(true)}
+              className="bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              Give Your Review
+            </Button>
           </div>
-        ))}
+        )}
+
+        {/* Review Form Modal */}
+        {showReviewForm && (
+          <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+            <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">Write a Review</h3>
+                <button 
+                  onClick={() => setShowReviewForm(false)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-2">Your Rating</label>
+                <StarRating 
+                  rating={newReview.rating} 
+                  maxRating={5} 
+                  size={28} 
+                  onRatingChange={(rating: number) => setNewReview({...newReview, rating})}
+                  clickable
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-2">Your Review</label>
+                <textarea 
+                  className="w-full bg-gray-700 rounded-lg p-3 text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  rows={4}
+                  placeholder="Share your experience..."
+                  value={newReview.comment}
+                  onChange={(e) => setNewReview({...newReview, comment: e.target.value})}
+                />
+              </div>
+              <div className="flex justify-end gap-3">
+                <button 
+                  onClick={() => setShowReviewForm(false)}
+                  className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-700 hover:bg-gray-600 text-white transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleAddReview}
+                  disabled={!newReview.comment.trim()}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors ${
+                    newReview.comment.trim() 
+                      ? 'bg-blue-600 hover:bg-blue-700' 
+                      : 'bg-blue-400 cursor-not-allowed'
+                  }`}
+                >
+                  Submit Review
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Reviews List */}
+        {professionalReviews.length === 0 ? (
+          <div className="text-center py-12 text-gray-400">
+            <p>No reviews yet</p>
+          </div>
+        ) : (
+          professionalReviews.map((review: any) => (
+            <div key={review.id} className="bg-gray-900 p-4 rounded-lg border border-gray-800">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-semibold">
+                    {review.userFullName?.[0] || 'A'}
+                  </div>
+                  <span className="font-medium text-white">{review.userFullName || 'Anonymous'}</span>
+                </div>
+                <StarRating rating={review.rating} />
+              </div>
+              <p className="text-gray-300 text-sm">{review.comment}</p>
+            </div>
+          ))
+        )}
       </div>
     );
   };

@@ -71,6 +71,7 @@ const Index = () => {
   const [newReview, setNewReview] = useState({ rating: 5, comment: '', author: 'You' });
   const [loading, setLoading] = useState(true);
   const [professionalData, setProfessionalData] = useState<any>(null);
+  const [openAddPortfolioForm, setOpenAddPortfolioForm] = useState(false);
   
   // For now, assume this is always the user's own profile
   // In the future, compare route params with user.id
@@ -237,11 +238,18 @@ const Index = () => {
   }, []);
 
   const handleEditProfile = () => {
+    setOpenAddPortfolioForm(false);
+    setShowEditProfile(true);
+  };
+
+  const handleAddPortfolio = () => {
+    setOpenAddPortfolioForm(true);
     setShowEditProfile(true);
   };
 
   const handleBackFromEdit = () => {
     setShowEditProfile(false);
+    setOpenAddPortfolioForm(false);
   };
 
   const handleSaveProfile = (updatedData: Partial<ProfileData>) => {
@@ -355,6 +363,7 @@ const Index = () => {
           portfolios: profileData.portfolios,
           aboutInfo: profileData.aboutInfo
         }}
+        openAddPortfolioForm={openAddPortfolioForm}
       />
     );
   }
@@ -438,6 +447,7 @@ const Index = () => {
                 {/* Right side - Add portfolio button (only visible on Portfolio tab) */}
                 {activeTab === 'portfolio' && (
                   <button 
+                    onClick={handleAddPortfolio}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white text-sm font-medium transition-all duration-200 transform hover:scale-105"
                   >
                     <Plus className="w-4 h-4" />

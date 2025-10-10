@@ -186,6 +186,9 @@ const Index = () => {
           comment: review.content || ''
         }));
 
+        // Save professional data for later use
+        setProfessionalData(professional);
+
         // Update profile data
         setProfileData(updateMediaCounts({
           username: user.username || '',
@@ -259,13 +262,48 @@ const Index = () => {
     setOpenAddPortfolioForm(false);
   };
 
-  const handleSaveProfile = (updatedData: Partial<ProfileData>) => {
-    setProfileData((prev: ProfileData) => updateMediaCounts({
-      ...prev,
-      ...updatedData,
-      stats: prev.stats // Keep existing stats
-    }));
-    setShowEditProfile(false);
+  const handleSaveProfile = async (updatedData: Partial<ProfileData>) => {
+    try {
+      // Update local state first for immediate UI feedback
+      setProfileData((prev: ProfileData) => updateMediaCounts({
+        ...prev,
+        ...updatedData,
+        stats: prev.stats // Keep existing stats
+      }));
+
+      // Save to backend if we have a professional ID
+      if (professionalData?.id) {
+        const dataToSave: any = {};
+        
+        // Map profile data fields to backend fields
+        if (updatedData.profileImage) dataToSave.profileImage = updatedData.profileImage;
+        if (updatedData.bio) dataToSave.about = updatedData.bio;
+        if (updatedData.occupation) dataToSave.profession = updatedData.occupation;
+        if (updatedData.aboutInfo?.location) dataToSave.location = updatedData.aboutInfo.location;
+        if (updatedData.aboutInfo?.contact) dataToSave.phone = updatedData.aboutInfo.contact;
+        if (updatedData.aboutInfo?.skills) dataToSave.specializations = updatedData.aboutInfo.skills;
+        if (updatedData.aboutInfo?.experience) {
+          const expMatch = updatedData.aboutInfo.experience.match(/(\d+)/);
+          if (expMatch) dataToSave.experience = parseInt(expMatch[1]);
+        }
+
+        const response = await apiRequest('PUT', `/api/professionals/${professionalData.id}`, dataToSave);
+        
+        if (!response.ok) {
+          throw new Error('Failed to save profile');
+        }
+
+        console.log('Profile saved successfully to backend');
+        
+        // Update professionalData with the saved data
+        setProfessionalData((prev: any) => ({ ...prev, ...dataToSave }));
+      }
+
+      setShowEditProfile(false);
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      // Optionally show an error toast here
+    }
   };
 
   // Update media counts when portfolios change

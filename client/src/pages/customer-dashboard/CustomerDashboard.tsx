@@ -70,7 +70,14 @@ export default function CustomerDashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const [activeTab, setActiveTab] = useState("portfolio");
+  const [activeTab, setActiveTab] = useState("orders");
+  
+  const customerTabs = [
+    { id: 'orders', label: 'My Orders' },
+    { id: 'bookings', label: 'My Bookings' },
+    { id: 'bookmarked', label: 'Bookmarked' },
+    { id: 'about', label: 'About' }
+  ];
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState<Order[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -217,18 +224,20 @@ export default function CustomerDashboard() {
           onEditProfile={() => navigate("/profile/edit")}
           averageRating={averageRating}
           reviewCount={reviews.length}
+          isCustomer={true}
+          isOwnProfile={true}
         />
 
-        <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
+        <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} customTabs={customerTabs} />
 
-        {activeTab === "portfolio" && (
+        {activeTab === "orders" && (
           <div className="px-4 py-6">
             <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-4">My Orders & Bookings</h3>
-              {totalItems === 0 ? (
+              <h3 className="text-lg font-semibold mb-4">My Orders</h3>
+              {orders.length === 0 ? (
                 <div className="text-center py-12 text-gray-400">
                   <ShoppingBag className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <p>No orders or bookings yet</p>
+                  <p>No orders yet</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-3 gap-0.5">
@@ -251,6 +260,23 @@ export default function CustomerDashboard() {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === "bookings" && (
+          <div className="px-4 py-6">
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-4">My Bookings</h3>
+              {bookings.length === 0 ? (
+                <div className="text-center py-12 text-gray-400">
+                  <Calendar className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                  <p>No bookings yet</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-0.5">
                   {bookings.map((booking) => (
                     <div 
                       key={`booking-${booking.id}`}
@@ -286,6 +312,18 @@ export default function CustomerDashboard() {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === "bookmarked" && (
+          <div className="px-4 py-6">
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-4">Bookmarked Professionals</h3>
+              <div className="text-center py-12 text-gray-400">
+                <Package className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <p>No bookmarked professionals yet</p>
+              </div>
             </div>
           </div>
         )}
@@ -336,42 +374,14 @@ export default function CustomerDashboard() {
               </div>
             </div>
 
-            <Button 
-              onClick={() => navigate("/profile/edit")}
-              className="w-full"
-            >
-              Edit Profile
-            </Button>
-          </div>
-        )}
-
-        {activeTab === "reviews" && (
-          <div className="px-4 py-6">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-semibold">My Reviews</h3>
+            <div className="space-y-3">
+              <Button 
+                onClick={() => navigate("/profile/edit")}
+                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500"
+              >
+                Edit Profile
+              </Button>
             </div>
-            
-            {reviews.length === 0 ? (
-              <div className="text-center py-12 text-gray-400">
-                <StarRating rating={0} size={48} className="justify-center mb-4 opacity-50" />
-                <p>No reviews given yet</p>
-                <p className="text-sm mt-2">Share your experience with professionals and dealers</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {reviews.map((review) => (
-                  <div key={review.id} className="bg-gray-900/50 rounded-lg p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <StarRating rating={review.rating} size={16} />
-                      <span className="text-xs text-gray-400">
-                        {new Date(review.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-300">{review.comment}</p>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         )}
 

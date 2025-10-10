@@ -1,17 +1,25 @@
 
 import React from 'react';
 
+interface Tab {
+  id: string;
+  label: string;
+}
+
 interface TabNavigationProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  customTabs?: Tab[];
 }
 
-const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActiveTab }) => {
-  const tabs = [
+const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActiveTab, customTabs }) => {
+  const defaultTabs = [
     { id: 'portfolio', label: 'Portfolio' },
     { id: 'about', label: 'About' },
     { id: 'reviews', label: 'Reviews' }
   ];
+
+  const tabs = customTabs || defaultTabs;
 
   return (
     <div className="border-t border-gray-800 sticky top-0 z-40 bg-black">

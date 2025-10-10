@@ -7,6 +7,11 @@ KaaragirX is a full-stack construction marketplace platform designed to connect 
 - None set yet (fresh import)
 
 ## Recent Changes
+- **October 10, 2025**: Public Professional Profile View Enhancements
+  - **Fixed Name Display**: Updated backend `getProfessional` and `getProfessionalByUserId` methods to join with users table and include fullName; public profiles now correctly display professional's full name instead of company name
+  - **Portfolio Grid Layout**: Implemented 3-column grid layout using ReelsGrid component, matching the professional dashboard design with proper aspect ratios
+  - **Enhanced Portfolio Details Modal**: Portfolio items now display complete project information when clicked, including images, description, category, BHK, budget, and completion date
+  - **Review Button**: Verified "Give Your Review" button is visible for logged-in users viewing other professionals' profiles
 - **October 9, 2025**: Professional Dashboard Real Data Integration
   - **Removed All Hardcoded Demo Data**: Eliminated all placeholder data including demo usernames, follower counts, sample reviews, and portfolio items from professional dashboard
   - **Real Data Fetching**: Integrated live database queries using logged-in user's information; dashboard now displays actual professional profile, portfolio projects, and reviews from PostgreSQL

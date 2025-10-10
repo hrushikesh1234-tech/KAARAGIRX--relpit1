@@ -163,6 +163,10 @@ const Index = () => {
         const reviewsResponse = await apiRequest('GET', `/api/professionals/${professional.id}/reviews`);
         const fetchedReviews = await reviewsResponse.json() || [];
 
+        // Fetch follow status for this professional
+        const followStatusResponse = await apiRequest('GET', `/api/professionals/${professional.id}/follow-status`);
+        const followStatus = await followStatusResponse.json() || { followerCount: 0, followingCount: 0 };
+
         // Transform projects data to portfolio format
         const portfolios = projects.map((project: any) => ({
           id: project.id.toString(),
@@ -199,8 +203,8 @@ const Index = () => {
           additionalInfo: `Experience: ${professional.experience || 0} years`,
           stats: {
             posts: projects.length,
-            followers: 0,
-            following: 0
+            followers: followStatus.followerCount || 0,
+            following: followStatus.followingCount || 0
           },
           profileImage: professional.profileImage || '/api/placeholder/100/100',
           isLive: professional.availability === 'Available',

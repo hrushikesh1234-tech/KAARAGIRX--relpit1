@@ -322,6 +322,47 @@ const Index = () => {
     }
   };
 
+  const handleProfileImageChange = async (imageUrl: string) => {
+    if (!professionalData?.id) return;
+
+    // Store original data for rollback
+    const originalProfileImage = profileData.profileImage;
+
+    try {
+      // Update local state immediately
+      setProfileData((prev: ProfileData) => ({
+        ...prev,
+        profileImage: imageUrl
+      }));
+
+      // Save to backend
+      const response = await apiRequest('PUT', `/api/professionals/${professionalData.id}`, {
+        profileImage: imageUrl
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update profile picture');
+      }
+
+      // Update professionalData
+      setProfessionalData((prev: any) => ({ ...prev, profileImage: imageUrl }));
+
+      // Show success toast
+      toast.success('Profile picture updated successfully');
+    } catch (error) {
+      console.error('Error updating profile picture:', error);
+      
+      // Revert to original image if save failed
+      setProfileData((prev: ProfileData) => ({
+        ...prev,
+        profileImage: originalProfileImage
+      }));
+      
+      // Show error toast
+      toast.error('Failed to update profile picture');
+    }
+  };
+
   // Update media counts when portfolios change
   useEffect(() => {
     setProfileData((prev: ProfileData) => updateMediaCounts(prev));
@@ -481,6 +522,7 @@ const Index = () => {
             averageRating={averageRating}
             reviewCount={reviewCount}
             isOwnProfile={isOwnProfile}
+            onProfileImageChange={isOwnProfile ? handleProfileImageChange : undefined}
           />
         </div>
         

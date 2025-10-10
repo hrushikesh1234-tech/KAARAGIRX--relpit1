@@ -41,6 +41,17 @@ export class UserService {
   async verifyPassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
     return await bcrypt.compare(plainPassword, hashedPassword);
   }
+
+  async updateUser(id: number, data: Partial<typeof users.$inferInsert>): Promise<User | undefined> {
+    const updateData = { ...data };
+    delete updateData.password;
+    
+    const [updated] = await db.update(users)
+      .set({ ...updateData, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
+    return updated || undefined;
+  }
 }
 
 export const userService = new UserService();

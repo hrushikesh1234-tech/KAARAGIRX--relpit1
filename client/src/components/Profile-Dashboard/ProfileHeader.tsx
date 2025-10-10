@@ -130,7 +130,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               {/* Only show friends for own profile */}
               <div className="flex items-center gap-2">
                 <div className="text-center">
-                  <div className="text-base font-semibold text-gray-100">{profileData.stats.following}</div>
+                  <div className="text-base font-semibold text-gray-100">{profileData.stats.followers}</div>
                   <div className="text-[11px] text-gray-400 font-medium">friends</div>
                 </div>
                 <div className="h-6 w-px bg-gray-700"></div>

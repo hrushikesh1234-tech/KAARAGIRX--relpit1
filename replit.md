@@ -7,6 +7,13 @@ KaaragirX is a full-stack construction marketplace platform designed to connect 
 - None set yet (fresh import)
 
 ## Recent Changes
+- **October 10, 2025**: Follow/Unfollow and Review Submission Enhancements
+  - **Follow System Implementation**: Created `follows` table in database schema with proper relations; implemented backend endpoints for follow/unfollow with authentication checks
+  - **Follower/Following Count Tracking**: Backend now returns separate followerCount and followingCount; fixed bug where both counts displayed the same value
+  - **Profile Follow Button**: Integrated follow/unfollow functionality in ProfileHeader component; button updates in real-time with proper React Query cache invalidation
+  - **Review Creation Backend**: Added POST endpoint for submitting reviews with rating and comment fields; includes authentication and duplicate review prevention
+  - **Review Form Error Handling**: Fixed review submission in PublicProfessionalProfile to display proper success/error messages; integrated with backend API for real-time updates
+  - **Cross-Dashboard Sync**: Follower counts and profile updates now sync automatically between professional's own dashboard and public profile views via React Query
 - **October 10, 2025**: Public Professional Profile View Enhancements
   - **Fixed Name Display**: Updated backend `getProfessional` and `getProfessionalByUserId` methods to join with users table and include fullName; public profiles now correctly display professional's full name instead of company name
   - **Portfolio Grid Layout**: Implemented 3-column grid layout using ReelsGrid component, matching the professional dashboard design with proper aspect ratios
@@ -65,11 +72,11 @@ KaaragirX is a full-stack construction marketplace platform designed to connect 
 9. **Image Upload**: Material dealers can upload multiple product images.
 
 ### System Design Choices
-- **Database Schema**: Comprehensive PostgreSQL schemas for users, professionals, projects, reviews, bookmarks, dealers, orders, order_items, conversations, messages, materials, and rental equipment.
-- **Security**: `bcrypt` for password hashing.
-- **API Layer**: RESTful APIs for all major entities including authentication, professionals, projects, dealers, orders, materials, rental equipment, and messaging.
+- **Database Schema**: Comprehensive PostgreSQL schemas for users, professionals, projects, reviews, bookmarks, dealers, orders, order_items, conversations, messages, materials, rental equipment, and follows (follower/following relationships with cascade deletion).
+- **Security**: `bcrypt` for password hashing; authentication checks on sensitive endpoints like follow/unfollow and review creation.
+- **API Layer**: RESTful APIs for all major entities including authentication, professionals, projects, dealers, orders, materials, rental equipment, messaging, follows, and reviews.
 - **Port Configuration**: Frontend on port 5000, Backend on port 3001.
-- **Real-time Integration**: APIs are designed to work with live database queries.
+- **Real-time Integration**: APIs are designed to work with live database queries; React Query cache invalidation ensures immediate UI updates across dashboards.
 
 ## External Dependencies
 - **PostgreSQL**: Primary database, specifically Neon-backed for serverless capabilities.

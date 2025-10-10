@@ -7,6 +7,14 @@ KaaragirX is a full-stack construction marketplace platform designed to connect 
 - None set yet (fresh import)
 
 ## Recent Changes
+- **October 10, 2025**: Customer and Professional Dashboard Profile Enhancements
+  - **Customer Dashboard Edit Button**: Moved "Edit Profile" button to top right corner; removed duplicate from "About" tab for cleaner UI
+  - **Profile Picture Upload**: Fixed + button functionality in both customer and professional dashboards; clicking + now opens file selector and saves image to database immediately
+  - **Customer Profile Persistence**: Profile changes from Edit Profile form now save correctly and display after page refresh; added window.location.reload() to fetch updated user data
+  - **Professional Profile Picture**: Added handleProfileImageChange to professional dashboard with real-time save to backend via PUT /api/professionals/:id
+  - **Layout Improvements**: Moved profile picture and name upward by removing extra spacing (h-2 div and mt-2); improved visual hierarchy with -mt-2 on profile section
+  - **Error Handling**: Both dashboards now have rollback mechanisms if profile picture save fails; success/error toasts provide user feedback
+  - **API Integration**: Customer dashboard uses PUT /api/users/:id for profile updates; professional dashboard uses PUT /api/professionals/:id with proper field mapping
 - **October 10, 2025**: Professional Profile Picture Synchronization Fix
   - **Fixed Profile Picture Persistence**: Profile images are now properly saved to backend database via PUT /api/professionals/:id endpoint when users update their profiles
   - **Backend Synchronization**: The handleSaveProfile function now maps frontend profile data to backend fields (profileImage, about, profession, location, phone, specializations, experience) and saves to PostgreSQL

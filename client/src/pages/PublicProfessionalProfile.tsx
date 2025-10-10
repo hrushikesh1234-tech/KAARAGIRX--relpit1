@@ -70,7 +70,7 @@ const PublicProfessionalProfile = () => {
     buildDate: p.completionDate,
     budget: typeof p.budget === 'number' ? p.budget.toString() : p.budget,
     description: p.description,
-    specifications: []
+    specifications: (p as any).specifications ?? []
   }));
 
   // Calculate average rating
@@ -111,40 +111,19 @@ const PublicProfessionalProfile = () => {
       );
     }
 
-    return (
-      <div className="px-4 pb-20 space-y-6">
-        {portfolioItems.map((item) => (
-          <div key={item.id} className="bg-gray-900 rounded-lg overflow-hidden border border-gray-800">
-            {item.thumbnail && (
-              <img 
-                src={item.thumbnail} 
-                alt={item.title} 
-                className="w-full h-64 object-cover cursor-pointer"
-                onClick={() => setSelectedReel(item)}
-              />
-            )}
-            <div className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-semibold text-white">{item.title}</h3>
-                {item.category && (
-                  <span className="text-xs px-2 py-1 bg-blue-500/20 text-blue-400 rounded-full">
-                    {item.category}
-                  </span>
-                )}
-              </div>
-              {item.description && (
-                <p className="text-gray-400 text-sm mb-3">{item.description}</p>
-              )}
-              <div className="flex flex-wrap gap-2 text-xs text-gray-500">
-                {item.bhk && <span>• {item.bhk} BHK</span>}
-                {item.buildDate && <span>• {item.buildDate}</span>}
-                {item.budget && <span>• ₹{item.budget}</span>}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    // Convert portfolio items to reels format for ReelsGrid
+    const reels = portfolioItems.map((item) => ({
+      id: parseInt(item.id),
+      title: item.title,
+      views: '0',
+      thumbnail: item.thumbnail,
+      mediaCount: item.images?.length || 0
+    }));
+
+    return <ReelsGrid reels={reels} onReelClick={(reel) => {
+      const fullItem = portfolioItems.find(p => p.id === reel.id.toString());
+      if (fullItem) setSelectedReel(fullItem);
+    }} />;
   };
 
   const handleAddReview = async () => {
@@ -341,30 +320,92 @@ const PublicProfessionalProfile = () => {
 
       {selectedReel && (
         <div
-          className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center"
+          className="fixed inset-0 bg-black/95 z-50 overflow-y-auto"
           onClick={() => setSelectedReel(null)}
         >
-          <button
-            className="absolute top-4 right-4 p-2 rounded-full bg-gray-800 hover:bg-gray-700"
-            onClick={() => setSelectedReel(null)}
-          >
-            <X size={24} />
-          </button>
+          <div className="min-h-screen flex items-center justify-center p-4">
+            <div className="bg-black max-w-6xl w-full" onClick={(e) => e.stopPropagation()}>
+              <button
+                className="sticky top-4 float-right p-2 rounded-full bg-gray-800 hover:bg-gray-700 z-10 mr-4"
+                onClick={() => setSelectedReel(null)}
+              >
+                <X size={24} />
+              </button>
 
-          {selectedReel.images && selectedReel.images.length > 0 ? (
-            <div className="max-w-4xl w-full px-4">
-              <ImageSlider images={selectedReel.images} title={selectedReel.title} />
+              {/* Image Slider */}
+              <div className="px-4 pt-1 pb-2 md:px-8">
+                <h1 className="text-lg md:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 text-center mb-4">
+                  {selectedReel.title}
+                </h1>
+                {selectedReel.images && selectedReel.images.length > 0 && (
+                  <ImageSlider 
+                    images={selectedReel.images}
+                    title={selectedReel.title}
+                  />
+                )}
+              </div>
+              
+              {/* Project Details */}
+              <div className="space-y-8 p-4 md:p-8">
+                {/* Description */}
+                {selectedReel.description && (
+                  <div>
+                    <h2 className="text-2xl font-semibold text-white mb-4">
+                      Project Overview
+                    </h2>
+                    <p className="text-gray-300 text-base md:text-lg">
+                      {selectedReel.description}
+                    </p>
+                  </div>
+                )}
+                
+                {/* Key Details */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {selectedReel.category && (
+                    <div className="bg-gray-900 p-4 rounded-lg border border-gray-800">
+                      <h3 className="text-sm font-medium text-gray-400">Category</h3>
+                      <p className="text-lg font-medium text-white">{selectedReel.category}</p>
+                    </div>
+                  )}
+                  {selectedReel.bhk && (
+                    <div className="bg-gray-900 p-4 rounded-lg border border-gray-800">
+                      <h3 className="text-sm font-medium text-gray-400">BHK</h3>
+                      <p className="text-lg font-medium text-white">{selectedReel.bhk}</p>
+                    </div>
+                  )}
+                  {selectedReel.buildDate && (
+                    <div className="bg-gray-900 p-4 rounded-lg border border-gray-800">
+                      <h3 className="text-sm font-medium text-gray-400">Completion Date</h3>
+                      <p className="text-lg font-medium text-white">{selectedReel.buildDate}</p>
+                    </div>
+                  )}
+                  {selectedReel.budget && (
+                    <div className="bg-gray-900 p-4 rounded-lg border border-gray-800">
+                      <h3 className="text-sm font-medium text-gray-400">Budget</h3>
+                      <p className="text-lg font-medium text-white">₹{selectedReel.budget}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Specifications */}
+                {selectedReel.specifications && selectedReel.specifications.length > 0 && (
+                  <div>
+                    <h2 className="text-2xl font-semibold text-white mb-4">
+                      Specifications
+                    </h2>
+                    <ul className="space-y-2">
+                      {selectedReel.specifications.map((spec, index) => (
+                        <li key={index} className="flex items-start">
+                          <span className="text-blue-400 mr-2">✓</span>
+                          <span className="text-gray-300">{spec}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
             </div>
-          ) : selectedReel.thumbnail ? (
-            <img
-              src={selectedReel.thumbnail}
-              alt={selectedReel.title}
-              className="max-w-4xl max-h-[80vh] object-contain"
-              onClick={(e) => e.stopPropagation()}
-            />
-          ) : (
-            <div className="text-gray-400">No image available</div>
-          )}
+          </div>
         </div>
       )}
     </div>

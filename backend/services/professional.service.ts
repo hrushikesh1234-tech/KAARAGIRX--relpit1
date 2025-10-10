@@ -3,13 +3,63 @@ import { db } from "../config/database";
 import { eq, and, or, like, desc } from "drizzle-orm";
 
 export class ProfessionalService {
-  async getProfessional(id: number): Promise<Professional | undefined> {
-    const [professional] = await db.select().from(professionals).where(eq(professionals.id, id));
+  async getProfessional(id: number): Promise<any> {
+    const [professional] = await db.select({
+      id: professionals.id,
+      userId: professionals.userId,
+      companyName: professionals.companyName,
+      address: professionals.address,
+      pincode: professionals.pincode,
+      phone: professionals.phone,
+      profession: professionals.profession,
+      experience: professionals.experience,
+      profileImage: professionals.profileImage,
+      about: professionals.about,
+      rating: professionals.rating,
+      reviewCount: professionals.reviewCount,
+      location: professionals.location,
+      specializations: professionals.specializations,
+      isVerified: professionals.isVerified,
+      isFeatured: professionals.isFeatured,
+      availability: professionals.availability,
+      completedProjects: professionals.completedProjects,
+      responseTime: professionals.responseTime,
+      createdAt: professionals.createdAt,
+      updatedAt: professionals.updatedAt,
+      fullName: users.fullName
+    }).from(professionals)
+      .leftJoin(users, eq(professionals.userId, users.id))
+      .where(eq(professionals.id, id));
     return professional || undefined;
   }
 
-  async getProfessionalByUserId(userId: number): Promise<Professional | undefined> {
-    const [professional] = await db.select().from(professionals).where(eq(professionals.userId, userId));
+  async getProfessionalByUserId(userId: number): Promise<any> {
+    const [professional] = await db.select({
+      id: professionals.id,
+      userId: professionals.userId,
+      companyName: professionals.companyName,
+      address: professionals.address,
+      pincode: professionals.pincode,
+      phone: professionals.phone,
+      profession: professionals.profession,
+      experience: professionals.experience,
+      profileImage: professionals.profileImage,
+      about: professionals.about,
+      rating: professionals.rating,
+      reviewCount: professionals.reviewCount,
+      location: professionals.location,
+      specializations: professionals.specializations,
+      isVerified: professionals.isVerified,
+      isFeatured: professionals.isFeatured,
+      availability: professionals.availability,
+      completedProjects: professionals.completedProjects,
+      responseTime: professionals.responseTime,
+      createdAt: professionals.createdAt,
+      updatedAt: professionals.updatedAt,
+      fullName: users.fullName
+    }).from(professionals)
+      .leftJoin(users, eq(professionals.userId, users.id))
+      .where(eq(professionals.userId, userId));
     return professional || undefined;
   }
 

@@ -116,11 +116,8 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
   return (
     <div className="px-4">
-      {/* Header spacing */}
-      <div className="h-2"></div>
-
       {/* Profile info section */}
-      <div className="flex items-start gap-4 mb-4">
+      <div className="flex items-start gap-4 mb-4 -mt-2">
         {/* Profile picture */}
         <div className="relative">
           <div 
@@ -153,7 +150,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         </div>
 
         {/* Right side content */}
-        <div className="flex-1 space-y-3 mt-2">
+        <div className="flex-1 space-y-3">
           {/* Display name */}
           <h2 className="font-bold text-sm">{profileData.displayName}</h2>
           

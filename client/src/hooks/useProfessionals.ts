@@ -121,3 +121,51 @@ export function useCreateReview() {
     },
   });
 }
+
+export function useFollowStatus(professionalId: number | string | undefined) {
+  return useQuery({
+    queryKey: ["followStatus", professionalId],
+    queryFn: async () => {
+      if (!professionalId) return { isFollowing: false, followerCount: 0 };
+      
+      const response = await fetch(`/api/professionals/${professionalId}/follow-status`, {
+        credentials: "include"
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to fetch follow status");
+      }
+      
+      return response.json();
+    },
+    enabled: !!professionalId
+  });
+}
+
+export function useFollowProfessional() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (professionalId: number) => 
+      apiRequest("POST", `/api/professionals/${professionalId}/follow`, {}).then(res => res.json()),
+    onSuccess: (_, professionalId) => {
+      // Invalidate follow status for this professional
+      queryClient.invalidateQueries({ queryKey: ["followStatus", professionalId] });
+      queryClient.invalidateQueries({ queryKey: ["followStatus", String(professionalId)] });
+    },
+  });
+}
+
+export function useUnfollowProfessional() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (professionalId: number) => 
+      apiRequest("DELETE", `/api/professionals/${professionalId}/follow`, undefined).then(res => res.json()),
+    onSuccess: (_, professionalId) => {
+      // Invalidate follow status for this professional
+      queryClient.invalidateQueries({ queryKey: ["followStatus", professionalId] });
+      queryClient.invalidateQueries({ queryKey: ["followStatus", String(professionalId)] });
+    },
+  });
+}

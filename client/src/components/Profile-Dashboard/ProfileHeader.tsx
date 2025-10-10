@@ -24,6 +24,9 @@ interface ProfileHeaderProps {
   averageRating: number;
   reviewCount: number;
   isOwnProfile?: boolean;
+  professionalId?: number | string;
+  isFollowing?: boolean;
+  onFollowClick?: () => void;
 }
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({ 
@@ -31,12 +34,23 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   onEditProfile,
   averageRating,
   reviewCount,
-  isOwnProfile = false
+  isOwnProfile = false,
+  professionalId,
+  isFollowing: externalIsFollowing = false,
+  onFollowClick
 }) => {
-  const [isFollowing, setIsFollowing] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(externalIsFollowing);
+
+  useEffect(() => {
+    setIsFollowing(externalIsFollowing);
+  }, [externalIsFollowing]);
 
   const handleFollowClick = () => {
-    setIsFollowing(!isFollowing);
+    if (onFollowClick) {
+      onFollowClick();
+    } else {
+      setIsFollowing(!isFollowing);
+    }
   };
 
   const [isModalOpen, setIsModalOpen] = useState(false);

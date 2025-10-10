@@ -7,7 +7,7 @@ import ReelsGrid from '@/components/Profile-Dashboard/ReelsGrid';
 import StarRating from '@/components/Profile-Dashboard/StarRating';
 import ImageSlider from '@/components/ui/ImageSlider';
 import { useAuth } from '@/contexts/AuthContext';
-import { useProfessional, useProfessionalReviews, useCreateReview } from '@/hooks/useProfessionals';
+import { useProfessional, useProfessionalReviews, useCreateReview, useFollowStatus, useFollowProfessional, useUnfollowProfessional } from '@/hooks/useProfessionals';
 import { useProfessionalProjects } from '@/hooks/useProjects';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -46,9 +46,12 @@ const PublicProfessionalProfile = () => {
   const { data: professional, isLoading: loadingProfessional } = useProfessional(id);
   const { data: professionalReviews = [], isLoading: loadingReviews } = useProfessionalReviews(id);
   const { data: projects = [], isLoading: loadingProjects } = useProfessionalProjects(id);
+  const { data: followStatus = { isFollowing: false, followerCount: 0 } } = useFollowStatus(id);
   
-  // Create review mutation
+  // Mutations
   const createReviewMutation = useCreateReview();
+  const followMutation = useFollowProfessional();
+  const unfollowMutation = useUnfollowProfessional();
 
   // Determine if this is the user's own profile
   const isOwnProfile = user?.id === professional?.userId;
@@ -87,8 +90,8 @@ const PublicProfessionalProfile = () => {
     additionalInfo: professional?.location || '',
     stats: {
       posts: portfolioItems.length,
-      followers: 0,
-      following: 0
+      followers: followStatus.followerCount || 0,
+      following: followStatus.followerCount || 0
     },
     profileImage: professional?.profileImage || '/lovable-uploads/1c8904bf-5b78-4e55-88ea-dc5028083eef.png',
     isLive: false
@@ -126,8 +129,48 @@ const PublicProfessionalProfile = () => {
     }} />;
   };
 
+  const handleFollowClick = async () => {
+    if (!id || !user) {
+      toast({
+        title: "Error",
+        description: "Please login to follow professionals",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      if (followStatus.isFollowing) {
+        await unfollowMutation.mutateAsync(Number(id));
+        toast({
+          title: "Success",
+          description: "Unfollowed successfully",
+        });
+      } else {
+        await followMutation.mutateAsync(Number(id));
+        toast({
+          title: "Success",
+          description: "Followed successfully",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to update follow status",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleAddReview = async () => {
-    if (!id || !user) return;
+    if (!id || !user) {
+      toast({
+        title: "Error",
+        description: "Please login to submit a review",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       await createReviewMutation.mutateAsync({
@@ -145,7 +188,7 @@ const PublicProfessionalProfile = () => {
 
       setShowReviewForm(false);
       setNewReview({ rating: 5, comment: '' });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
         description: "Failed to submit review",
@@ -308,6 +351,10 @@ const PublicProfessionalProfile = () => {
         onEditProfile={() => {}}
         averageRating={averageRating}
         reviewCount={reviewCount}
+        isOwnProfile={isOwnProfile}
+        professionalId={id}
+        isFollowing={followStatus.isFollowing}
+        onFollowClick={handleFollowClick}
       />
 
       <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />

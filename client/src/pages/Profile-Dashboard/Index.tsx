@@ -10,6 +10,7 @@ import ImageSlider from '@/components/ui/ImageSlider';
 import type { CardProps } from '@/components/ui/apple-cards-carousel';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiRequest } from '@/lib/queryClient';
+import { toast } from 'sonner';
 
 interface PortfolioItem {
   id: string;
@@ -263,6 +264,9 @@ const Index = () => {
   };
 
   const handleSaveProfile = async (updatedData: Partial<ProfileData>) => {
+    // Store original data for potential rollback
+    const originalData = profileData;
+    
     try {
       // Update local state first for immediate UI feedback
       setProfileData((prev: ProfileData) => updateMediaCounts({
@@ -297,12 +301,20 @@ const Index = () => {
         
         // Update professionalData with the saved data
         setProfessionalData((prev: any) => ({ ...prev, ...dataToSave }));
+        
+        // Show success toast
+        toast.success('Profile updated successfully');
       }
 
       setShowEditProfile(false);
     } catch (error) {
       console.error('Error saving profile:', error);
-      // Optionally show an error toast here
+      
+      // Revert to original data if save failed
+      setProfileData(originalData);
+      
+      // Show error toast
+      toast.error('Failed to save profile. Please try again.');
     }
   };
 

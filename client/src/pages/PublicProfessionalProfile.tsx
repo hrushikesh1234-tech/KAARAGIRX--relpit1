@@ -178,14 +178,23 @@ const PublicProfessionalProfile = () => {
   const renderReviewsTab = () => {
     return (
       <div className="px-4 pb-20 space-y-4">
+        {/* Star Rating Summary */}
+        <div className="bg-gray-900 p-6 rounded-lg border border-gray-800 mb-4">
+          <div className="flex items-center justify-center gap-4 mb-2">
+            <StarRating rating={averageRating} maxRating={5} size={24} />
+            <span className="text-white font-semibold text-xl">{averageRating.toFixed(1)} out of 5</span>
+          </div>
+          <p className="text-gray-400 text-sm text-center">Based on {reviewCount} reviews</p>
+        </div>
+
         {/* Give Review Button - only for logged-in users who are not viewing their own profile */}
         {user && !isOwnProfile && (
-          <div className="flex justify-end mb-4">
+          <div className="flex justify-center mb-6">
             <Button
               onClick={() => setShowReviewForm(true)}
-              className="bg-blue-500 hover:bg-blue-600 text-white"
+              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white px-6 py-3 text-base font-medium transition-all duration-200 transform hover:scale-105 shadow-lg"
             >
-              Give Your Review
+              ⭐ Give Your Review
             </Button>
           </div>
         )}

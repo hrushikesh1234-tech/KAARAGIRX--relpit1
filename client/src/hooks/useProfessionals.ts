@@ -108,8 +108,16 @@ export function useCreateReview() {
     mutationFn: ({ professionalId, data }: { professionalId: number, data: any }) => 
       apiRequest("POST", `/api/professionals/${professionalId}/reviews`, data).then(res => res.json()),
     onSuccess: (_, variables) => {
+      // Invalidate professional reviews for both public and own dashboard
       queryClient.invalidateQueries({ queryKey: ["professionalReviews", variables.professionalId] });
+      queryClient.invalidateQueries({ queryKey: ["professionalReviews", String(variables.professionalId)] });
+      
+      // Invalidate professional data to update review count
       queryClient.invalidateQueries({ queryKey: ["professional", variables.professionalId] });
+      queryClient.invalidateQueries({ queryKey: ["professional", String(variables.professionalId)] });
+      
+      // Invalidate user's professional reviews (for their dashboard)
+      queryClient.invalidateQueries({ queryKey: ["professionals"] });
     },
   });
 }

@@ -67,6 +67,13 @@ export const reviews = pgTable("reviews", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const follows = pgTable("follows", {
+  id: serial("id").primaryKey(),
+  followerId: integer("follower_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  followingId: integer("following_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const bookmarks = pgTable("bookmarks", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
@@ -280,6 +287,8 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   sentMessages: many(messages),
   conversationsAsUser1: many(conversations, { relationName: "user1Conversations" }),
   conversationsAsUser2: many(conversations, { relationName: "user2Conversations" }),
+  followers: many(follows, { relationName: "following" }),
+  following: many(follows, { relationName: "follower" }),
 }));
 
 export const professionalsRelations = relations(professionals, ({ one, many }) => ({
@@ -309,6 +318,19 @@ export const reviewsRelations = relations(reviews, ({ one }) => ({
   user: one(users, {
     fields: [reviews.userId],
     references: [users.id],
+  }),
+}));
+
+export const followsRelations = relations(follows, ({ one }) => ({
+  follower: one(users, {
+    fields: [follows.followerId],
+    references: [users.id],
+    relationName: "follower",
+  }),
+  following: one(users, {
+    fields: [follows.followingId],
+    references: [users.id],
+    relationName: "following",
   }),
 }));
 
@@ -451,6 +473,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
 export const insertProfessionalSchema = createInsertSchema(professionals);
 export const insertProjectSchema = createInsertSchema(projects);
 export const insertReviewSchema = createInsertSchema(reviews);
+export const insertFollowSchema = createInsertSchema(follows);
 export const insertBookmarkSchema = createInsertSchema(bookmarks);
 export const insertDealerSchema = createInsertSchema(dealers);
 export const insertOrderSchema = createInsertSchema(orders);
@@ -468,6 +491,7 @@ export type User = typeof users.$inferSelect;
 export type Professional = typeof professionals.$inferSelect;
 export type Project = typeof projects.$inferSelect;
 export type Review = typeof reviews.$inferSelect;
+export type Follow = typeof follows.$inferSelect;
 export type Bookmark = typeof bookmarks.$inferSelect;
 export type Dealer = typeof dealers.$inferSelect;
 export type Order = typeof orders.$inferSelect;

@@ -1,6 +1,6 @@
-import { professionals, projects, reviews, users, type Professional, type Project } from "../../shared/schema";
+import { professionals, projects, reviews, users, follows, type Professional, type Project } from "../../shared/schema";
 import { db } from "../config/database";
-import { eq, and, or, like, desc } from "drizzle-orm";
+import { eq, and, or, like, desc, sql } from "drizzle-orm";
 
 export class ProfessionalService {
   async getProfessional(id: number): Promise<any> {
@@ -206,6 +206,73 @@ export class ProfessionalService {
     return await db.select().from(reviews)
       .where(eq(reviews.userId, userId))
       .orderBy(desc(reviews.createdAt));
+  }
+
+  async createReview(professionalId: number, userId: number, rating: number, content: string) {
+    const [review] = await db.insert(reviews).values({
+      professionalId,
+      userId,
+      rating,
+      content
+    }).returning();
+
+    // Update professional's average rating and review count
+    const allReviews = await this.getProfessionalReviews(professionalId);
+    const avgRating = allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
+    
+    await db.update(professionals)
+      .set({ 
+        rating: avgRating.toFixed(2),
+        reviewCount: allReviews.length
+      })
+      .where(eq(professionals.id, professionalId));
+
+    // Get user info for the review
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+    
+    return {
+      ...review,
+      userFullName: user?.fullName || 'Anonymous'
+    };
+  }
+
+  async followUser(followerId: number, followingId: number) {
+    const [follow] = await db.insert(follows).values({
+      followerId,
+      followingId
+    }).returning();
+    return follow;
+  }
+
+  async unfollowUser(followerId: number, followingId: number) {
+    await db.delete(follows)
+      .where(and(
+        eq(follows.followerId, followerId),
+        eq(follows.followingId, followingId)
+      ));
+  }
+
+  async isFollowing(followerId: number, followingId: number): Promise<boolean> {
+    const [result] = await db.select().from(follows)
+      .where(and(
+        eq(follows.followerId, followerId),
+        eq(follows.followingId, followingId)
+      ));
+    return !!result;
+  }
+
+  async getFollowerCount(userId: number): Promise<number> {
+    const result = await db.select({ count: sql<number>`count(*)` })
+      .from(follows)
+      .where(eq(follows.followingId, userId));
+    return Number(result[0]?.count || 0);
+  }
+
+  async getFollowingCount(userId: number): Promise<number> {
+    const result = await db.select({ count: sql<number>`count(*)` })
+      .from(follows)
+      .where(eq(follows.followerId, userId));
+    return Number(result[0]?.count || 0);
   }
 }
 

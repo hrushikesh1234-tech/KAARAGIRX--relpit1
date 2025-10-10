@@ -158,6 +158,128 @@ export class ProfessionalController {
       res.status(500).json({ error: 'Failed to fetch reviews' });
     }
   }
+
+  async createReview(req: Request, res: Response) {
+    try {
+      const professionalId = parseInt(req.params.id);
+      const userId = (req.user as any)?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
+
+      const { rating, comment } = req.body;
+      
+      if (!rating || rating < 1 || rating > 5) {
+        return res.status(400).json({ error: 'Rating must be between 1 and 5' });
+      }
+
+      const review = await professionalService.createReview(professionalId, userId, rating, comment || '');
+      res.status(201).json(review);
+    } catch (error) {
+      console.error('Error creating review:', error);
+      res.status(500).json({ error: 'Failed to create review' });
+    }
+  }
+
+  async followProfessional(req: Request, res: Response) {
+    try {
+      const professionalId = parseInt(req.params.id);
+      const userId = (req.user as any)?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
+
+      // Get the professional to find their userId
+      const professional = await professionalService.getProfessional(professionalId);
+      
+      if (!professional) {
+        return res.status(404).json({ error: 'Professional not found' });
+      }
+
+      // Don't allow following yourself
+      if (userId === professional.userId) {
+        return res.status(400).json({ error: 'Cannot follow yourself' });
+      }
+
+      // Check if already following
+      const isFollowing = await professionalService.isFollowing(userId, professional.userId);
+      if (isFollowing) {
+        return res.status(400).json({ error: 'Already following this professional' });
+      }
+
+      const follow = await professionalService.followUser(userId, professional.userId);
+      const followerCount = await professionalService.getFollowerCount(professional.userId);
+      
+      res.status(201).json({ 
+        success: true, 
+        follow,
+        followerCount
+      });
+    } catch (error) {
+      console.error('Error following professional:', error);
+      res.status(500).json({ error: 'Failed to follow professional' });
+    }
+  }
+
+  async unfollowProfessional(req: Request, res: Response) {
+    try {
+      const professionalId = parseInt(req.params.id);
+      const userId = (req.user as any)?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
+
+      // Get the professional to find their userId
+      const professional = await professionalService.getProfessional(professionalId);
+      
+      if (!professional) {
+        return res.status(404).json({ error: 'Professional not found' });
+      }
+
+      await professionalService.unfollowUser(userId, professional.userId);
+      const followerCount = await professionalService.getFollowerCount(professional.userId);
+      
+      res.json({ 
+        success: true,
+        followerCount
+      });
+    } catch (error) {
+      console.error('Error unfollowing professional:', error);
+      res.status(500).json({ error: 'Failed to unfollow professional' });
+    }
+  }
+
+  async checkFollowStatus(req: Request, res: Response) {
+    try {
+      const professionalId = parseInt(req.params.id);
+      const userId = (req.user as any)?.id;
+      
+      if (!userId) {
+        return res.json({ isFollowing: false, followerCount: 0 });
+      }
+
+      // Get the professional to find their userId
+      const professional = await professionalService.getProfessional(professionalId);
+      
+      if (!professional) {
+        return res.status(404).json({ error: 'Professional not found' });
+      }
+
+      const isFollowing = await professionalService.isFollowing(userId, professional.userId);
+      const followerCount = await professionalService.getFollowerCount(professional.userId);
+      
+      res.json({ 
+        isFollowing,
+        followerCount
+      });
+    } catch (error) {
+      console.error('Error checking follow status:', error);
+      res.status(500).json({ error: 'Failed to check follow status' });
+    }
+  }
 }
 
 export const professionalController = new ProfessionalController();

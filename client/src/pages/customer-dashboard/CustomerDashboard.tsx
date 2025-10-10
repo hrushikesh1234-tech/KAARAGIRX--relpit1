@@ -171,6 +171,36 @@ export default function CustomerDashboard() {
     }
   };
 
+  const handleProfileImageChange = async (imageUrl: string) => {
+    if (!user?.id) return;
+
+    try {
+      await fetch(`/api/users/${user.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ profileImage: imageUrl }),
+      });
+
+      toast({
+        title: "Success",
+        description: "Profile picture updated successfully",
+      });
+
+      // Reload to get updated user data
+      window.location.reload();
+    } catch (error) {
+      console.error("Error updating profile picture:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update profile picture",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       pending: "text-yellow-400",
@@ -239,6 +269,7 @@ export default function CustomerDashboard() {
           reviewCount={reviews.length}
           isCustomer={true}
           isOwnProfile={true}
+          onProfileImageChange={handleProfileImageChange}
         />
 
         <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} customTabs={customerTabs} />

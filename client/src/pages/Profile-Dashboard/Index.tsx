@@ -245,6 +245,13 @@ const Index = () => {
   const handleAddPortfolio = () => {
     setOpenAddPortfolioForm(true);
     setShowEditProfile(true);
+    
+    setTimeout(() => {
+      const portfolioSection = document.getElementById('portfolio-management-section');
+      if (portfolioSection) {
+        portfolioSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   const handleBackFromEdit = () => {

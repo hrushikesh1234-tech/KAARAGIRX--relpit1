@@ -7,6 +7,13 @@ KaaragirX is a full-stack construction marketplace platform designed to connect 
 - None set yet (fresh import)
 
 ## Recent Changes
+- **October 10, 2025**: Professional Profile Picture Synchronization Fix
+  - **Fixed Profile Picture Persistence**: Profile images are now properly saved to backend database via PUT /api/professionals/:id endpoint when users update their profiles
+  - **Backend Synchronization**: The handleSaveProfile function now maps frontend profile data to backend fields (profileImage, about, profession, location, phone, specializations, experience) and saves to PostgreSQL
+  - **Real-time Sync**: Profile pictures now sync correctly between professional dashboard and public profile views, eliminating the auto-removal bug
+  - **User Feedback**: Added toast notifications for save success/error using Sonner library for better UX
+  - **Error Handling**: Implemented rollback mechanism that reverts local state if backend save fails, preventing UI drift
+  - **Root Cause Fixed**: Resolved issue where profile data was only stored in local React state instead of being persisted to database
 - **October 10, 2025**: Follow/Unfollow and Review Submission Enhancements
   - **Follow System Implementation**: Created `follows` table in database schema with proper relations; implemented backend endpoints for follow/unfollow with authentication checks
   - **Follower/Following Count Tracking**: Backend now returns separate followerCount and followingCount; fixed bug where both counts displayed the same value

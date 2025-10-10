@@ -466,7 +466,7 @@ const Index = () => {
           </div>
         )}
         
-        <div className={`px-1 ${isTabsSticky ? 'pt-12' : ''}`}>
+        <div className={`px-1 ${isTabsSticky ? 'pt-12' : ''} min-h-screen bg-black`}>
           {activeTab === 'portfolio' && (
             <ReelsGrid reels={profileData.portfolios} onReelClick={handleReelClick} />
           )}

@@ -158,8 +158,8 @@ const Index = () => {
         const projectsResponse = await apiRequest('GET', `/api/projects/professional/${professional.id}`);
         const projects = await projectsResponse.json() || [];
 
-        // Fetch reviews
-        const reviewsResponse = await apiRequest('GET', `/api/professionals/reviews/user/${user.id}`);
+        // Fetch reviews for this professional
+        const reviewsResponse = await apiRequest('GET', `/api/professionals/${professional.id}/reviews`);
         const fetchedReviews = await reviewsResponse.json() || [];
 
         // Transform projects data to portfolio format
@@ -181,7 +181,7 @@ const Index = () => {
         // Transform reviews data
         const transformedReviews = fetchedReviews.map((review: any) => ({
           id: review.id,
-          author: review.user?.fullName || 'Anonymous',
+          author: review.userFullName || 'Anonymous',
           rating: review.rating,
           comment: review.content || ''
         }));

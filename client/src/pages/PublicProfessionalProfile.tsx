@@ -294,7 +294,7 @@ const PublicProfessionalProfile = () => {
                 </div>
                 <StarRating rating={review.rating} />
               </div>
-              <p className="text-gray-300 text-sm">{review.comment}</p>
+              <p className="text-gray-300 text-sm">{review.content}</p>
             </div>
           ))
         )}

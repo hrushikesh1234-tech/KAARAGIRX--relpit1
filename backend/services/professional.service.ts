@@ -197,7 +197,16 @@ export class ProfessionalService {
   }
 
   async getProfessionalReviews(professionalId: number) {
-    return await db.select().from(reviews)
+    return await db.select({
+      id: reviews.id,
+      professionalId: reviews.professionalId,
+      userId: reviews.userId,
+      rating: reviews.rating,
+      content: reviews.content,
+      createdAt: reviews.createdAt,
+      userFullName: users.fullName
+    }).from(reviews)
+      .leftJoin(users, eq(reviews.userId, users.id))
       .where(eq(reviews.professionalId, professionalId))
       .orderBy(desc(reviews.createdAt));
   }

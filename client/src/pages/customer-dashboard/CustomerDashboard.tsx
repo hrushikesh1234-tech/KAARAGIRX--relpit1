@@ -196,15 +196,15 @@ export default function CustomerDashboard() {
   const profileData = {
     username: user?.username || "",
     displayName: user?.fullName || "Customer",
-    bio: "Construction Materials & Equipment Customer",
+    bio: (user as any)?.bio || "Construction Materials & Equipment Customer",
     occupation: "Customer",
-    additionalInfo: "",
+    additionalInfo: (user as any)?.address || "",
     stats: {
       posts: totalItems,
-      followers: orders.length,
-      following: bookings.length
+      followers: 0,
+      following: 0
     },
-    profileImage: "/images/profiles/john smith.png",
+    profileImage: (user as any)?.profileImage || "/images/profiles/john smith.png",
     isLive: false
   };
 

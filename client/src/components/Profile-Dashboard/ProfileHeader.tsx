@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, MessageSquare, X } from 'lucide-react';
+import { ChevronDown, MessageSquare, X, Upload } from 'lucide-react';
 import { Badge } from '../ui/badge';
 
 interface ProfileData {
@@ -28,6 +28,7 @@ interface ProfileHeaderProps {
   isFollowing?: boolean;
   onFollowClick?: () => void;
   isCustomer?: boolean;
+  onProfileImageChange?: (imageUrl: string) => void;
 }
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({ 
@@ -39,9 +40,11 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   professionalId,
   isFollowing: externalIsFollowing = false,
   onFollowClick,
-  isCustomer = false
+  isCustomer = false,
+  onProfileImageChange
 }) => {
   const [isFollowing, setIsFollowing] = useState(externalIsFollowing);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setIsFollowing(externalIsFollowing);
@@ -57,6 +60,23 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
+
+  const handleProfileImageUpload = () => {
+    if (isOwnProfile && fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && onProfileImageChange) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        onProfileImageChange(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleProfilePicClick = () => {
     setIsModalOpen(true);
@@ -113,13 +133,27 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               className="w-full h-full rounded-full object-cover bg-black"
             />
           </div>
-          <button className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold hover:bg-blue-600 transition-colors">
-            +
-          </button>
+          {isOwnProfile && (
+            <>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+              <button 
+                onClick={handleProfileImageUpload}
+                className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold hover:bg-blue-600 transition-colors"
+              >
+                +
+              </button>
+            </>
+          )}
         </div>
 
         {/* Right side content */}
-        <div className="flex-1 space-y-3">
+        <div className="flex-1 space-y-3 mt-2">
           {/* Display name */}
           <h2 className="font-bold text-sm">{profileData.displayName}</h2>
           

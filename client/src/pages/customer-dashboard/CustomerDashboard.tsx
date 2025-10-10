@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ShoppingBag, Calendar, Package, Eye, Layers, Plus } from "lucide-react";
+import { Loader2, ShoppingBag, Calendar, Package, Eye, Layers, Plus, Edit } from "lucide-react";
 import ProfileHeader from "@/components/Profile-Dashboard/ProfileHeader";
 import TabNavigation from "@/components/Profile-Dashboard/TabNavigation";
 import StarRating from "@/components/Profile-Dashboard/StarRating";
@@ -219,6 +219,19 @@ export default function CustomerDashboard() {
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="max-w-4xl mx-auto">
+        {/* Edit Button - Top Right Corner */}
+        <div className="flex justify-end px-4 pt-4 pb-2">
+          <Button
+            onClick={() => navigate("/profile/edit")}
+            variant="ghost"
+            size="sm"
+            className="text-gray-400 hover:text-white hover:bg-gray-800"
+          >
+            <Edit className="w-4 h-4 mr-2" />
+            Edit Profile
+          </Button>
+        </div>
+
         <ProfileHeader 
           profileData={profileData}
           onEditProfile={() => navigate("/profile/edit")}
@@ -374,14 +387,6 @@ export default function CustomerDashboard() {
               </div>
             </div>
 
-            <div className="space-y-3">
-              <Button 
-                onClick={() => navigate("/profile/edit")}
-                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500"
-              >
-                Edit Profile
-              </Button>
-            </div>
           </div>
         )}
 

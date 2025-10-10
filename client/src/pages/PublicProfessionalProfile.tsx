@@ -46,7 +46,7 @@ const PublicProfessionalProfile = () => {
   const { data: professional, isLoading: loadingProfessional } = useProfessional(id);
   const { data: professionalReviews = [], isLoading: loadingReviews } = useProfessionalReviews(id);
   const { data: projects = [], isLoading: loadingProjects } = useProfessionalProjects(id);
-  const { data: followStatus = { isFollowing: false, followerCount: 0 } } = useFollowStatus(id);
+  const { data: followStatus = { isFollowing: false, followerCount: 0, followingCount: 0 } } = useFollowStatus(id);
   
   // Mutations
   const createReviewMutation = useCreateReview();
@@ -91,7 +91,7 @@ const PublicProfessionalProfile = () => {
     stats: {
       posts: portfolioItems.length,
       followers: followStatus.followerCount || 0,
-      following: followStatus.followerCount || 0
+      following: followStatus.followingCount || 0
     },
     profileImage: professional?.profileImage || '/lovable-uploads/1c8904bf-5b78-4e55-88ea-dc5028083eef.png',
     isLive: false

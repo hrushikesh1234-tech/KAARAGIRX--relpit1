@@ -256,10 +256,6 @@ export class ProfessionalController {
     try {
       const professionalId = parseInt(req.params.id);
       const userId = (req.user as any)?.id;
-      
-      if (!userId) {
-        return res.json({ isFollowing: false, followerCount: 0 });
-      }
 
       // Get the professional to find their userId
       const professional = await professionalService.getProfessional(professionalId);
@@ -268,12 +264,24 @@ export class ProfessionalController {
         return res.status(404).json({ error: 'Professional not found' });
       }
 
-      const isFollowing = await professionalService.isFollowing(userId, professional.userId);
+      // Get follower and following counts for the professional
       const followerCount = await professionalService.getFollowerCount(professional.userId);
+      const followingCount = await professionalService.getFollowingCount(professional.userId);
+      
+      if (!userId) {
+        return res.json({ 
+          isFollowing: false, 
+          followerCount,
+          followingCount
+        });
+      }
+
+      const isFollowing = await professionalService.isFollowing(userId, professional.userId);
       
       res.json({ 
         isFollowing,
-        followerCount
+        followerCount,
+        followingCount
       });
     } catch (error) {
       console.error('Error checking follow status:', error);

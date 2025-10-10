@@ -126,7 +126,7 @@ export function useFollowStatus(professionalId: number | string | undefined) {
   return useQuery({
     queryKey: ["followStatus", professionalId],
     queryFn: async () => {
-      if (!professionalId) return { isFollowing: false, followerCount: 0 };
+      if (!professionalId) return { isFollowing: false, followerCount: 0, followingCount: 0 };
       
       const response = await fetch(`/api/professionals/${professionalId}/follow-status`, {
         credentials: "include"

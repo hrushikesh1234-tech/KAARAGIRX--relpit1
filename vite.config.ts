@@ -10,6 +10,9 @@ export default defineConfig({
     react(),
     // Only include basic plugins for production compatibility
   ],
+  define: {
+    'import.meta.env.VITE_CLOUDINARY_CLOUD_NAME': JSON.stringify(process.env.CLOUDINARY_CLOUD_NAME),
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "client", "src"),

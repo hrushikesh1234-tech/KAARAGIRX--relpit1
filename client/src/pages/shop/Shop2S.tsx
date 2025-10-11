@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MapPin, Star, Truck, CheckCircle, ShoppingCart, Heart, ShieldCheck } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { useMaterials } from "@/hooks/useMaterials";
+import { OptimizedImage } from "@/components/OptimizedImage";
 
 // Import Material type
 import type { Material } from '@/hooks/useMaterials';
@@ -262,10 +263,13 @@ const Shop = () => {
                         >
                           <div className="aspect-square bg-gray-100 flex items-center justify-center">
                             {category.image ? (
-                              <img
+                              <OptimizedImage
                                 src={category.image}
                                 alt={category.name}
                                 className="w-full h-full object-cover"
+                                lazy={true}
+                                fallback="/images/placeholder.jpg"
+                                objectFit="cover"
                               />
                             ) : (
                               <div className="text-gray-400 text-2xl">📦</div>
@@ -365,10 +369,13 @@ const Shop = () => {
                       onClick={() => handleMaterialClick(material)}
                     >
                       <div className="relative h-48 overflow-hidden group">
-                        <img
+                        <OptimizedImage
                           src={material.image || '/images/categories/default.jpg'}
                           alt={material.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          lazy={true}
+                          fallback="/images/placeholder.jpg"
+                          objectFit="cover"
                         />
                         <button 
                           className="absolute top-2 right-2 p-2 bg-white/80 rounded-full hover:bg-white transition-colors"

@@ -1,6 +1,6 @@
 import React from 'react';
-// Import Lucide icons using require
 import { CheckCircle } from 'lucide-react';
+import { OptimizedImage } from '@/components/OptimizedImage';
 
 export interface Subcategory {
   name: string;
@@ -79,7 +79,7 @@ export const SubcategoryFilter: React.FC<SubcategoryFilterProps> = ({
                 aria-label="Show all subcategories"
               >
                 <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gray-100 mb-1.5">
-                  <img 
+                  <OptimizedImage 
                     src={
                       category?.toLowerCase() === 'stone-dust' ? 
                       '/images/categories/stone dust.jpg' :
@@ -93,10 +93,11 @@ export const SubcategoryFilter: React.FC<SubcategoryFilterProps> = ({
                     }
                     alt="All"
                     className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = '/images/placeholder.jpg';
-                    }}
+                    width={48}
+                    height={48}
+                    lazy={true}
+                    fallback="/images/placeholder.jpg"
+                    objectFit="cover"
                   />
                   {!subcategory && (
                     <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
@@ -127,14 +128,15 @@ export const SubcategoryFilter: React.FC<SubcategoryFilterProps> = ({
                     aria-label={`Filter by ${subcat.name}`}
                   >
                     <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gray-100 mb-1.5">
-                      <img 
+                      <OptimizedImage 
                         src={subcat.image} 
                         alt={subcat.name}
                         className="w-full h-full object-cover"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = '/images/placeholder.jpg';
-                        }}
+                        width={48}
+                        height={48}
+                        lazy={true}
+                        fallback="/images/placeholder.jpg"
+                        objectFit="cover"
                       />
                       {isSelected && (
                         <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">

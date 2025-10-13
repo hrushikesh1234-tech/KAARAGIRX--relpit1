@@ -7,6 +7,13 @@ KaaragirX is a full-stack construction marketplace platform designed to connect 
 - None set yet (fresh import)
 
 ## Recent Changes
+- **October 13, 2025**: Customer Dashboard Improvements
+  - **Username Display**: Changed dashboard to display username instead of full name for consistency
+  - **Profile Layout**: Moved profile picture and name up closer to header toolbar by adjusting spacing
+  - **Email Field**: Added email field to Edit Profile form with proper save functionality
+  - **Profile Updates Fix**: Implemented updateUser method in AuthContext to update user data without full page reloads
+  - **Seamless Updates**: Removed window.location.reload() calls; profile changes now reflect immediately without page refresh
+  - **Data Persistence**: Profile updates (email, bio, phone, address, profileImage) now save correctly and persist across navigation
 - **October 10, 2025**: Customer and Professional Dashboard Profile Enhancements
   - **Customer Dashboard Edit Button**: Moved "Edit Profile" button to top right corner; removed duplicate from "About" tab for cleaner UI
   - **Profile Picture Upload**: Fixed + button functionality in both customer and professional dashboards; clicking + now opens file selector and saves image to database immediately

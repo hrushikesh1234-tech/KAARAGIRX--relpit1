@@ -80,11 +80,11 @@ export default function CustomerDashboard() {
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState("orders");
+  const [showFriendsModal, setShowFriendsModal] = useState(false);
   
   const customerTabs = [
     { id: 'orders', label: 'My Orders' },
     { id: 'bookings', label: 'My Bookings' },
-    { id: 'friends', label: 'Friends' },
     { id: 'bookmarked', label: 'Bookmarked' },
     { id: 'about', label: 'About' }
   ];
@@ -262,7 +262,7 @@ export default function CustomerDashboard() {
     additionalInfo: (user as any)?.address || "",
     stats: {
       posts: totalItems,
-      followers: 0,
+      followers: friends.length,
       following: 0
     },
     profileImage: (user as any)?.profileImage || "/images/profiles/john smith.png",
@@ -302,6 +302,16 @@ export default function CustomerDashboard() {
           isOwnProfile={true}
           onProfileImageChange={handleProfileImageChange}
         />
+
+        {/* Friends Count - Below Username */}
+        <div className="px-4 pb-4">
+          <button
+            onClick={() => setShowFriendsModal(true)}
+            className="text-sm text-gray-400 hover:text-white transition-colors"
+          >
+            <span className="font-semibold text-white">{friends.length}</span> friends
+          </button>
+        </div>
 
         <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} customTabs={customerTabs} />
 
@@ -453,6 +463,79 @@ export default function CustomerDashboard() {
         )}
 
         <div className="h-20"></div>
+
+        {/* Friends Modal */}
+        {showFriendsModal && (
+          <div 
+            className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+            onClick={() => setShowFriendsModal(false)}
+          >
+            <div 
+              className="bg-gray-900 rounded-lg max-w-md w-full max-h-[80vh] overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-4 border-b border-gray-800 flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Friends ({friends.length})</h3>
+                <button
+                  onClick={() => setShowFriendsModal(false)}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="overflow-y-auto max-h-[calc(80vh-80px)]">
+                {friends.length === 0 ? (
+                  <div className="text-center py-12 text-gray-400">
+                    <p>No friends yet</p>
+                    <p className="text-sm mt-2">Follow professionals to add them as friends</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-800">
+                    {friends.map((friend) => (
+                      <div 
+                        key={friend.id}
+                        className="p-4 hover:bg-gray-800/50 transition-colors cursor-pointer"
+                        onClick={() => {
+                          setShowFriendsModal(false);
+                          if (friend.userType === 'contractor' || friend.userType === 'architect') {
+                            navigate(`/professionals/${friend.id}`);
+                          }
+                        }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-800 flex-shrink-0">
+                            {friend.profileImage ? (
+                              <img
+                                src={friend.profileImage}
+                                alt={friend.fullName}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-2xl">
+                                👤
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold truncate">{friend.fullName}</p>
+                            <p className="text-sm text-gray-400 truncate">@{friend.username}</p>
+                            {friend.bio && (
+                              <p className="text-xs text-gray-500 truncate mt-1">{friend.bio}</p>
+                            )}
+                          </div>
+                          <div className="text-xs text-gray-500 capitalize">
+                            {friend.userType.replace('_', ' ')}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

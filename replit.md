@@ -7,6 +7,19 @@ KaaragirX is a full-stack construction marketplace platform designed to connect 
 - None set yet (fresh import)
 
 ## Recent Changes
+- **October 13, 2025**: UI/UX Design Enhancements
+  - **Customer Dashboard Friends Section**: Moved "friends" count to display directly below username (previously in action buttons area); now shows centered below username for better visual hierarchy when viewing own customer profile
+  - **Professional Cards Dark Theme Redesign**: Complete redesign of professional listing cards with sleek dark aesthetic
+    - Dark black gradient background (from-gray-900 via-black to-gray-900) with subtle border
+    - Portfolio images displayed in 2×2 grid (4 images total) at the top of each card
+    - Profile picture overlay positioned on top-left corner of portfolio grid with blue verification badge
+    - All text styled in white/gray colors for optimal contrast on dark background
+    - Enhanced hover animation with 10% opacity gradient glow effect (blue to purple)
+    - Rating displayed with yellow accent color in dedicated badge
+    - Stats section with dark semi-transparent background
+    - Cards arranged 2 per row on medium+ screens (md:grid-cols-2)
+    - Graceful fallbacks for missing portfolio images using Unsplash placeholders
+  - **Responsive Design**: Both components maintain proper responsive behavior across all screen sizes
 - **October 13, 2025**: Customer Dashboard Improvements
   - **Username Display**: Changed dashboard to display username instead of full name for consistency
   - **Profile Layout**: Moved profile picture and name up closer to header toolbar by adjusting spacing

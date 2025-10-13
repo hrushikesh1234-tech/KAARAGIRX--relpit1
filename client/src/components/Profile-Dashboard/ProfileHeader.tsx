@@ -117,7 +117,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   return (
     <div className="px-4">
       {/* Profile info section */}
-      <div className="flex items-start gap-4 mb-4 -mt-2">
+      <div className="flex items-start gap-4 mb-4">
         {/* Profile picture */}
         <div className="relative">
           <div 

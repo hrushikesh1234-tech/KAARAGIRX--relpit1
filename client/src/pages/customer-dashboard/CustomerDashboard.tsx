@@ -225,7 +225,7 @@ export default function CustomerDashboard() {
 
   const profileData = {
     username: user?.username || "",
-    displayName: user?.fullName || "Customer",
+    displayName: user?.username || "Customer",
     bio: (user as any)?.bio || "Construction Materials & Equipment Customer",
     occupation: "Customer",
     additionalInfo: (user as any)?.address || "",
@@ -250,7 +250,7 @@ export default function CustomerDashboard() {
     <div className="min-h-screen bg-black text-white">
       <div className="max-w-4xl mx-auto">
         {/* Edit Button - Top Right Corner */}
-        <div className="flex justify-end px-4 pt-4 pb-2">
+        <div className="flex justify-end px-4 pt-2 pb-0">
           <Button
             onClick={() => navigate("/profile/edit")}
             variant="ghost"

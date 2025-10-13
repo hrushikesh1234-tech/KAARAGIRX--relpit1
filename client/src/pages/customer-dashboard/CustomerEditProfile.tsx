@@ -15,6 +15,7 @@ export default function CustomerEditProfile() {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
+    email: "",
     bio: "",
     phone: "",
     address: "",
@@ -29,6 +30,7 @@ export default function CustomerEditProfile() {
 
     setFormData({
       fullName: user.fullName || "",
+      email: user.email || "",
       bio: (user as any)?.bio || "",
       phone: (user as any)?.phone || "",
       address: (user as any)?.address || "",
@@ -131,6 +133,17 @@ export default function CustomerEditProfile() {
               value={formData.fullName}
               onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
               className="bg-gray-900 border-gray-700 text-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Email</label>
+            <Input
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+              className="bg-gray-900 border-gray-700 text-white"
+              placeholder="your.email@example.com"
             />
           </div>
 

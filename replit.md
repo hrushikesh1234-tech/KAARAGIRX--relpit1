@@ -8,7 +8,7 @@ KaaragirX is a full-stack construction marketplace platform designed to connect 
 
 ## Recent Changes
 - **October 13, 2025**: UI/UX Design Enhancements
-  - **Customer Dashboard Friends Section**: Moved "friends" count to display directly below username (previously in action buttons area); now shows centered below username for better visual hierarchy when viewing own customer profile
+  - **Customer Dashboard Friends Section**: Positioned "friends" count closer to profile picture in Instagram-style layout; removed duplicate section that was previously showing below bio; friends count is now clickable to open friends modal
   - **Professional Cards Dark Theme Redesign**: Complete redesign of professional listing cards with sleek dark aesthetic
     - Dark black gradient background (from-gray-900 via-black to-gray-900) with subtle border
     - Portfolio images displayed in 2×2 grid (4 images total) at the top of each card

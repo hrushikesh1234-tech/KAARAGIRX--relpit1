@@ -301,17 +301,8 @@ export default function CustomerDashboard() {
           isCustomer={true}
           isOwnProfile={true}
           onProfileImageChange={handleProfileImageChange}
+          onFriendsClick={() => setShowFriendsModal(true)}
         />
-
-        {/* Friends Count - Below Username */}
-        <div className="px-4 pb-4">
-          <button
-            onClick={() => setShowFriendsModal(true)}
-            className="text-sm text-gray-400 hover:text-white transition-colors"
-          >
-            <span className="font-semibold text-white">{friends.length}</span> friends
-          </button>
-        </div>
 
         <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} customTabs={customerTabs} />
 

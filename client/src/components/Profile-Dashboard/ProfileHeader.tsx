@@ -29,6 +29,7 @@ interface ProfileHeaderProps {
   onFollowClick?: () => void;
   isCustomer?: boolean;
   onProfileImageChange?: (imageUrl: string) => void;
+  onFriendsClick?: () => void;
 }
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({ 
@@ -41,7 +42,8 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   isFollowing: externalIsFollowing = false,
   onFollowClick,
   isCustomer = false,
-  onProfileImageChange
+  onProfileImageChange,
+  onFriendsClick
 }) => {
   const [isFollowing, setIsFollowing] = useState(externalIsFollowing);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -150,16 +152,21 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         </div>
 
         {/* Right side content */}
-        <div className="flex-1 space-y-3">
+        <div className="flex-1">
           {/* Display name */}
-          <h2 className="font-bold text-sm">{profileData.displayName}</h2>
+          <h2 className="font-bold text-sm mb-4">{profileData.displayName}</h2>
           
-          {/* Friends section - shown for customers below username */}
+          {/* Friends section - shown for customers next to profile (Instagram-style) */}
           {isCustomer && isOwnProfile && (
-            <div className="text-center">
-              <div className="text-base font-semibold text-gray-100">{profileData.stats.followers}</div>
-              <div className="text-[11px] text-gray-400 font-medium">friends</div>
-            </div>
+            <button 
+              onClick={onFriendsClick}
+              className="flex items-center gap-4 hover:opacity-80 transition-opacity"
+            >
+              <div className="text-center">
+                <div className="text-base font-semibold text-gray-100">{profileData.stats.followers}</div>
+                <div className="text-[11px] text-gray-400 font-medium">friends</div>
+              </div>
+            </button>
           )}
           
           {/* Action buttons - hide rating/follow/message for customers */}

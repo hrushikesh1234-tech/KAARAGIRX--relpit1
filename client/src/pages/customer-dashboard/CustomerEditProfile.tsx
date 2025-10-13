@@ -9,7 +9,7 @@ import { ArrowLeft, Camera, Loader2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 export default function CustomerEditProfile() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -43,16 +43,17 @@ export default function CustomerEditProfile() {
 
     setLoading(true);
     try {
-      await apiRequest("PUT", `/api/users/${user.id}`, formData);
+      const response = await apiRequest("PUT", `/api/users/${user.id}`, formData);
+      const updatedUser = await response.json();
+      
+      updateUser(updatedUser);
 
       toast({
         title: "Success",
         description: "Profile updated successfully",
       });
 
-      // Navigate and reload to get updated user data
       navigate("/customer/dashboard");
-      window.location.reload();
     } catch (error) {
       console.error("Error updating profile:", error);
       toast({

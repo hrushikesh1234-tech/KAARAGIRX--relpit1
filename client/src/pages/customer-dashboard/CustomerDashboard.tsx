@@ -66,7 +66,7 @@ interface Review {
 }
 
 export default function CustomerDashboard() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, updateUser } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -175,7 +175,7 @@ export default function CustomerDashboard() {
     if (!user?.id) return;
 
     try {
-      await fetch(`/api/users/${user.id}`, {
+      const response = await fetch(`/api/users/${user.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -184,13 +184,15 @@ export default function CustomerDashboard() {
         body: JSON.stringify({ profileImage: imageUrl }),
       });
 
-      toast({
-        title: "Success",
-        description: "Profile picture updated successfully",
-      });
-
-      // Reload to get updated user data
-      window.location.reload();
+      if (response.ok) {
+        const updatedUser = await response.json();
+        updateUser(updatedUser);
+        
+        toast({
+          title: "Success",
+          description: "Profile picture updated successfully",
+        });
+      }
     } catch (error) {
       console.error("Error updating profile picture:", error);
       toast({

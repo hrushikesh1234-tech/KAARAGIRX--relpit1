@@ -329,7 +329,7 @@ const ProfessionalsListingPage = () => {
               const portfolioImages = professional.projects
                 ?.filter(p => p.coverImage)
                 .map(p => p.coverImage as string)
-                .slice(0, 3) || [];
+                .slice(0, 4) || [];
               
               return (
                 <ProfessionalCard 

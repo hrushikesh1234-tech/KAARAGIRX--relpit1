@@ -154,6 +154,14 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           {/* Display name */}
           <h2 className="font-bold text-sm">{profileData.displayName}</h2>
           
+          {/* Friends section - shown for customers below username */}
+          {isCustomer && isOwnProfile && (
+            <div className="text-center">
+              <div className="text-base font-semibold text-gray-100">{profileData.stats.followers}</div>
+              <div className="text-[11px] text-gray-400 font-medium">friends</div>
+            </div>
+          )}
+          
           {/* Action buttons - hide rating/follow/message for customers */}
           {!isCustomer && (
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full">

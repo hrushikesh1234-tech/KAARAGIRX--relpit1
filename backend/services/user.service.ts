@@ -1,4 +1,4 @@
-import { users, type User, type InsertUser } from "../../shared/schema";
+import { users, follows, type User, type InsertUser } from "../../shared/schema";
 import { db } from "../config/database";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
@@ -54,7 +54,6 @@ export class UserService {
   }
 
   async getFollowing(userId: number) {
-    const { follows } = await import("../../shared/schema.js");
     const result = await db
       .select({
         id: users.id,

@@ -65,6 +65,15 @@ interface Review {
   createdAt: string;
 }
 
+interface Friend {
+  id: number;
+  username: string;
+  fullName: string;
+  profileImage: string;
+  userType: string;
+  bio: string;
+}
+
 export default function CustomerDashboard() {
   const { user, isAuthenticated, updateUser } = useAuth();
   const navigate = useNavigate();
@@ -75,6 +84,7 @@ export default function CustomerDashboard() {
   const customerTabs = [
     { id: 'orders', label: 'My Orders' },
     { id: 'bookings', label: 'My Bookings' },
+    { id: 'friends', label: 'Friends' },
     { id: 'bookmarked', label: 'Bookmarked' },
     { id: 'about', label: 'About' }
   ];
@@ -82,6 +92,7 @@ export default function CustomerDashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [friends, setFriends] = useState<Friend[]>([]);
 
   const totalItems = orders.length + bookings.length;
   const averageRating = reviews.length > 0 
@@ -115,7 +126,8 @@ export default function CustomerDashboard() {
       await Promise.all([
         fetchOrders(),
         fetchBookings(),
-        fetchReviews()
+        fetchReviews(),
+        fetchFriends()
       ]);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -168,6 +180,23 @@ export default function CustomerDashboard() {
       }
     } catch (error) {
       console.error("Error fetching reviews:", error);
+    }
+  };
+
+  const fetchFriends = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const response = await fetch(`/api/users/${user.id}/following`, {
+        credentials: "include"
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setFriends(data);
+      }
+    } catch (error) {
+      console.error("Error fetching friends:", error);
     }
   };
 

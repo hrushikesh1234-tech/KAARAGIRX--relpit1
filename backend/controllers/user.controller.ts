@@ -43,6 +43,17 @@ export class UserController {
       res.status(500).json({ error: 'Failed to update user' });
     }
   }
+
+  async getFollowing(req: Request, res: Response) {
+    try {
+      const id = parseInt(req.params.id);
+      const following = await userService.getFollowing(id);
+      res.json(following);
+    } catch (error) {
+      console.error('Error fetching following:', error);
+      res.status(500).json({ error: 'Failed to fetch following' });
+    }
+  }
 }
 
 export const userController = new UserController();

@@ -52,6 +52,24 @@ export class UserService {
       .returning();
     return updated || undefined;
   }
+
+  async getFollowing(userId: number) {
+    const { follows } = await import("../../shared/schema.js");
+    const result = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        fullName: users.fullName,
+        profileImage: users.profileImage,
+        userType: users.userType,
+        bio: users.bio
+      })
+      .from(follows)
+      .innerJoin(users, eq(follows.followingId, users.id))
+      .where(eq(follows.followerId, userId));
+    
+    return result;
+  }
 }
 
 export const userService = new UserService();

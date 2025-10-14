@@ -14,6 +14,7 @@ import TabNavigation from "@/components/Profile-Dashboard/TabNavigation";
 import StarRating from "@/components/Profile-Dashboard/StarRating";
 import Carousel, { Card as CardComponent } from '@/components/ui/apple-cards-carousel';
 import ImageSlider from '@/components/ui/ImageSlider';
+import CloudinaryMultiImageUpload from '@/components/CloudinaryMultiImageUpload';
 import type { CardProps } from '@/components/ui/apple-cards-carousel';
 
 interface Material {
@@ -795,132 +796,14 @@ export default function MaterialDealerDashboard() {
               </div>
             </div>
             <div className="grid gap-2">
-              <Label>Product Images (Up to 5)</Label>
-              <p className="text-sm text-gray-400">Upload images or enter image URLs from your public folder (e.g., /images/materials/...)</p>
-              
-              {/* Bulk Upload Option */}
-              <div className="mb-3 p-3 bg-gray-800/50 border border-gray-700 rounded-lg">
-                <Label htmlFor="bulk-upload" className="text-sm text-gray-300 mb-2 block">Upload Multiple Images (Select up to 5)</Label>
-                <Input
-                  id="bulk-upload"
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={async (e) => {
-                    const files = Array.from(e.target.files || []);
-                    if (files.length > 5) {
-                      toast({
-                        title: "Too many images",
-                        description: "You can only upload up to 5 images at once.",
-                        variant: "destructive"
-                      });
-                      return;
-                    }
-
-                    const newImages = [...materialForm.images];
-                    let uploadedCount = 0;
-                    
-                    for (const file of files) {
-                      if (file.size > 5000000) {
-                        toast({
-                          title: "Image too large",
-                          description: `${file.name} is larger than 5MB. Skipping.`,
-                          variant: "destructive"
-                        });
-                        continue;
-                      }
-
-                      const emptySlotIndex = newImages.findIndex(img => !img || img.trim() === "");
-                      if (emptySlotIndex === -1) {
-                        toast({
-                          title: "No more slots",
-                          description: "All 5 image slots are filled. Remove an image first.",
-                          variant: "destructive"
-                        });
-                        break;
-                      }
-
-                      const reader = new FileReader();
-                      await new Promise<void>((resolve) => {
-                        reader.onloadend = () => {
-                          const base64String = reader.result as string;
-                          newImages[emptySlotIndex] = base64String;
-                          uploadedCount++;
-                          resolve();
-                        };
-                        reader.readAsDataURL(file);
-                      });
-                    }
-
-                    if (uploadedCount > 0) {
-                      setMaterialForm({ ...materialForm, images: newImages, image: newImages[0] || "" });
-                      toast({
-                        title: "Success",
-                        description: `${uploadedCount} image(s) uploaded successfully.`,
-                      });
-                    }
-                    e.target.value = '';
-                  }}
-                  className="bg-gray-800 border-gray-700"
-                />
-              </div>
-
-              <div className="space-y-2">
-                {[0, 1, 2, 3, 4].map((index) => (
-                  <div key={index} className="flex gap-2 items-center">
-                    <div className="flex-1 flex gap-2">
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            if (file.size > 5000000) {
-                              toast({
-                                title: "Image too large",
-                                description: "Please use images under 5MB per image.",
-                                variant: "destructive"
-                              });
-                              return;
-                            }
-                            const reader = new FileReader();
-                            reader.onloadend = () => {
-                              const base64String = reader.result as string;
-                              const newImages = [...materialForm.images];
-                              newImages[index] = base64String;
-                              setMaterialForm({ ...materialForm, images: newImages, image: newImages[0] || "" });
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        }}
-                        className="bg-gray-800 border-gray-700 flex-1"
-                      />
-                      <span className="text-gray-500 self-center">OR</span>
-                      <Input
-                        type="text"
-                        placeholder={`URL ${index + 1}`}
-                        value={materialForm.images[index]?.startsWith('data:') ? '' : materialForm.images[index] || ""}
-                        onChange={(e) => {
-                          const newImages = [...materialForm.images];
-                          newImages[index] = e.target.value;
-                          setMaterialForm({ ...materialForm, images: newImages, image: newImages[0] || "" });
-                        }}
-                        className="bg-gray-800 border-gray-700 flex-1"
-                      />
-                    </div>
-                    {materialForm.images[index] && (
-                      <img 
-                        src={materialForm.images[index]} 
-                        alt={`Preview ${index + 1}`} 
-                        className="w-16 h-16 object-cover rounded"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
+              <CloudinaryMultiImageUpload
+                images={materialForm.images}
+                onImagesChange={(newImages) => {
+                  setMaterialForm({ ...materialForm, images: newImages, image: newImages[0] || "" });
+                }}
+                maxImages={5}
+                maxSizeMB={5}
+              />
             </div>
           </div>
           <DialogFooter>
@@ -1044,132 +927,14 @@ export default function MaterialDealerDashboard() {
               </div>
             </div>
             <div className="grid gap-2">
-              <Label>Product Images (Up to 5)</Label>
-              <p className="text-sm text-gray-400">Upload images or enter image URLs from your public folder (e.g., /images/materials/...)</p>
-              
-              {/* Bulk Upload Option */}
-              <div className="mb-3 p-3 bg-gray-800/50 border border-gray-700 rounded-lg">
-                <Label htmlFor="bulk-upload" className="text-sm text-gray-300 mb-2 block">Upload Multiple Images (Select up to 5)</Label>
-                <Input
-                  id="bulk-upload"
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={async (e) => {
-                    const files = Array.from(e.target.files || []);
-                    if (files.length > 5) {
-                      toast({
-                        title: "Too many images",
-                        description: "You can only upload up to 5 images at once.",
-                        variant: "destructive"
-                      });
-                      return;
-                    }
-
-                    const newImages = [...materialForm.images];
-                    let uploadedCount = 0;
-                    
-                    for (const file of files) {
-                      if (file.size > 5000000) {
-                        toast({
-                          title: "Image too large",
-                          description: `${file.name} is larger than 5MB. Skipping.`,
-                          variant: "destructive"
-                        });
-                        continue;
-                      }
-
-                      const emptySlotIndex = newImages.findIndex(img => !img || img.trim() === "");
-                      if (emptySlotIndex === -1) {
-                        toast({
-                          title: "No more slots",
-                          description: "All 5 image slots are filled. Remove an image first.",
-                          variant: "destructive"
-                        });
-                        break;
-                      }
-
-                      const reader = new FileReader();
-                      await new Promise<void>((resolve) => {
-                        reader.onloadend = () => {
-                          const base64String = reader.result as string;
-                          newImages[emptySlotIndex] = base64String;
-                          uploadedCount++;
-                          resolve();
-                        };
-                        reader.readAsDataURL(file);
-                      });
-                    }
-
-                    if (uploadedCount > 0) {
-                      setMaterialForm({ ...materialForm, images: newImages, image: newImages[0] || "" });
-                      toast({
-                        title: "Success",
-                        description: `${uploadedCount} image(s) uploaded successfully.`,
-                      });
-                    }
-                    e.target.value = '';
-                  }}
-                  className="bg-gray-800 border-gray-700"
-                />
-              </div>
-
-              <div className="space-y-2">
-                {[0, 1, 2, 3, 4].map((index) => (
-                  <div key={index} className="flex gap-2 items-center">
-                    <div className="flex-1 flex gap-2">
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            if (file.size > 5000000) {
-                              toast({
-                                title: "Image too large",
-                                description: "Please use images under 5MB per image.",
-                                variant: "destructive"
-                              });
-                              return;
-                            }
-                            const reader = new FileReader();
-                            reader.onloadend = () => {
-                              const base64String = reader.result as string;
-                              const newImages = [...materialForm.images];
-                              newImages[index] = base64String;
-                              setMaterialForm({ ...materialForm, images: newImages, image: newImages[0] || "" });
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        }}
-                        className="bg-gray-800 border-gray-700 flex-1"
-                      />
-                      <span className="text-gray-500 self-center">OR</span>
-                      <Input
-                        type="text"
-                        placeholder={`URL ${index + 1}`}
-                        value={materialForm.images[index]?.startsWith('data:') ? '' : materialForm.images[index] || ""}
-                        onChange={(e) => {
-                          const newImages = [...materialForm.images];
-                          newImages[index] = e.target.value;
-                          setMaterialForm({ ...materialForm, images: newImages, image: newImages[0] || "" });
-                        }}
-                        className="bg-gray-800 border-gray-700 flex-1"
-                      />
-                    </div>
-                    {materialForm.images[index] && (
-                      <img 
-                        src={materialForm.images[index]} 
-                        alt={`Preview ${index + 1}`} 
-                        className="w-16 h-16 object-cover rounded"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
+              <CloudinaryMultiImageUpload
+                images={materialForm.images}
+                onImagesChange={(newImages) => {
+                  setMaterialForm({ ...materialForm, images: newImages, image: newImages[0] || "" });
+                }}
+                maxImages={5}
+                maxSizeMB={5}
+              />
             </div>
           </div>
           <DialogFooter>

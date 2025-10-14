@@ -40,18 +40,19 @@ export function ProfessionalCard({
   }
 
   return (
-    <motion.div 
-      className={`group relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-2xl overflow-hidden border border-gray-800 h-full flex flex-col ${className} ${
-        isActive ? 'ring-2 ring-blue-500' : ''
-      }`}
-      whileHover={{ 
-        y: -6,
-        transition: { duration: 0.3, ease: "easeOut" }
-      }}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
+    <Link to={`/professionals/${professional.id}`} className="block h-full">
+      <motion.div 
+        className={`group relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-2xl overflow-hidden border border-gray-800 h-full flex flex-col cursor-pointer ${className} ${
+          isActive ? 'ring-2 ring-blue-500' : ''
+        }`}
+        whileHover={{ 
+          y: -6,
+          transition: { duration: 0.3, ease: "easeOut" }
+        }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
       {/* Portfolio Images Grid with Profile Picture Overlay */}
       <div className="relative h-48">
         {hasPortfolio ? (
@@ -169,16 +170,14 @@ export function ProfessionalCard({
                 {priceRange}
               </div>
             </div>
-            <Link 
-              to={`/professionals/${professional.id}`}
-              className="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-lg text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-200 shadow-lg shadow-blue-500/20"
-            >
+            <div className="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-lg text-white bg-gradient-to-r from-blue-600 to-blue-500 group-hover:from-blue-500 group-hover:to-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-200 shadow-lg shadow-blue-500/20">
               View Profile
-            </Link>
+            </div>
           </div>
         </div>
       </div>
     </motion.div>
+    </Link>
   );
 }
 

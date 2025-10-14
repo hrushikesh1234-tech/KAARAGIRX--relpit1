@@ -26,8 +26,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useLikedItems } from '@/contexts/LikedItemsContext';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { useDealers } from "@/hooks/useDealers";
-import type { Dealer } from '@/types/dealer.types';
+import { useMaterials, type Material } from "@/hooks/useMaterials";
 import { getFallbackImage } from "@/utils/imageUtils";
 import './styles/scrollbar-hide.css';
 
@@ -55,8 +54,6 @@ const MaterialsListingPage2S: React.FC = () => {
   
   const { category: categoryParam = '', subcategory: subcategoryParam = '' } = useParams<RouteParams>();
   
-  const { data: dealerList = [], isLoading, error } = useDealers();
-  
   const { addToCart, removeFromCart, isItemInCart } = useCart();
   const { addLikedItem, removeLikedItem, isLiked } = useLikedItems();
   
@@ -74,6 +71,11 @@ const MaterialsListingPage2S: React.FC = () => {
   
   const category = (categoryParam?.toLowerCase() || searchParamsObj.get('category') || '').toLowerCase();
   const subcategory = (subcategoryParam?.toLowerCase() || searchParamsObj.get('subcategory') || '').toLowerCase();
+  
+  const { data: materialList = [], isLoading, error } = useMaterials({
+    category: category || undefined,
+    subcategory: subcategory || undefined,
+  });
   
   useEffect(() => {
     const sortParam = searchParamsObj.get('sort');
@@ -107,8 +109,8 @@ const MaterialsListingPage2S: React.FC = () => {
     updateFilters({ sort: value });
   };
 
-  const getDealerImage = (dealer: Dealer): string => {
-    const dealerImageMap: Record<number, string> = {
+  const getMaterialImage = (material: Material): string => {
+    const materialImageMap: Record<number, string> = {
       1: '/images/materials images/cement/001/a1.png',
       2: '/images/materials images/cement/002/b1.png',
       245: '/images/materials images/cement/245/c1.png',
@@ -137,31 +139,31 @@ const MaterialsListingPage2S: React.FC = () => {
       249: '/images/materials images/rubblestone/249/z1.png'
     };
 
-    if (dealer.id in dealerImageMap) {
-      return dealerImageMap[dealer.id as keyof typeof dealerImageMap];
+    if (material.id in materialImageMap) {
+      return materialImageMap[material.id as keyof typeof materialImageMap];
     }
     
-    if (dealer?.image) {
-      return dealer.image;
+    if (material?.image) {
+      return material.image;
     }
     
-    return getFallbackImage(dealer?.category || 'other');
+    return getFallbackImage(material?.category || 'other');
   };
 
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>, dealer: Dealer) => {
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>, material: Material) => {
     const target = e.target as HTMLImageElement;
-    target.src = getFallbackImage(dealer.category || 'other');
+    target.src = getFallbackImage(material.category || 'other');
   };
 
   const uniqueLocations = useMemo(() => {
     const locations = new Set<string>();
-    dealerList.forEach(dealer => {
-      if (dealer.location) {
-        locations.add(dealer.location.split(',')[0].trim());
+    materialList.forEach(material => {
+      if (material.dealerLocation) {
+        locations.add(material.dealerLocation.split(',')[0].trim());
       }
     });
     return Array.from(locations).sort();
-  }, [dealerList]);
+  }, [materialList]);
 
   const formatCategory = (category: string): string => {
     if (!category) return '';
@@ -175,23 +177,23 @@ const MaterialsListingPage2S: React.FC = () => {
       .replace('Tmt', 'TMT');
   };
 
-  const filteredDealers = dealerList.filter((dealer: Dealer) => {
-    const dealerCategory = (dealer.category || '').toLowerCase();
-    const dealerSubcategory = (dealer.subcategory || '').toLowerCase();
-    const dealerLocation = (dealer.location || '').toLowerCase();
+  const filteredMaterials = materialList.filter((material: Material) => {
+    const materialCategory = (material.category || '').toLowerCase();
+    const materialSubcategory = (material.subcategory || '').toLowerCase();
+    const materialLocation = (material.dealerLocation || '').toLowerCase();
     
     const normalizedCategory = category.trim();
     const normalizedSubcategory = subcategory.trim();
     const normalizedLocation = locationFilter.trim();
     
     const matchesCategory = !normalizedCategory || 
-      dealerCategory === normalizedCategory ||
-      dealerCategory.replace(/\s+/g, '-') === normalizedCategory;
+      materialCategory === normalizedCategory ||
+      materialCategory.replace(/\s+/g, '-') === normalizedCategory;
     
     let matchesSubcategory = true;
     if (normalizedSubcategory) {
       const normalize = (str: string): string => str.toLowerCase().trim().replace(/[\s-]+/g, '-');
-      const dealerSubNormalized = normalize(dealerSubcategory);
+      const materialSubNormalized = normalize(materialSubcategory);
       const filterSubNormalized = normalize(normalizedSubcategory);
       
       const isStoneDust = ['stonedust', 'stone-dust', 'stone dust', 'fine-stone-dust', 'coarse-stone-dust']
@@ -206,45 +208,45 @@ const MaterialsListingPage2S: React.FC = () => {
         const stoneDustVariations = ['stonedust', 'stone-dust', 'stone dust', 'fine-stone-dust', 'coarse-stone-dust']
           .map((s: string) => normalize(s));
         matchesSubcategory = stoneDustVariations.some((variation: string) => 
-          dealerSubNormalized.includes(variation) || 
-          variation.includes(dealerSubNormalized)
+          materialSubNormalized.includes(variation) || 
+          variation.includes(materialSubNormalized)
         );
       } else if (isRubble) {
         const rubbleVariations = ['rubblestone', 'rubble-stone', 'rubble stone', 'rubble', '10mm-rubble', '20mm-rubble', '40mm-rubble']
           .map((s: string) => normalize(s));
         matchesSubcategory = rubbleVariations.some((variation: string) => 
-          dealerSubNormalized.includes(variation) || 
-          variation.includes(dealerSubNormalized)
+          materialSubNormalized.includes(variation) || 
+          variation.includes(materialSubNormalized)
         );
       } else {
         matchesSubcategory = 
-          typeof dealerSubNormalized === 'string' && 
+          typeof materialSubNormalized === 'string' && 
           typeof filterSubNormalized === 'string' &&
-          (dealerSubNormalized === filterSubNormalized ||
-           dealerSubNormalized.includes(filterSubNormalized) ||
-           filterSubNormalized.includes(dealerSubNormalized)
+          (materialSubNormalized === filterSubNormalized ||
+           materialSubNormalized.includes(filterSubNormalized) ||
+           filterSubNormalized.includes(materialSubNormalized)
           );
       }
     }
     
     const matchesLocation = !normalizedLocation || 
-      (dealerLocation && typeof dealerLocation === 'string' && 
+      (materialLocation && typeof materialLocation === 'string' && 
        normalizedLocation && typeof normalizedLocation === 'string' &&
-       dealerLocation.toLowerCase().includes(normalizedLocation.toLowerCase()));
+       materialLocation.toLowerCase().includes(normalizedLocation.toLowerCase()));
       
     return matchesCategory && matchesSubcategory && matchesLocation;
   });
 
-  const sortedAndFilteredDealers = [...filteredDealers].sort((a, b) => {
+  const sortedAndFilteredMaterials = [...filteredMaterials].sort((a, b) => {
     switch (sortBy) {
       case 'highest-rated':
-        return (b.rating || 0) - (a.rating || 0);
+        return (Number(b.dealerRating) || 0) - (Number(a.dealerRating) || 0);
       case 'lowest-rated':
-        return (a.rating || 0) - (b.rating || 0);
+        return (Number(a.dealerRating) || 0) - (Number(b.dealerRating) || 0);
       case 'price-high-to-low':
-        return (b.price || 0) - (a.price || 0);
+        return (Number(b.price) || 0) - (Number(a.price) || 0);
       case 'price-low-to-high':
-        return (a.price || 0) - (b.price || 0);
+        return (Number(a.price) || 0) - (Number(b.price) || 0);
       default:
         return 0;
     }
@@ -263,47 +265,47 @@ const MaterialsListingPage2S: React.FC = () => {
     }
   };
 
-  const toggleLike = (dealer: Dealer, e: React.MouseEvent) => {
+  const toggleLike = (material: Material, e: React.MouseEvent) => {
     e.stopPropagation();
-    const id = typeof dealer.id === 'number' ? dealer.id.toString() : dealer.id;
+    const id = typeof material.id === 'number' ? material.id.toString() : material.id;
     
     if (isLiked(id)) {
       removeLikedItem(id);
     } else {
       addLikedItem({
         id,
-        name: dealer.name,
-        price: dealer.price || 0,
-        image: dealer.image,
-        unit: dealer.unit || 'unit',
-        dealerName: dealer.name,
-        dealerId: id
+        name: material.name,
+        price: Number(material.price) || 0,
+        image: material.image || '',
+        unit: material.unit || 'unit',
+        dealerName: material.dealerName || '',
+        dealerId: material.dealerId.toString()
       });
     }
   };
 
-  const handleAddToCart = async (dealer: Dealer, e: React.MouseEvent) => {
+  const handleAddToCart = async (material: Material, e: React.MouseEvent) => {
     e.stopPropagation();
-    const dealerId = dealer.id.toString();
-    const itemInCart = isItemInCart(dealerId);
+    const materialId = material.id.toString();
+    const itemInCart = isItemInCart(materialId);
     
-    setAddingToCartId(dealerId);
+    setAddingToCartId(materialId);
     
     try {
       await new Promise(resolve => setTimeout(resolve, 300));
       
       if (itemInCart) {
-        removeFromCart(dealerId);
+        removeFromCart(materialId);
         toast.success('Item removed from cart');
       } else {
         addToCart({
-          id: dealerId,
-          name: dealer.name,
-          price: dealer.price || 0,
-          unit: dealer.unit || 'unit',
-          image: dealer.image,
-          dealerName: dealer.name,
-          dealerId: dealerId
+          id: materialId,
+          name: material.name,
+          price: Number(material.price) || 0,
+          unit: material.unit || 'unit',
+          image: material.image || '',
+          dealerName: material.dealerName || '',
+          dealerId: material.dealerId.toString()
         });
         toast.success('Item added to cart');
       }
@@ -320,13 +322,13 @@ const MaterialsListingPage2S: React.FC = () => {
     
     const subcategoryMap = new Map<string, Subcategory>();
     
-    dealerList.forEach(dealer => {
-      if (dealer.category && dealer.category.toLowerCase() === category.toLowerCase() && dealer.subcategory) {
-        const subcatName = dealer.subcategory.trim();
+    materialList.forEach(material => {
+      if (material.category && material.category.toLowerCase() === category.toLowerCase() && material.subcategory) {
+        const subcatName = material.subcategory.trim();
         if (!subcategoryMap.has(subcatName)) {
           const displayName = formatCategory(subcatName);
           const slug = subcatName.toLowerCase().replace(/\s+/g, '-');
-          const image = dealer.image || getFallbackImage(category || 'other');
+          const image = material.image || getFallbackImage(category || 'other');
           
           subcategoryMap.set(subcatName, {
             name: displayName,
@@ -553,9 +555,9 @@ const MaterialsListingPage2S: React.FC = () => {
           {/* Products Grid/List */}
           {viewMode === 'grid' ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-              {sortedAndFilteredDealers.map((dealer) => (
+              {sortedAndFilteredMaterials.map((material: Material) => (
                 <div
-                  key={dealer.id}
+                  key={material.id}
                   className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer group relative"
                   onClick={() => {
                     const params = new URLSearchParams();
@@ -563,7 +565,7 @@ const MaterialsListingPage2S: React.FC = () => {
                     if (subcategory) params.set('subcategory', subcategory);
                     if (locationFilter) params.set('location', locationFilter);
                     
-                    navigate(`/dealer/${dealer.id}?${params.toString()}`, {
+                    navigate(`/dealer/${material.dealerId}?${params.toString()}`, {
                       state: {
                         from: 'materials-listing',
                         filters: { category, subcategory, location: locationFilter }
@@ -573,13 +575,13 @@ const MaterialsListingPage2S: React.FC = () => {
                 >
                   {/* Heart Icon */}
                   <button
-                    onClick={(e) => toggleLike(dealer, e)}
+                    onClick={(e) => toggleLike(material, e)}
                     className="absolute top-2 right-2 z-10 bg-white rounded-full p-1.5 shadow-md hover:scale-110 transition-transform"
-                    aria-label={isLiked(dealer.id.toString()) ? 'Remove from wishlist' : 'Add to wishlist'}
+                    aria-label={isLiked(material.id.toString()) ? 'Remove from wishlist' : 'Add to wishlist'}
                   >
                     <Heart
                       className={`w-4 h-4 ${
-                        isLiked(dealer.id.toString())
+                        isLiked(material.id.toString())
                           ? 'fill-red-500 text-red-500'
                           : 'text-gray-400'
                       }`}
@@ -589,10 +591,10 @@ const MaterialsListingPage2S: React.FC = () => {
                   {/* Product Image */}
                   <div className="relative w-full aspect-square bg-gray-50 flex items-center justify-center p-4">
                     <img
-                      src={getDealerImage(dealer)}
-                      alt={dealer.name}
+                      src={getMaterialImage(material)}
+                      alt={material.name}
                       className="w-full h-full object-contain"
-                      onError={(e) => handleImageError(e, dealer)}
+                      onError={(e) => handleImageError(e, material)}
                     />
                   </div>
 
@@ -600,27 +602,27 @@ const MaterialsListingPage2S: React.FC = () => {
                   <div className="p-3">
                     {/* Product Name */}
                     <h3 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
-                      {dealer.name}
+                      {material.name}
                     </h3>
 
                     {/* Rating */}
                     <div className="flex items-center gap-1 mb-2">
                       <div className="flex items-center bg-green-600 text-white text-xs px-1.5 py-0.5 rounded">
                         <Star className="w-3 h-3 fill-white mr-0.5" />
-                        <span className="font-medium">{(Number(dealer.rating) || 0).toFixed(1)}</span>
+                        <span className="font-medium">{(Number(material.dealerRating) || 0).toFixed(1)}</span>
                       </div>
-                      <span className="text-xs text-gray-500">({dealer.reviewCount || 0})</span>
+                      <span className="text-xs text-gray-500">({material.dealerReviewCount || 0})</span>
                     </div>
 
                     {/* Price */}
                     <div className="mb-2">
-                      <span className="text-lg font-bold text-gray-900">₹{dealer.price}</span>
-                      <span className="text-xs text-gray-500 ml-1">/{dealer.unit || 'unit'}</span>
+                      <span className="text-lg font-bold text-gray-900">₹{material.price}</span>
+                      <span className="text-xs text-gray-500 ml-1">/{material.unit || 'unit'}</span>
                     </div>
 
                     {/* Sold By */}
                     <div className="text-xs text-gray-600 mb-3">
-                      Sold by: <span className="font-medium">{dealer.name}</span>
+                      Sold by: <span className="font-medium">{material.dealerName || 'Dealer'}</span>
                     </div>
 
                     {/* Add to Cart Button */}
@@ -628,22 +630,22 @@ const MaterialsListingPage2S: React.FC = () => {
                       variant="default"
                       size="sm"
                       className={`w-full text-xs h-8 transition-all ${
-                        isItemInCart(dealer.id.toString())
+                        isItemInCart(material.id.toString())
                           ? 'bg-green-600 hover:bg-green-700'
                           : 'bg-orange-500 hover:bg-orange-600'
                       }`}
-                      onClick={(e) => handleAddToCart(dealer, e)}
-                      disabled={addingToCartId === dealer.id.toString()}
+                      onClick={(e) => handleAddToCart(material, e)}
+                      disabled={addingToCartId === material.id.toString()}
                     >
-                      {addingToCartId === dealer.id.toString() ? (
+                      {addingToCartId === material.id.toString() ? (
                         <div className="flex items-center">
                           <svg className="animate-spin -ml-1 mr-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                           </svg>
-                          {isItemInCart(dealer.id.toString()) ? 'Removing...' : 'Adding...'}
+                          {isItemInCart(material.id.toString()) ? 'Removing...' : 'Adding...'}
                         </div>
-                      ) : isItemInCart(dealer.id.toString()) ? (
+                      ) : isItemInCart(material.id.toString()) ? (
                         <div className="flex items-center justify-center">
                           <CheckCircle2 className="w-4 h-4 mr-1.5" />
                           <span>In Cart</span>
@@ -661,9 +663,9 @@ const MaterialsListingPage2S: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              {sortedAndFilteredDealers.map((dealer) => (
+              {sortedAndFilteredMaterials.map((material: Material) => (
                 <div
-                  key={dealer.id}
+                  key={material.id}
                   className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-lg transition-all duration-200 cursor-pointer flex gap-4"
                   onClick={() => {
                     const params = new URLSearchParams();
@@ -671,7 +673,7 @@ const MaterialsListingPage2S: React.FC = () => {
                     if (subcategory) params.set('subcategory', subcategory);
                     if (locationFilter) params.set('location', locationFilter);
                     
-                    navigate(`/dealer/${dealer.id}?${params.toString()}`, {
+                    navigate(`/dealer/${material.dealerId}?${params.toString()}`, {
                       state: {
                         from: 'materials-listing',
                         filters: { category, subcategory, location: locationFilter }
@@ -682,10 +684,10 @@ const MaterialsListingPage2S: React.FC = () => {
                   {/* Product Image */}
                   <div className="relative flex-shrink-0 w-32 h-32 bg-gray-50 rounded-lg flex items-center justify-center p-2">
                     <img
-                      src={getDealerImage(dealer)}
-                      alt={dealer.name}
+                      src={getMaterialImage(material)}
+                      alt={material.name}
                       className="w-full h-full object-contain"
-                      onError={(e) => handleImageError(e, dealer)}
+                      onError={(e) => handleImageError(e, material)}
                     />
                   </div>
 
@@ -694,28 +696,28 @@ const MaterialsListingPage2S: React.FC = () => {
                     <div>
                       {/* Product Name */}
                       <h3 className="text-base font-medium text-gray-900 mb-1">
-                        {dealer.name}
+                        {material.name}
                       </h3>
 
                       {/* Rating */}
                       <div className="flex items-center gap-1 mb-2">
                         <div className="flex items-center bg-green-600 text-white text-xs px-1.5 py-0.5 rounded">
                           <Star className="w-3 h-3 fill-white mr-0.5" />
-                          <span className="font-medium">{(Number(dealer.rating) || 0).toFixed(1)}</span>
+                          <span className="font-medium">{(Number(material.dealerRating) || 0).toFixed(1)}</span>
                         </div>
-                        <span className="text-xs text-gray-500">({dealer.reviewCount || 0})</span>
+                        <span className="text-xs text-gray-500">({material.dealerReviewCount || 0})</span>
                       </div>
 
                       {/* Sold By */}
                       <div className="text-sm text-gray-600 mb-2">
-                        Sold by: <span className="font-medium">{dealer.name}</span>
+                        Sold by: <span className="font-medium">{material.dealerName || 'Dealer'}</span>
                       </div>
 
-                      {/* Delivery Time */}
-                      {dealer.deliveryTime && (
+                      {/* Location */}
+                      {material.dealerLocation && (
                         <div className="flex items-center text-xs text-gray-500">
                           <Truck className="w-3.5 h-3.5 mr-1" />
-                          <span>{dealer.deliveryTime}</span>
+                          <span>{material.dealerLocation}</span>
                         </div>
                       )}
                     </div>
@@ -723,20 +725,20 @@ const MaterialsListingPage2S: React.FC = () => {
                     <div className="flex items-center justify-between mt-3">
                       {/* Price */}
                       <div>
-                        <span className="text-xl font-bold text-gray-900">₹{dealer.price}</span>
-                        <span className="text-sm text-gray-500 ml-1">/{dealer.unit || 'unit'}</span>
+                        <span className="text-xl font-bold text-gray-900">₹{material.price}</span>
+                        <span className="text-sm text-gray-500 ml-1">/{material.unit || 'unit'}</span>
                       </div>
 
                       {/* Actions */}
                       <div className="flex gap-2 items-center">
                         <button
-                          onClick={(e) => toggleLike(dealer, e)}
+                          onClick={(e) => toggleLike(material, e)}
                           className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                          aria-label={isLiked(dealer.id.toString()) ? 'Remove from wishlist' : 'Add to wishlist'}
+                          aria-label={isLiked(material.id.toString()) ? 'Remove from wishlist' : 'Add to wishlist'}
                         >
                           <Heart
                             className={`w-5 h-5 ${
-                              isLiked(dealer.id.toString())
+                              isLiked(material.id.toString())
                                 ? 'fill-red-500 text-red-500'
                                 : 'text-gray-400'
                             }`}
@@ -746,22 +748,22 @@ const MaterialsListingPage2S: React.FC = () => {
                           variant="default"
                           size="sm"
                           className={`text-sm h-9 px-4 transition-all ${
-                            isItemInCart(dealer.id.toString())
+                            isItemInCart(material.id.toString())
                               ? 'bg-green-600 hover:bg-green-700'
                               : 'bg-orange-500 hover:bg-orange-600'
                           }`}
-                          onClick={(e) => handleAddToCart(dealer, e)}
-                          disabled={addingToCartId === dealer.id.toString()}
+                          onClick={(e) => handleAddToCart(material, e)}
+                          disabled={addingToCartId === material.id.toString()}
                         >
-                          {addingToCartId === dealer.id.toString() ? (
+                          {addingToCartId === material.id.toString() ? (
                             <div className="flex items-center">
                               <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                               </svg>
-                              {isItemInCart(dealer.id.toString()) ? 'Removing...' : 'Adding...'}
+                              {isItemInCart(material.id.toString()) ? 'Removing...' : 'Adding...'}
                             </div>
-                          ) : isItemInCart(dealer.id.toString()) ? (
+                          ) : isItemInCart(material.id.toString()) ? (
                             <div className="flex items-center">
                               <CheckCircle2 className="w-4 h-4 mr-1.5" />
                               <span>In Cart</span>
@@ -781,7 +783,14 @@ const MaterialsListingPage2S: React.FC = () => {
             </div>
           )}
 
-          {filteredDealers.length === 0 && (
+          {isLoading && (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+              <p className="mt-4 text-gray-500">Loading materials...</p>
+            </div>
+          )}
+
+          {!isLoading && filteredMaterials.length === 0 && (
             <div className="text-center py-12">
               <Package className="w-12 h-12 mx-auto text-gray-300" />
               <h3 className="mt-2 text-lg font-medium text-gray-900">No products found</h3>

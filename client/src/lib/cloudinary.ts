@@ -36,3 +36,70 @@ export const getOptimizedImageUrl = (publicId: string, width?: number, height?: 
 
   return image.toURL();
 };
+
+export interface UploadProgress {
+  loaded: number;
+  total: number;
+  percentage: number;
+}
+
+export const uploadToCloudinary = async (
+  file: File,
+  onProgress?: (progress: UploadProgress) => void
+): Promise<string> => {
+  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+  if (!cloudName || !uploadPreset) {
+    throw new Error('Cloudinary configuration is missing');
+  }
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', uploadPreset);
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.addEventListener('progress', (e) => {
+      if (e.lengthComputable && onProgress) {
+        onProgress({
+          loaded: e.loaded,
+          total: e.total,
+          percentage: Math.round((e.loaded / e.total) * 100)
+        });
+      }
+    });
+
+    xhr.addEventListener('load', () => {
+      if (xhr.status === 200) {
+        const response = JSON.parse(xhr.responseText);
+        resolve(response.secure_url);
+      } else {
+        reject(new Error('Upload failed'));
+      }
+    });
+
+    xhr.addEventListener('error', () => {
+      reject(new Error('Upload failed'));
+    });
+
+    xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`);
+    xhr.send(formData);
+  });
+};
+
+export const uploadMultipleToCloudinary = async (
+  files: File[],
+  onProgress?: (index: number, progress: UploadProgress) => void
+): Promise<string[]> => {
+  const uploadPromises = files.map((file, index) => 
+    uploadToCloudinary(file, (progress) => {
+      if (onProgress) {
+        onProgress(index, progress);
+      }
+    })
+  );
+
+  return Promise.all(uploadPromises);
+};

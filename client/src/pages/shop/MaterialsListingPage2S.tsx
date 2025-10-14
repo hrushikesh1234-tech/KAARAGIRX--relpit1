@@ -110,39 +110,6 @@ const MaterialsListingPage2S: React.FC = () => {
   };
 
   const getMaterialImage = (material: Material): string => {
-    const materialImageMap: Record<number, string> = {
-      1: '/images/materials images/cement/001/a1.png',
-      2: '/images/materials images/cement/002/b1.png',
-      245: '/images/materials images/cement/245/c1.png',
-      250: '/images/materials images/cement/250/e1.png',
-      253: '/images/materials images/cement/253/d1.png',
-      5: '/images/materials images/bricks/005/f1.png',
-      238: '/images/materials images/bricks/238/g1.png',
-      3: '/images/materials images/blocks/003/h1.png',
-      239: '/images/materials images/blocks/239/i1.png',
-      4: '/images/materials images/sand/004/j1.png',
-      240: '/images/materials images/sand/240/k1.png',
-      246: '/images/materials images/sand/246/l1.png',
-      251: '/images/materials images/sand/251/m1.png',
-      254: '/images/materials images/sand/254/n1.png',
-      6: '/images/materials images/steel/006/03.png',
-      241: '/images/materials images/steel/241/p1.png',
-      247: '/images/materials images/steel/247/q1.png',
-      7: '/images/materials images/stone dust/007/r1.png',
-      242: '/images/materials images/stone dust/242/s1.png',
-      8: '/images/materials images/aggregate/008/t1.png',
-      243: '/images/materials images/aggregate/243/u1.png',
-      248: '/images/materials images/aggregate/248/v1.png',
-      252: '/images/materials images/aggregate/252/w1.png',
-      9: '/images/materials images/rubblestone/009/x1.png',
-      244: '/images/materials images/rubblestone/244/y1.png',
-      249: '/images/materials images/rubblestone/249/z1.png'
-    };
-
-    if (material.id in materialImageMap) {
-      return materialImageMap[material.id as keyof typeof materialImageMap];
-    }
-    
     if (material?.image) {
       return material.image;
     }
@@ -722,7 +689,7 @@ const MaterialsListingPage2S: React.FC = () => {
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between mt-3">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mt-3">
                       {/* Price */}
                       <div>
                         <span className="text-xl font-bold text-gray-900">₹{material.price}</span>
@@ -730,10 +697,10 @@ const MaterialsListingPage2S: React.FC = () => {
                       </div>
 
                       {/* Actions */}
-                      <div className="flex gap-2 items-center">
+                      <div className="flex gap-2 items-center w-full sm:w-auto">
                         <button
                           onClick={(e) => toggleLike(material, e)}
-                          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                          className="p-2 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
                           aria-label={isLiked(material.id.toString()) ? 'Remove from wishlist' : 'Add to wishlist'}
                         >
                           <Heart
@@ -747,7 +714,7 @@ const MaterialsListingPage2S: React.FC = () => {
                         <Button
                           variant="default"
                           size="sm"
-                          className={`text-sm h-9 px-4 transition-all ${
+                          className={`text-sm h-9 px-3 sm:px-4 transition-all flex-1 sm:flex-initial ${
                             isItemInCart(material.id.toString())
                               ? 'bg-green-600 hover:bg-green-700'
                               : 'bg-orange-500 hover:bg-orange-600'
@@ -756,12 +723,12 @@ const MaterialsListingPage2S: React.FC = () => {
                           disabled={addingToCartId === material.id.toString()}
                         >
                           {addingToCartId === material.id.toString() ? (
-                            <div className="flex items-center">
+                            <div className="flex items-center justify-center">
                               <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                               </svg>
-                              {isItemInCart(material.id.toString()) ? 'Removing...' : 'Adding...'}
+                              <span className="hidden sm:inline">{isItemInCart(material.id.toString()) ? 'Removing...' : 'Adding...'}</span>
                             </div>
                           ) : isItemInCart(material.id.toString()) ? (
                             <div className="flex items-center">

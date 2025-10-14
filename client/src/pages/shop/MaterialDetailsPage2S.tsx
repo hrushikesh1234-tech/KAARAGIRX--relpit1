@@ -405,45 +405,67 @@ const MaterialDetailsPage2S = () => {
           <div className="bg-white shadow-sm rounded-lg p-4 mb-4">
             <h3 className="font-semibold text-lg mb-3">Sold By</h3>
             <div 
-              className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+              className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-gray-50 rounded-lg cursor-pointer hover:from-blue-100 hover:to-gray-100 transition-all duration-200 border border-blue-100 hover:border-blue-200 group"
               onClick={handleDealerClick}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  handleDealerClick();
+                }
+              }}
             >
               <div className="flex-shrink-0">
                 {material.dealerImage ? (
                   <img 
                     src={material.dealerImage} 
                     alt={material.dealerName || 'Dealer'}
-                    className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
+                    className="w-20 h-20 rounded-full object-cover border-3 border-blue-200 group-hover:border-blue-300 transition-colors shadow-md"
+                    loading="lazy"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
+                      target.onerror = null;
                       target.src = '/images/default-dealer.png';
                     }}
                   />
                 ) : (
-                  <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center border-2 border-gray-300">
-                    <User className="h-8 w-8 text-gray-500" />
+                  <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center border-3 border-blue-200 group-hover:border-blue-300 transition-colors shadow-md">
+                    <Building2 className="h-10 w-10 text-blue-600" />
                   </div>
                 )}
               </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-base">{material.dealerName || 'Dealer'}</h4>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className="font-bold text-lg text-gray-900 truncate">{material.dealerName || 'Dealer'}</h4>
+                  {material.dealerVerified && (
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-xs flex-shrink-0">
+                      <Check className="h-3 w-3 mr-1" />
+                      Verified
+                    </Badge>
+                  )}
+                </div>
                 {material.dealerLocation && (
-                  <div className="flex items-center gap-1 text-sm text-gray-600 mt-1">
-                    <MapPin className="h-4 w-4" />
-                    <span>{material.dealerLocation}</span>
+                  <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
+                    <MapPin className="h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">{material.dealerLocation}</span>
                   </div>
                 )}
                 {material.dealerRating && (
-                  <div className="flex items-center gap-1 mt-1">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm font-medium">{material.dealerRating}</span>
+                  <div className="flex items-center gap-1">
+                    <div className="flex items-center bg-yellow-100 px-2 py-0.5 rounded">
+                      <Star className="h-4 w-4 fill-yellow-500 text-yellow-500 mr-1" />
+                      <span className="text-sm font-semibold text-gray-900">{material.dealerRating}</span>
+                    </div>
                     {material.dealerReviewCount && (
                       <span className="text-sm text-gray-500">({material.dealerReviewCount} reviews)</span>
                     )}
                   </div>
                 )}
               </div>
-              <ChevronDown className="h-5 w-5 text-gray-400 rotate-[-90deg]" />
+              <div className="flex flex-col items-center gap-1 text-blue-600 group-hover:text-blue-700 transition-colors">
+                <ChevronDown className="h-6 w-6 rotate-[-90deg] group-hover:translate-x-1 transition-transform" />
+                <span className="text-xs font-medium whitespace-nowrap">View Profile</span>
+              </div>
             </div>
           </div>
 

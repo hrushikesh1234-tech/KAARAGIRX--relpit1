@@ -561,6 +561,7 @@ const MaterialsListingPage2S: React.FC = () => {
                       src={getMaterialImage(material)}
                       alt={material.name}
                       className="w-full h-full object-contain"
+                      loading="lazy"
                       onError={(e) => handleImageError(e, material)}
                     />
                   </div>
@@ -654,6 +655,7 @@ const MaterialsListingPage2S: React.FC = () => {
                       src={getMaterialImage(material)}
                       alt={material.name}
                       className="w-full h-full object-contain"
+                      loading="lazy"
                       onError={(e) => handleImageError(e, material)}
                     />
                   </div>

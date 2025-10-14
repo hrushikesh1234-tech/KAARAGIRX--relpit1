@@ -24,7 +24,7 @@ const NotificationsNT = lazy(() => import("./pages/Notification/notifications-nt
 // Shop Components
 const Index2S = lazy(() => import("@/pages/shop/Index2S"));
 const Shop2S = lazy(() => import("@/pages/shop/Shop2S"));
-const DealerListing2S = lazy(() => import("@/pages/shop/DealerListing2S"));
+const MaterialsListingPage2S = lazy(() => import("@/pages/shop/MaterialsListingPage2S"));
 const DealerProfile2S = lazy(() => import("@/pages/shop/DealerProfile2S"));
 const BuyNowRequest = lazy(() => import("@/pages/shop/BuyNowRequest2S"));
 const TrackOrderToolbar = lazy(() => import("@/pages/shop/TrackOrder-toolbar2S"));
@@ -147,6 +147,8 @@ function AppRoutes() {
           {/* Shop Routes */}
           <Route path="/shop" element={<Index2S />} />
           <Route path="/shop/products" element={<Shop2S />} />
+          <Route path="/shop/dealers" element={<MaterialsListingPage2S />} />
+          <Route path="/shop/dealers/category/:category" element={<MaterialsListingPage2S />} />
           <Route path="/buy-now/:dealerId" element={<BuyNowRequest />} />
           <Route path="/track" element={<TrackOrderToolbar />} />
           <Route path="/track-order" element={<TrackOrderToolbar />} />
@@ -155,9 +157,9 @@ function AppRoutes() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/liked-items" element={<LikedItems />} />
           
-          {/* Dealers */}
-          <Route path="/dealers" element={<DealerListing2S />} />
-          <Route path="/dealers/category/:category" element={<DealerListing2S />} />
+          {/* Materials */}
+          <Route path="/dealers" element={<MaterialsListingPage2S />} />
+          <Route path="/dealers/category/:category" element={<MaterialsListingPage2S />} />
           <Route path="/dealers/:dealerId" element={<DealerProfile2S />} />
           <Route path="/dealer/:dealerId" element={<DealerProfile2S />} />
           <Route path="/dealer-profile/:dealerId" element={<DealerProfile2S />} />

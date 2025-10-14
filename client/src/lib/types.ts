@@ -71,6 +71,7 @@ export interface User {
   userType: 'customer' | 'contractor' | 'architect' | 'material_dealer' | 'rental_merchant' | 'admin';
   phone?: string;
   address?: string;
+  profileImage?: string;
 }
 
 export interface LoginCredentials {

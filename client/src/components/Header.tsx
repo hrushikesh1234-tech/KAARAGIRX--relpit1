@@ -182,7 +182,25 @@ const Header = () => {
                   <DropdownMenuTrigger asChild>
                     <button className="flex items-center space-x-2 rounded-full hover:bg-gray-800 p-1.5 transition-colors">
                       <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center overflow-hidden">
-                        <span>👤</span>
+                        {user?.profileImage ? (
+                          <img 
+                            src={user.profileImage} 
+                            alt={user.fullName || 'User'} 
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.fullName || 'user'}`;
+                            }}
+                          />
+                        ) : (
+                          <img 
+                            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.fullName || 'user'}`}
+                            alt={user?.fullName || 'User'} 
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = '/placeholder.svg';
+                            }}
+                          />
+                        )}
                       </div>
                     </button>
                   </DropdownMenuTrigger>
@@ -244,12 +262,27 @@ const Header = () => {
           {/* Left: Profile Icon */}
           <div className="flex items-center space-x-4">
             {isAuthenticated && (
-              <ProfilePicture 
-                userType={user?.email?.includes('contractor') ? 'contractor' : 
-                         user?.email?.includes('architect') ? 'architect' : 
-                         (user?.email && user?.email.length % 2 === 0) ? 'customer1' : 'customer2'} 
-                size="sm" 
-              />
+              <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center overflow-hidden">
+                {user?.profileImage ? (
+                  <img 
+                    src={user.profileImage} 
+                    alt={user.fullName || 'User'} 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.fullName || 'user'}`;
+                    }}
+                  />
+                ) : (
+                  <img 
+                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.fullName || 'user'}`}
+                    alt={user?.fullName || 'User'} 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/placeholder.svg';
+                    }}
+                  />
+                )}
+              </div>
             )}
           </div>
 

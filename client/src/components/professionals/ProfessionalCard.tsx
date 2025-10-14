@@ -54,41 +54,43 @@ export function ProfessionalCard({
     >
       {/* Portfolio Images Grid with Profile Picture Overlay */}
       <div className="relative h-48">
-        <div className="grid grid-cols-2 gap-1 h-full">
-          {displayImages.map((img, index) => (
-            <div key={index} className="relative overflow-hidden bg-gray-800 flex items-center justify-center">
-              {img ? (
-                <img 
-                  src={img} 
-                  alt={`Portfolio ${index + 1}`}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=400&h=300&fit=crop';
-                  }}
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  {index === 0 && !hasPortfolio && (
-                    <p className="text-gray-500 text-xs font-medium text-center px-2">
-                      No Portfolio Yet
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+        {hasPortfolio ? (
+          <div className="grid grid-cols-2 gap-1 h-full">
+            {displayImages.map((img, index) => (
+              <div key={index} className="relative overflow-hidden bg-gray-800 flex items-center justify-center">
+                {img ? (
+                  <img 
+                    src={img} 
+                    alt={`Portfolio ${index + 1}`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=400&h=300&fit=crop';
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-800"></div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+            <p className="text-gray-500 text-sm font-medium text-center px-4">
+              No Portfolio Yet
+            </p>
+          </div>
+        )}
         
         {/* Profile Picture Overlay - Top Left */}
         <div className="absolute top-3 left-3">
           <div className="relative">
             <div className="w-16 h-16 rounded-full border-2 border-gray-900 overflow-hidden bg-gray-800">
               <img
-                src={professional.profileImage || '/default-avatar.png'}
+                src={professional.profileImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${professional.fullName}`}
                 alt={professional.fullName}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + professional.fullName;
+                  (e.target as HTMLImageElement).src = '/placeholder.svg';
                 }}
               />
             </div>

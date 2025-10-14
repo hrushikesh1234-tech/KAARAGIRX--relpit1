@@ -7,6 +7,23 @@ KaaragirX is a full-stack construction marketplace platform designed to connect 
 - None set yet (fresh import)
 
 ## Recent Changes
+- **October 14, 2025**: Materials Listing Page E-Commerce Redesign
+  - **Page Rename**: Renamed DealerListing2S.tsx to MaterialsListingPage2S.tsx for better clarity
+  - **E-Commerce Grid Layout**: Complete redesign with Flipkart/Amazon-style product grid
+    - Responsive grid layout (2-5 columns based on screen size)
+    - Product cards with images, ratings, prices, and dealer information
+    - Heart icon for adding products to wishlist (top-right corner of each card)
+    - "Add to Cart" button with visual feedback (orange button, turns green when in cart)
+    - "Sold by" dealer name display on each product card
+    - Green rating badge with star icon and review count
+  - **View Toggle**: Added grid/list view toggle buttons for flexible browsing
+    - Grid view: Cards in responsive columns
+    - List view: Horizontal layout with larger images and more details
+  - **Subcategory Slider**: Preserved existing subcategory slider with horizontal scroll
+  - **Filters**: Location and sort filters remain functional
+  - **Routes**: Added /shop/dealers and /shop/dealers/category/:category routes to App.tsx
+  - **Bug Fixes**: Fixed rating display by converting dealer.rating to Number before calling toFixed()
+  - **Legacy Support**: Kept existing /dealers routes for backward compatibility
 - **October 13, 2025**: UI/UX Design Enhancements
   - **Customer Dashboard Friends Section**: Positioned "friends" count closer to profile picture in Instagram-style layout; removed duplicate section that was previously showing below bio; friends count is now clickable to open friends modal
   - **Professional Cards Dark Theme Redesign**: Complete redesign of professional listing cards with sleek dark aesthetic

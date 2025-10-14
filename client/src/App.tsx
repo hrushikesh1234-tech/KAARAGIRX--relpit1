@@ -26,6 +26,7 @@ const Index2S = lazy(() => import("@/pages/shop/Index2S"));
 const Shop2S = lazy(() => import("@/pages/shop/Shop2S"));
 const MaterialsListingPage2S = lazy(() => import("@/pages/shop/MaterialsListingPage2S"));
 const DealerProfile2S = lazy(() => import("@/pages/shop/DealerProfile2S"));
+const MaterialDetailsPage2S = lazy(() => import("@/pages/shop/MaterialDetailsPage2S"));
 const BuyNowRequest = lazy(() => import("@/pages/shop/BuyNowRequest2S"));
 const TrackOrderToolbar = lazy(() => import("@/pages/shop/TrackOrder-toolbar2S"));
 const TrackOrder = lazy(() => import("@/pages/shop/TrackOrder2S"));
@@ -160,6 +161,7 @@ function AppRoutes() {
           {/* Materials */}
           <Route path="/dealers" element={<MaterialsListingPage2S />} />
           <Route path="/dealers/category/:category" element={<MaterialsListingPage2S />} />
+          <Route path="/material/:materialId" element={<MaterialDetailsPage2S />} />
           <Route path="/dealers/:dealerId" element={<DealerProfile2S />} />
           <Route path="/dealer/:dealerId" element={<DealerProfile2S />} />
           <Route path="/dealer-profile/:dealerId" element={<DealerProfile2S />} />

@@ -565,7 +565,7 @@ const MaterialsListingPage2S: React.FC = () => {
                     if (subcategory) params.set('subcategory', subcategory);
                     if (locationFilter) params.set('location', locationFilter);
                     
-                    navigate(`/dealer/${material.dealerId}?${params.toString()}`, {
+                    navigate(`/material/${material.id}?${params.toString()}`, {
                       state: {
                         from: 'materials-listing',
                         filters: { category, subcategory, location: locationFilter }
@@ -673,7 +673,7 @@ const MaterialsListingPage2S: React.FC = () => {
                     if (subcategory) params.set('subcategory', subcategory);
                     if (locationFilter) params.set('location', locationFilter);
                     
-                    navigate(`/dealer/${material.dealerId}?${params.toString()}`, {
+                    navigate(`/material/${material.id}?${params.toString()}`, {
                       state: {
                         from: 'materials-listing',
                         filters: { category, subcategory, location: locationFilter }

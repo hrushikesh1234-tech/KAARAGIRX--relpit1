@@ -31,10 +31,12 @@ export function ProfessionalCard({
   const completedProjects = professional.completedProjects || 0;
   const responseTime = professional.responseTime || '<24h';
 
-  const displayImages = portfolioImages.slice(0, 4);
-  const placeholderImage = 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=400&h=300&fit=crop';
+  const hasPortfolio = portfolioImages.length > 0;
+  const displayImages: (string | null)[] = portfolioImages.slice(0, 4);
+  
+  // Fill remaining slots with nulls to maintain 4-grid layout
   while (displayImages.length < 4) {
-    displayImages.push(placeholderImage);
+    displayImages.push(null);
   }
 
   return (
@@ -54,15 +56,25 @@ export function ProfessionalCard({
       <div className="relative h-48">
         <div className="grid grid-cols-2 gap-1 h-full">
           {displayImages.map((img, index) => (
-            <div key={index} className="relative overflow-hidden bg-gray-800">
-              <img 
-                src={img} 
-                alt={`Portfolio ${index + 1}`}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=400&h=300&fit=crop';
-                }}
-              />
+            <div key={index} className="relative overflow-hidden bg-gray-800 flex items-center justify-center">
+              {img ? (
+                <img 
+                  src={img} 
+                  alt={`Portfolio ${index + 1}`}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=400&h=300&fit=crop';
+                  }}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  {index === 0 && !hasPortfolio && (
+                    <p className="text-gray-500 text-xs font-medium text-center px-2">
+                      No Portfolio Yet
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -164,9 +176,6 @@ export function ProfessionalCard({
           </div>
         </div>
       </div>
-      
-      {/* Gradient Glow effect on hover - 10% opacity */}
-      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
     </motion.div>
   );
 }

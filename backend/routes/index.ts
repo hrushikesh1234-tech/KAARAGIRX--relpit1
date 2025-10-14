@@ -13,6 +13,7 @@ import bookingRoutes from "./booking.routes";
 import wishlistRoutes from "./wishlist.routes";
 import notificationRoutes from "./notification.routes";
 import userRoutes from "./user.routes";
+import uploadRoutes from "./upload.routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/auth', authRoutes);
@@ -28,6 +29,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/bookmarks', wishlistRoutes);
   app.use('/api/notifications', notificationRoutes);
   app.use('/api/users', userRoutes);
+  app.use('/api/upload', uploadRoutes);
 
   const httpServer = createServer(app);
   return httpServer;

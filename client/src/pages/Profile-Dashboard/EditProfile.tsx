@@ -7,6 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfessionalProjects, useCreateProject, useDeleteProject, useUpdateProject } from '@/hooks/useProjects';
 import { useToast } from '@/hooks/use-toast';
+import CloudinaryImageUpload from '@/components/CloudinaryImageUpload';
+import CloudinaryMultiImageUpload from '@/components/CloudinaryMultiImageUpload';
 
 interface Portfolio {
   id: number;
@@ -113,93 +115,17 @@ const EditProfile: React.FC<EditProfileProps> = ({ onBack, onSave, initialData, 
     }
   }, [openAddPortfolioForm]);
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setProfileImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+  const handleProfileImageUpload = (url: string) => {
+    setProfileImage(url);
   };
 
-  const handlePortfolioImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files) return;
-
-    // Validate number of files
-    const currentImageCount = newPortfolio.images.length;
-    const newFileCount = files.length;
-    const totalCount = currentImageCount + newFileCount;
-
-    if (totalCount > 5) {
-      toast({
-        title: "Too many images",
-        description: "You can upload a maximum of 5 images",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Validate file sizes and types
-    const validFiles: File[] = [];
-    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-
-    Array.from(files).forEach(file => {
-      if (file.size > maxSize) {
-        toast({
-          title: "File too large",
-          description: `${file.name} exceeds 5MB limit`,
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      if (!file.type.startsWith('image/')) {
-        toast({
-          title: "Invalid file type",
-          description: `${file.name} is not an image file`,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      validFiles.push(file);
-    });
-
-    // Read and add valid files
-    validFiles.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setNewPortfolio(prev => {
-          const newImages = [...prev.images, reader.result as string];
-          return {
-            ...prev,
-            images: newImages,
-            thumbnail: prev.thumbnail || reader.result as string, // Set first image as thumbnail if not set
-            mediaCount: newImages.length
-          };
-        });
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const handleRemovePortfolioImage = (index: number) => {
-    setNewPortfolio(prev => {
-      const newImages = prev.images.filter((_, i) => i !== index);
-      return {
-        ...prev,
-        images: newImages,
-        thumbnail: newImages[0] || '',
-        mediaCount: newImages.length
-      };
-    });
-  };
-
-  const handleRemoveImage = () => {
-    setProfileImage('');
+  const handlePortfolioImagesChange = (images: string[]) => {
+    setNewPortfolio(prev => ({
+      ...prev,
+      images,
+      thumbnail: images[0] || '',
+      mediaCount: images.length
+    }));
   };
 
   const handleAddPortfolio = async () => {
@@ -424,38 +350,22 @@ const EditProfile: React.FC<EditProfileProps> = ({ onBack, onSave, initialData, 
 
       <div className="px-4 py-6 pb-24 space-y-6">
         {/* Profile Picture Section */}
-        <div className="text-center">
-          <div className="relative inline-block">
-            {profileImage ? (
-              <div className="relative">
-                <img
-                  src={profileImage}
-                  alt="Profile"
-                  className="w-24 h-24 rounded-full object-cover"
-                />
-                <button
-                  onClick={handleRemoveImage}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs hover:bg-red-600"
-                >
-                  <X size={12} />
-                </button>
-              </div>
-            ) : (
-              <div className="w-24 h-24 rounded-full bg-gray-700 flex items-center justify-center">
-                <Camera size={24} className="text-gray-400" />
-              </div>
-            )}
-            <label className="absolute -bottom-2 -right-2 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white cursor-pointer hover:bg-blue-600">
-              <Camera size={16} />
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
+        <div className="space-y-2">
+          {profileImage && (
+            <div className="text-center mb-4">
+              <img
+                src={profileImage}
+                alt="Profile"
+                className="w-24 h-24 rounded-full object-cover mx-auto"
               />
-            </label>
-          </div>
-          <p className="text-sm text-gray-400 mt-2">Change profile picture</p>
+            </div>
+          )}
+          <CloudinaryImageUpload
+            onUploadComplete={handleProfileImageUpload}
+            currentImage={profileImage}
+            label="Profile Picture"
+            maxSizeMB={5}
+          />
         </div>
 
         {/* Bio Section */}
@@ -635,55 +545,12 @@ const EditProfile: React.FC<EditProfileProps> = ({ onBack, onSave, initialData, 
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-1">
-                        Upload Images <span className="text-gray-400 text-xs">({newPortfolio.images.length}/5 - Max 5MB each)</span>
-                      </label>
-                      
-                      {/* Image Previews Grid */}
-                      {newPortfolio.images.length > 0 && (
-                        <div className="grid grid-cols-3 gap-2 mb-3">
-                          {newPortfolio.images.map((image, index) => (
-                            <div key={index} className="relative group">
-                              <img 
-                                src={image} 
-                                alt={`Preview ${index + 1}`} 
-                                className="w-full h-24 object-cover rounded-lg"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => handleRemovePortfolioImage(index)}
-                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                              >
-                                <X size={14} />
-                              </button>
-                              {index === 0 && (
-                                <div className="absolute bottom-1 left-1 bg-blue-500 text-white text-xs px-2 py-0.5 rounded">
-                                  Cover
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      
-                      {/* Upload Button */}
-                      {newPortfolio.images.length < 5 && (
-                        <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-lg cursor-pointer bg-gray-700 border-gray-600 hover:bg-gray-600">
-                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                            <Camera className="w-6 h-6 mb-1 text-gray-400" />
-                            <p className="text-xs text-gray-400">
-                              {newPortfolio.images.length === 0 ? 'Click to upload images' : 'Add more images'}
-                            </p>
-                          </div>
-                          <input 
-                            type="file" 
-                            className="hidden" 
-                            onChange={handlePortfolioImageUpload}
-                            accept="image/*"
-                            multiple
-                          />
-                        </label>
-                      )}
+                      <CloudinaryMultiImageUpload
+                        images={newPortfolio.images}
+                        onImagesChange={handlePortfolioImagesChange}
+                        maxImages={5}
+                        maxSizeMB={5}
+                      />
                     </div>
 
                     <div>

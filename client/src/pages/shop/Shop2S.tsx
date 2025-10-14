@@ -171,8 +171,12 @@ const Shop = () => {
   };
 
   const handleCategoryClick = (categoryId: string) => {
-    setSelectedCategory(categoryId);
-    setSelectedSubCategory('all');
+    if (categoryId === 'all') {
+      setSelectedCategory(categoryId);
+      setSelectedSubCategory('all');
+    } else {
+      navigate(`/shop/dealers/category/${categoryId}`);
+    }
   };
 
   const handleMaterialClick = (material: Material) => {

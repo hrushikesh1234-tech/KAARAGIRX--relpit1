@@ -84,6 +84,7 @@ async function seed() {
               location: "Lonavala, Maharashtra",
               specializations: ["Bungalow Construction", "Interior Renovation", "Office Spaces"],
               isVerified: true,
+              isFeatured: true,
               completedProjects: 50,
               responseTime: "Within 2 hours",
             }
@@ -102,6 +103,7 @@ async function seed() {
               location: "Pune, Maharashtra",
               specializations: ["Residential Design", "Sustainable Architecture", "Interior Design"],
               isVerified: true,
+              isFeatured: true,
               completedProjects: 35,
               responseTime: "Within 1 hour",
             };

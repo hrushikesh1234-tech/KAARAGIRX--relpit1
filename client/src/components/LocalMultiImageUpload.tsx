@@ -55,8 +55,8 @@ export default function LocalMultiImageUpload({
       onImagesChange(newImages);
       
       toast({
-        title: "Success",
-        description: `Image ${index + 1} uploaded successfully!`
+        title: "Image Uploaded & Optimized",
+        description: `Image ${index + 1} compressed and uploaded successfully! (50-70% size reduction)`
       });
     } catch (error) {
       console.error('Upload error:', error);

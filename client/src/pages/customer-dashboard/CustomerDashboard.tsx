@@ -321,7 +321,7 @@ export default function CustomerDashboard() {
                     <div 
                       key={`order-${order.id}`}
                       className="relative w-full pb-[177.78%] bg-gray-900 overflow-hidden group cursor-pointer"
-                      onClick={() => navigate(`/shop/track-order/${order.id}`)}
+                      onClick={() => navigate(`/order/${order.id}`)}
                     >
                       <div className="absolute inset-0 bg-gradient-to-br from-blue-900 to-gray-900 flex flex-col items-center justify-center p-2">
                         <ShoppingBag className="w-8 h-8 mb-2 text-blue-400" />

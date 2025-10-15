@@ -89,6 +89,12 @@ const getStatusInfo = (status: OrderStatus): StatusInfo => {
         progress: 0,
       };
     case 'verified':
+      return {
+        text: 'Verified',
+        color: 'bg-emerald-100 text-emerald-800',
+        icon: <CheckCircle2 className="h-4 w-4" />,
+        progress: 35,
+      };
     case 'paid':
     default:
       return {

@@ -169,7 +169,7 @@ const MaterialDetailsPage2S = () => {
 
   const handleDealerClick = () => {
     if (!material?.dealerId) return;
-    navigate(`/dealer/${material.dealerId}`);
+    navigate(`/dealer-public/${material.dealerId}`);
   };
 
   const handleProductClick = (productId: number) => {

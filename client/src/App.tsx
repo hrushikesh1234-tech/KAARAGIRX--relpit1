@@ -182,6 +182,7 @@ function AppRoutes() {
           <Route path="/onrent/booking/:equipmentId" element={<><ScrollToTop /><BookingPageOR /></>} />
           <Route path="/onrent/booked" element={<><ScrollToTop /><BookedOR /></>} />
           <Route path="/onrent/bookings" element={<><ScrollToTop /><BookingsListOR /></>} />
+          <Route path="/rental-merchant/:merchantId" element={<><ScrollToTop /><RentalMerchantDashboard /></>} />
 
           {/* Static Pages */}
           <Route path="/about" element={<AboutUsPage />} />

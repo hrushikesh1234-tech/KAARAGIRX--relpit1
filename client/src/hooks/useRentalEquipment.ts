@@ -7,6 +7,7 @@ export interface RentalEquipment {
   category: string;
   subcategory?: string;
   description?: string;
+  hourlyRate?: string | number;
   dailyRate: string | number;
   weeklyRate?: string | number;
   monthlyRate?: string | number;

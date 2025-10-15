@@ -23,6 +23,7 @@ interface RentalEquipment {
   category: string;
   subcategory?: string;
   description?: string;
+  hourlyRate?: string;
   dailyRate: string;
   weeklyRate?: string;
   monthlyRate?: string;
@@ -103,6 +104,7 @@ export default function RentalMerchantDashboard() {
     description: "",
     category: "",
     subcategory: "",
+    hourlyRate: "",
     dailyRate: "",
     weeklyRate: "",
     monthlyRate: "",
@@ -113,7 +115,14 @@ export default function RentalMerchantDashboard() {
     minRentalPeriod: "",
     image: "",
     images: ["", "", "", "", ""],
-    specifications: "{}"
+    specifications: {
+      manufacturer: "",
+      model: "",
+      year: "",
+      capacity: "",
+      fuelType: "",
+      weight: ""
+    }
   });
 
   const averageRating = reviews.length > 0 
@@ -241,6 +250,7 @@ export default function RentalMerchantDashboard() {
       description: "",
       category: "",
       subcategory: "",
+      hourlyRate: "",
       dailyRate: "",
       weeklyRate: "",
       monthlyRate: "",
@@ -251,7 +261,14 @@ export default function RentalMerchantDashboard() {
       minRentalPeriod: "",
       image: "",
       images: ["", "", "", "", ""],
-      specifications: "{}"
+      specifications: {
+        manufacturer: "",
+        model: "",
+        year: "",
+        capacity: "",
+        fuelType: "",
+        weight: ""
+      }
     });
   };
 
@@ -259,17 +276,10 @@ export default function RentalMerchantDashboard() {
     if (!merchantId) return;
 
     try {
-      let specifications = {};
-      try {
-        specifications = JSON.parse(equipmentForm.specifications);
-      } catch (e) {
-        toast({
-          title: "Invalid Specifications",
-          description: "Specifications must be valid JSON format.",
-          variant: "destructive"
-        });
-        return;
-      }
+      // Filter out empty specification fields
+      const specifications = Object.fromEntries(
+        Object.entries(equipmentForm.specifications).filter(([_, value]) => value && value.trim() !== "")
+      );
 
       const response = await fetch("/api/rental-equipment", {
         method: "POST",
@@ -283,6 +293,7 @@ export default function RentalMerchantDashboard() {
           description: equipmentForm.description,
           category: equipmentForm.category,
           subcategory: equipmentForm.subcategory,
+          hourlyRate: equipmentForm.hourlyRate ? parseFloat(equipmentForm.hourlyRate) : null,
           dailyRate: parseFloat(equipmentForm.dailyRate),
           weeklyRate: equipmentForm.weeklyRate ? parseFloat(equipmentForm.weeklyRate) : null,
           monthlyRate: equipmentForm.monthlyRate ? parseFloat(equipmentForm.monthlyRate) : null,
@@ -326,17 +337,10 @@ export default function RentalMerchantDashboard() {
     if (!selectedEquipment) return;
 
     try {
-      let specifications = {};
-      try {
-        specifications = JSON.parse(equipmentForm.specifications);
-      } catch (e) {
-        toast({
-          title: "Invalid Specifications",
-          description: "Specifications must be valid JSON format.",
-          variant: "destructive"
-        });
-        return;
-      }
+      // Filter out empty specification fields
+      const specifications = Object.fromEntries(
+        Object.entries(equipmentForm.specifications).filter(([_, value]) => value && value.trim() !== "")
+      );
 
       const response = await fetch(`/api/rental-equipment/${selectedEquipment.id}`, {
         method: "PUT",
@@ -349,6 +353,7 @@ export default function RentalMerchantDashboard() {
           description: equipmentForm.description,
           category: equipmentForm.category,
           subcategory: equipmentForm.subcategory,
+          hourlyRate: equipmentForm.hourlyRate ? parseFloat(equipmentForm.hourlyRate) : null,
           dailyRate: parseFloat(equipmentForm.dailyRate),
           weeklyRate: equipmentForm.weeklyRate ? parseFloat(equipmentForm.weeklyRate) : null,
           monthlyRate: equipmentForm.monthlyRate ? parseFloat(equipmentForm.monthlyRate) : null,
@@ -424,11 +429,13 @@ export default function RentalMerchantDashboard() {
     const existingImages = (eq.images && eq.images.length > 0) ? eq.images : (eq.image ? [eq.image] : []);
     const paddedImages = [...existingImages, "", "", "", "", ""].slice(0, 5);
     
+    const existingSpecs = eq.specifications || {};
     setEquipmentForm({
       name: eq.name,
       description: eq.description || "",
       category: eq.category,
       subcategory: eq.subcategory || "",
+      hourlyRate: eq.hourlyRate || "",
       dailyRate: eq.dailyRate,
       weeklyRate: eq.weeklyRate || "",
       monthlyRate: eq.monthlyRate || "",
@@ -439,7 +446,14 @@ export default function RentalMerchantDashboard() {
       minRentalPeriod: eq.minRentalPeriod || "",
       image: eq.image || "",
       images: paddedImages,
-      specifications: JSON.stringify(eq.specifications || {}, null, 2)
+      specifications: {
+        manufacturer: existingSpecs.manufacturer || existingSpecs.Manufacturer || "",
+        model: existingSpecs.model || existingSpecs.Model || "",
+        year: existingSpecs.year || existingSpecs.Year || "",
+        capacity: existingSpecs.capacity || existingSpecs.Capacity || "",
+        fuelType: existingSpecs.fuelType || existingSpecs["Fuel Type"] || "",
+        weight: existingSpecs.weight || existingSpecs.Weight || ""
+      }
     });
     setIsEditModalOpen(true);
   };
@@ -525,7 +539,7 @@ export default function RentalMerchantDashboard() {
     displayName: user?.fullName || "Rental Merchant",
     bio: "Construction Equipment Rental Services",
     occupation: "Rental Merchant",
-    additionalInfo: user?.companyName || "",
+    additionalInfo: user?.address || "",
     stats: {
       posts: equipment.length,
       followers: bookings.length,
@@ -641,10 +655,6 @@ export default function RentalMerchantDashboard() {
             <div>
               <h3 className="text-lg font-semibold mb-4">Business Information</h3>
               <div className="space-y-3 bg-gray-900/50 rounded-lg p-4">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Business Name</span>
-                  <span className="font-medium">{user?.companyName || "N/A"}</span>
-                </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">Owner Name</span>
                   <span className="font-medium">{user?.fullName || "N/A"}</span>
@@ -792,6 +802,17 @@ export default function RentalMerchantDashboard() {
               </Select>
             </div>
             <div className="space-y-2">
+              <Label htmlFor="hourlyRate">Hourly Rate (₹)</Label>
+              <Input
+                id="hourlyRate"
+                type="number"
+                value={equipmentForm.hourlyRate}
+                onChange={(e) => setEquipmentForm({ ...equipmentForm, hourlyRate: e.target.value })}
+                placeholder="250"
+                className="bg-gray-800 border-gray-700"
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="dailyRate">Daily Rate (₹) *</Label>
               <Input
                 id="dailyRate"
@@ -867,6 +888,75 @@ export default function RentalMerchantDashboard() {
                 className="bg-gray-800 border-gray-700"
               />
             </div>
+            
+            {/* Specifications Section */}
+            <div className="col-span-2 space-y-4 border-t border-gray-700 pt-4">
+              <h3 className="text-md font-semibold">Specifications</h3>
+              <p className="text-sm text-gray-400">Provide at least 6 key specifications for better customer understanding</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="manufacturer">Manufacturer/Brand</Label>
+                  <Input
+                    id="manufacturer"
+                    value={equipmentForm.specifications.manufacturer}
+                    onChange={(e) => setEquipmentForm({ ...equipmentForm, specifications: { ...equipmentForm.specifications, manufacturer: e.target.value } })}
+                    placeholder="e.g., Tata Hitachi, JCB"
+                    className="bg-gray-800 border-gray-700"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="model">Model</Label>
+                  <Input
+                    id="model"
+                    value={equipmentForm.specifications.model}
+                    onChange={(e) => setEquipmentForm({ ...equipmentForm, specifications: { ...equipmentForm.specifications, model: e.target.value } })}
+                    placeholder="e.g., ZX200, 3DX"
+                    className="bg-gray-800 border-gray-700"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="year">Year/Model Year</Label>
+                  <Input
+                    id="year"
+                    value={equipmentForm.specifications.year}
+                    onChange={(e) => setEquipmentForm({ ...equipmentForm, specifications: { ...equipmentForm.specifications, year: e.target.value } })}
+                    placeholder="e.g., 2022, 2023"
+                    className="bg-gray-800 border-gray-700"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="capacity">Capacity/Load</Label>
+                  <Input
+                    id="capacity"
+                    value={equipmentForm.specifications.capacity}
+                    onChange={(e) => setEquipmentForm({ ...equipmentForm, specifications: { ...equipmentForm.specifications, capacity: e.target.value } })}
+                    placeholder="e.g., 20 Ton, 5 Cubic Meter"
+                    className="bg-gray-800 border-gray-700"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="fuelType">Fuel Type</Label>
+                  <Input
+                    id="fuelType"
+                    value={equipmentForm.specifications.fuelType}
+                    onChange={(e) => setEquipmentForm({ ...equipmentForm, specifications: { ...equipmentForm.specifications, fuelType: e.target.value } })}
+                    placeholder="e.g., Diesel, Electric, Hybrid"
+                    className="bg-gray-800 border-gray-700"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="weight">Weight</Label>
+                  <Input
+                    id="weight"
+                    value={equipmentForm.specifications.weight}
+                    onChange={(e) => setEquipmentForm({ ...equipmentForm, specifications: { ...equipmentForm.specifications, weight: e.target.value } })}
+                    placeholder="e.g., 20,000 kg, 15 Ton"
+                    className="bg-gray-800 border-gray-700"
+                  />
+                </div>
+              </div>
+            </div>
+            
             <div className="space-y-2 col-span-2">
               <Label>Equipment Images (Up to 5)</Label>
               <p className="text-sm text-gray-400">Select up to 5 images for your equipment</p>
@@ -1055,6 +1145,16 @@ export default function RentalMerchantDashboard() {
               </Select>
             </div>
             <div className="space-y-2">
+              <Label>Hourly Rate (₹)</Label>
+              <Input
+                type="number"
+                value={equipmentForm.hourlyRate}
+                onChange={(e) => setEquipmentForm({ ...equipmentForm, hourlyRate: e.target.value })}
+                placeholder="250"
+                className="bg-gray-800 border-gray-700"
+              />
+            </div>
+            <div className="space-y-2">
               <Label>Daily Rate (₹)</Label>
               <Input
                 type="number"
@@ -1116,6 +1216,68 @@ export default function RentalMerchantDashboard() {
                 className="bg-gray-800 border-gray-700"
               />
             </div>
+            
+            {/* Specifications Section */}
+            <div className="col-span-2 space-y-4 border-t border-gray-700 pt-4">
+              <h3 className="text-md font-semibold">Specifications</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Manufacturer/Brand</Label>
+                  <Input
+                    value={equipmentForm.specifications.manufacturer}
+                    onChange={(e) => setEquipmentForm({ ...equipmentForm, specifications: { ...equipmentForm.specifications, manufacturer: e.target.value } })}
+                    placeholder="e.g., Tata Hitachi, JCB"
+                    className="bg-gray-800 border-gray-700"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Model</Label>
+                  <Input
+                    value={equipmentForm.specifications.model}
+                    onChange={(e) => setEquipmentForm({ ...equipmentForm, specifications: { ...equipmentForm.specifications, model: e.target.value } })}
+                    placeholder="e.g., ZX200, 3DX"
+                    className="bg-gray-800 border-gray-700"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Year/Model Year</Label>
+                  <Input
+                    value={equipmentForm.specifications.year}
+                    onChange={(e) => setEquipmentForm({ ...equipmentForm, specifications: { ...equipmentForm.specifications, year: e.target.value } })}
+                    placeholder="e.g., 2022, 2023"
+                    className="bg-gray-800 border-gray-700"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Capacity/Load</Label>
+                  <Input
+                    value={equipmentForm.specifications.capacity}
+                    onChange={(e) => setEquipmentForm({ ...equipmentForm, specifications: { ...equipmentForm.specifications, capacity: e.target.value } })}
+                    placeholder="e.g., 20 Ton, 5 Cubic Meter"
+                    className="bg-gray-800 border-gray-700"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Fuel Type</Label>
+                  <Input
+                    value={equipmentForm.specifications.fuelType}
+                    onChange={(e) => setEquipmentForm({ ...equipmentForm, specifications: { ...equipmentForm.specifications, fuelType: e.target.value } })}
+                    placeholder="e.g., Diesel, Electric, Hybrid"
+                    className="bg-gray-800 border-gray-700"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Weight</Label>
+                  <Input
+                    value={equipmentForm.specifications.weight}
+                    onChange={(e) => setEquipmentForm({ ...equipmentForm, specifications: { ...equipmentForm.specifications, weight: e.target.value } })}
+                    placeholder="e.g., 20,000 kg, 15 Ton"
+                    className="bg-gray-800 border-gray-700"
+                  />
+                </div>
+              </div>
+            </div>
+            
             <div className="space-y-2 col-span-2">
               <Label>Image URL</Label>
               <Input

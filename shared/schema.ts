@@ -213,6 +213,7 @@ export const rentalEquipment = pgTable("rental_equipment", {
   category: text("category").notNull(),
   subcategory: text("subcategory"),
   description: text("description"),
+  hourlyRate: decimal("hourly_rate", { precision: 10, scale: 2 }),
   dailyRate: decimal("daily_rate", { precision: 10, scale: 2 }).notNull(),
   weeklyRate: decimal("weekly_rate", { precision: 10, scale: 2 }),
   monthlyRate: decimal("monthly_rate", { precision: 10, scale: 2 }),

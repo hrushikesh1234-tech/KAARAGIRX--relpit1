@@ -566,7 +566,17 @@ export default function RentalMerchantDashboard() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto relative">
+        {/* Edit Profile Button - Top Right Corner */}
+        <Button
+          onClick={() => navigate("/profile/edit")}
+          className="absolute top-4 right-4 z-50 bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+          size="sm"
+        >
+          <Edit className="h-4 w-4" />
+          Edit Profile
+        </Button>
+
         <ProfileHeader 
           profileData={profileData}
           onEditProfile={() => navigate("/profile/edit")}
@@ -775,13 +785,6 @@ export default function RentalMerchantDashboard() {
                 </div>
               </div>
             </div>
-
-            <Button 
-              onClick={() => navigate("/profile/edit")}
-              className="w-full"
-            >
-              Edit Profile
-            </Button>
           </div>
         )}
 

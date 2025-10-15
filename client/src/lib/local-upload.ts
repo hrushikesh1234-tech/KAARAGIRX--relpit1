@@ -10,18 +10,32 @@ export interface CompressionOptions {
   quality?: number;
 }
 
+export interface CompressionResult {
+  file: File;
+  originalSize: number;
+  compressedSize: number;
+  reductionPercentage: number;
+}
+
 export const compressImage = async (
   file: File,
   options: CompressionOptions = {}
-): Promise<File> => {
+): Promise<CompressionResult> => {
   const {
-    maxWidth = 1920,
-    maxHeight = 1080,
-    quality = 0.85
+    maxWidth = 1280,
+    maxHeight = 720,
+    quality = 0.55
   } = options;
 
+  const originalSize = file.size;
+
   if (!file.type.startsWith('image/')) {
-    return file;
+    return {
+      file,
+      originalSize,
+      compressedSize: originalSize,
+      reductionPercentage: 0
+    };
   }
 
   return new Promise((resolve, reject) => {
@@ -55,13 +69,21 @@ export const compressImage = async (
           }
 
           const compressedFile = new File([blob], file.name, {
-            type: file.type,
+            type: file.type === 'image/png' ? 'image/jpeg' : file.type,
             lastModified: Date.now(),
           });
 
-          resolve(compressedFile);
+          const compressedSize = compressedFile.size;
+          const reductionPercentage = Math.round(((originalSize - compressedSize) / originalSize) * 100);
+
+          resolve({
+            file: compressedFile,
+            originalSize,
+            compressedSize,
+            reductionPercentage
+          });
         },
-        file.type,
+        file.type === 'image/png' ? 'image/jpeg' : file.type,
         quality
       );
     };
@@ -89,7 +111,14 @@ export const uploadToLocal = async (
   compress: boolean = true
 ): Promise<string> => {
   try {
-    const processedFile = compress ? await compressImage(file) : file;
+    let processedFile: File;
+    if (compress) {
+      const result = await compressImage(file);
+      processedFile = result.file;
+      console.log(`Image compressed: ${result.originalSize} → ${result.compressedSize} bytes (${result.reductionPercentage}% reduction)`);
+    } else {
+      processedFile = file;
+    }
     const base64 = await fileToBase64(processedFile);
 
     return new Promise((resolve, reject) => {

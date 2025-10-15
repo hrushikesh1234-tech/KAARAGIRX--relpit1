@@ -34,6 +34,16 @@ KaaragirX is a full-stack construction marketplace platform connecting customers
 - **Real-time UI Updates**: Leverages React Query for data fetching, caching, and invalidation, providing immediate UI feedback and synchronization across different parts of the application.
 - **Development Environment**: Frontend runs on port 5000, and backend on port 3001, managed by `concurrently`.
 
+### Performance Optimizations (October 2025)
+- **Image Compression**: Client-side image compression before Cloudinary upload reduces file sizes by up to 50-70%, improving upload speed and bandwidth usage.
+- **Optimized Image Delivery**: Enhanced OptimizedImage component with intelligent thumbnail generation for listings, using Cloudinary's optimization features for faster page loads.
+- **Database Indexes**: Added strategic indexes on frequently queried columns (categories, locations, user IDs, timestamps) across all major tables, significantly improving query performance.
+- **Request Caching**: Implemented tiered caching strategy with React Query:
+  - Static data (categories, materials lists): 30-minute cache
+  - Semi-static data (featured items, professionals): 15-minute cache
+  - Dynamic data (messages, bookings): Fresh data with minimal caching
+- **Loading Skeletons**: Comprehensive loading skeleton components for better perceived performance and user experience during data fetching.
+
 ## External Dependencies
 - **PostgreSQL**: Primary database solution, utilizing Neon for serverless capabilities.
 - **Drizzle ORM**: Object-Relational Mapper for database interactions.

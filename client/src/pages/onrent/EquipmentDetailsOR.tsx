@@ -103,7 +103,7 @@ const EquipmentDetailsOR = () => {
 
   const handleMerchantClick = () => {
     if (!equipment?.merchantId) return;
-    navigate(`/rental-merchant/${equipment.merchantId}`);
+    navigate(`/rental-merchant-public/${equipment.merchantId}`);
   };
 
   const handleEquipmentClick = (equipmentId: number) => {

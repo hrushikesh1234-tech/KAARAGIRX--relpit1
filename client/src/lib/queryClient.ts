@@ -71,3 +71,24 @@ export const queryClient = new QueryClient({
     },
   },
 });
+
+export const staticDataQueryOptions = {
+  staleTime: 30 * 60 * 1000,
+  gcTime: 60 * 60 * 1000,
+  refetchOnMount: false,
+  refetchOnWindowFocus: false,
+  refetchOnReconnect: false,
+};
+
+export const semiStaticDataQueryOptions = {
+  staleTime: 15 * 60 * 1000,
+  gcTime: 30 * 60 * 1000,
+  refetchOnMount: false,
+  refetchOnWindowFocus: false,
+};
+
+export const dynamicDataQueryOptions = {
+  staleTime: 30 * 1000,
+  gcTime: 5 * 60 * 1000,
+  refetchOnWindowFocus: true,
+};

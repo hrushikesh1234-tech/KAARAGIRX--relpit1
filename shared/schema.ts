@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp, boolean, decimal, varchar, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, boolean, decimal, varchar, jsonb, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -40,7 +40,12 @@ export const professionals = pgTable("professionals", {
   responseTime: text("response_time"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  professionIdx: index("professionals_profession_idx").on(table.profession),
+  locationIdx: index("professionals_location_idx").on(table.location),
+  isFeaturedIdx: index("professionals_is_featured_idx").on(table.isFeatured),
+  ratingIdx: index("professionals_rating_idx").on(table.rating),
+}));
 
 export const projects = pgTable("projects", {
   id: serial("id").primaryKey(),
@@ -118,7 +123,12 @@ export const dealers = pgTable("dealers", {
   productsCount: integer("products_count"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  categoryIdx: index("dealers_category_idx").on(table.category),
+  subcategoryIdx: index("dealers_subcategory_idx").on(table.subcategory),
+  locationIdx: index("dealers_location_idx").on(table.location),
+  ratingIdx: index("dealers_rating_idx").on(table.rating),
+}));
 
 export const orders = pgTable("orders", {
   id: varchar("id").primaryKey(),
@@ -154,7 +164,11 @@ export const orders = pgTable("orders", {
   orderDate: timestamp("order_date").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  userIdIdx: index("orders_user_id_idx").on(table.userId),
+  createdAtIdx: index("orders_created_at_idx").on(table.createdAt),
+  statusIdx: index("orders_status_idx").on(table.status),
+}));
 
 export const orderItems = pgTable("order_items", {
   id: serial("id").primaryKey(),
@@ -185,7 +199,12 @@ export const materials = pgTable("materials", {
   inStock: boolean("in_stock").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  dealerIdIdx: index("materials_dealer_id_idx").on(table.dealerId),
+  categoryIdx: index("materials_category_idx").on(table.category),
+  subcategoryIdx: index("materials_subcategory_idx").on(table.subcategory),
+  inStockIdx: index("materials_in_stock_idx").on(table.inStock),
+}));
 
 export const rentalEquipment = pgTable("rental_equipment", {
   id: serial("id").primaryKey(),
@@ -207,7 +226,12 @@ export const rentalEquipment = pgTable("rental_equipment", {
   minRentalPeriod: text("min_rental_period"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  categoryIdx: index("rental_equipment_category_idx").on(table.category),
+  merchantIdIdx: index("rental_equipment_merchant_id_idx").on(table.merchantId),
+  conditionIdx: index("rental_equipment_condition_idx").on(table.condition),
+  subcategoryIdx: index("rental_equipment_subcategory_idx").on(table.subcategory),
+}));
 
 export const bookings = pgTable("bookings", {
   id: varchar("id").primaryKey(),
@@ -228,7 +252,12 @@ export const bookings = pgTable("bookings", {
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  merchantIdIdx: index("bookings_merchant_id_idx").on(table.merchantId),
+  userIdIdx: index("bookings_user_id_idx").on(table.userId),
+  equipmentIdIdx: index("bookings_equipment_id_idx").on(table.equipmentId),
+  createdAtIdx: index("bookings_created_at_idx").on(table.createdAt),
+}));
 
 export const wishlists = pgTable("wishlists", {
   id: serial("id").primaryKey(),
@@ -256,7 +285,10 @@ export const conversations = pgTable("conversations", {
   lastMessageAt: timestamp("last_message_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  user1IdIdx: index("conversations_user1_id_idx").on(table.user1Id),
+  user2IdIdx: index("conversations_user2_id_idx").on(table.user2Id),
+}));
 
 export const messages = pgTable("messages", {
   id: serial("id").primaryKey(),
@@ -271,7 +303,10 @@ export const messages = pgTable("messages", {
     url: string;
   }>(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  conversationIdIdx: index("messages_conversation_id_idx").on(table.conversationId),
+  createdAtIdx: index("messages_created_at_idx").on(table.createdAt),
+}));
 
 export const usersRelations = relations(users, ({ many, one }) => ({
   professional: one(professionals, {

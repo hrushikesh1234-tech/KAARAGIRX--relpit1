@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import { getOptimizedImageUrl } from '@/lib/cloudinary';
 
 interface OptimizedImageProps {
   src: string;
@@ -10,6 +11,7 @@ interface OptimizedImageProps {
   lazy?: boolean;
   fallback?: string;
   objectFit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down';
+  thumbnail?: boolean;
 }
 
 export const OptimizedImage: React.FC<OptimizedImageProps> = ({
@@ -20,16 +22,42 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   height,
   lazy = true,
   fallback = '/images/placeholder.png',
-  objectFit = 'cover'
+  objectFit = 'cover',
+  thumbnail = false
 }) => {
-  const [imageSrc, setImageSrc] = useState<string>(lazy ? fallback : src);
+  const optimizedSrc = useMemo(() => {
+    if (!src || src.startsWith('/') || src.startsWith('data:')) {
+      return src;
+    }
+
+    const isCloudinary = src.includes('cloudinary.com');
+    
+    if (isCloudinary && (width || height) && thumbnail) {
+      const versionMatch = src.match(/\/upload\/v\d+\/([^?]+)/);
+      if (versionMatch) {
+        const publicIdWithExt = versionMatch[1];
+        const publicId = publicIdWithExt.replace(/\.[^.]+$/, '');
+        const thumbWidth = width ? Math.min(width, 400) : 400;
+        const thumbHeight = height ? Math.min(height, 300) : 300;
+        try {
+          return getOptimizedImageUrl(publicId, thumbWidth, thumbHeight);
+        } catch {
+          return src;
+        }
+      }
+    }
+
+    return src;
+  }, [src, width, height, thumbnail]);
+
+  const [imageSrc, setImageSrc] = useState<string>(lazy ? fallback : optimizedSrc);
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     if (!lazy) {
-      setImageSrc(src);
+      setImageSrc(optimizedSrc);
       return;
     }
 
@@ -37,13 +65,13 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setImageSrc(src);
+            setImageSrc(optimizedSrc);
             observer.disconnect();
           }
         });
       },
       {
-        rootMargin: '50px',
+        rootMargin: '100px',
       }
     );
 
@@ -54,7 +82,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     return () => {
       observer.disconnect();
     };
-  }, [src, lazy]);
+  }, [optimizedSrc, lazy]);
 
   const handleLoad = () => {
     setIsLoaded(true);

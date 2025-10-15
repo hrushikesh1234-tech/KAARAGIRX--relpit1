@@ -43,9 +43,80 @@ export interface UploadProgress {
   percentage: number;
 }
 
+export interface CompressionOptions {
+  maxWidth?: number;
+  maxHeight?: number;
+  quality?: number;
+}
+
+export const compressImage = async (
+  file: File,
+  options: CompressionOptions = {}
+): Promise<File> => {
+  const {
+    maxWidth = 1920,
+    maxHeight = 1080,
+    quality = 0.85
+  } = options;
+
+  if (!file.type.startsWith('image/')) {
+    return file;
+  }
+
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    img.onload = () => {
+      let { width, height } = img;
+
+      if (width > maxWidth || height > maxHeight) {
+        const aspectRatio = width / height;
+        if (width > height) {
+          width = maxWidth;
+          height = width / aspectRatio;
+        } else {
+          height = maxHeight;
+          width = height * aspectRatio;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      ctx?.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error('Image compression failed'));
+            return;
+          }
+
+          const compressedFile = new File([blob], file.name, {
+            type: file.type,
+            lastModified: Date.now(),
+          });
+
+          resolve(compressedFile);
+        },
+        file.type,
+        quality
+      );
+    };
+
+    img.onerror = () => {
+      reject(new Error('Failed to load image'));
+    };
+
+    img.src = URL.createObjectURL(file);
+  });
+};
+
 export const uploadToCloudinary = async (
   file: File,
-  onProgress?: (progress: UploadProgress) => void
+  onProgress?: (progress: UploadProgress) => void,
+  compress: boolean = true
 ): Promise<string> => {
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
@@ -54,8 +125,12 @@ export const uploadToCloudinary = async (
     throw new Error('Cloudinary configuration is missing');
   }
 
+  const fileToUpload = compress && file.type.startsWith('image/') 
+    ? await compressImage(file)
+    : file;
+
   const formData = new FormData();
-  formData.append('file', file);
+  formData.append('file', fileToUpload);
   formData.append('upload_preset', uploadPreset);
 
   return new Promise((resolve, reject) => {
@@ -91,14 +166,15 @@ export const uploadToCloudinary = async (
 
 export const uploadMultipleToCloudinary = async (
   files: File[],
-  onProgress?: (index: number, progress: UploadProgress) => void
+  onProgress?: (index: number, progress: UploadProgress) => void,
+  compress: boolean = true
 ): Promise<string[]> => {
   const uploadPromises = files.map((file, index) => 
     uploadToCloudinary(file, (progress) => {
       if (onProgress) {
         onProgress(index, progress);
       }
-    })
+    }, compress)
   );
 
   return Promise.all(uploadPromises);

@@ -14,7 +14,7 @@ import TabNavigation from "@/components/Profile-Dashboard/TabNavigation";
 import StarRating from "@/components/Profile-Dashboard/StarRating";
 import Carousel, { Card as CardComponent } from '@/components/ui/apple-cards-carousel';
 import ImageSlider from '@/components/ui/ImageSlider';
-import CloudinaryMultiImageUpload from '@/components/CloudinaryMultiImageUpload';
+import LocalMultiImageUpload from '@/components/LocalMultiImageUpload';
 import type { CardProps } from '@/components/ui/apple-cards-carousel';
 
 interface Material {
@@ -875,7 +875,7 @@ export default function MaterialDealerDashboard() {
               </div>
             </div>
             <div className="grid gap-2">
-              <CloudinaryMultiImageUpload
+              <LocalMultiImageUpload
                 images={materialForm.images}
                 onImagesChange={(newImages) => {
                   setMaterialForm({ ...materialForm, images: newImages, image: newImages[0] || "" });
@@ -1006,7 +1006,7 @@ export default function MaterialDealerDashboard() {
               </div>
             </div>
             <div className="grid gap-2">
-              <CloudinaryMultiImageUpload
+              <LocalMultiImageUpload
                 images={materialForm.images}
                 onImagesChange={(newImages) => {
                   setMaterialForm({ ...materialForm, images: newImages, image: newImages[0] || "" });

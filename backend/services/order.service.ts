@@ -1,6 +1,6 @@
 import { orders, orderItems, type Order, type OrderItem } from "../../shared/schema";
 import { db } from "../config/database";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, or } from "drizzle-orm";
 
 export class OrderService {
   async getOrder(id: string): Promise<Order | undefined> {
@@ -57,6 +57,65 @@ export class OrderService {
       .where(eq(orders.id, orderId))
       .returning();
     return updated || undefined;
+  }
+
+  async confirmFromDealer(orderId: string): Promise<Order | undefined> {
+    const order = await this.getOrder(orderId);
+    if (!order) return undefined;
+
+    const updateData: any = { dealerConfirmed: true, updatedAt: new Date() };
+    
+    if (order.customerConfirmed) {
+      updateData.status = 'verified';
+    }
+
+    const [updated] = await db.update(orders)
+      .set(updateData)
+      .where(eq(orders.id, orderId))
+      .returning();
+    return updated || undefined;
+  }
+
+  async confirmFromCustomer(orderId: string): Promise<Order | undefined> {
+    const order = await this.getOrder(orderId);
+    if (!order) return undefined;
+
+    const updateData: any = { customerConfirmed: true, updatedAt: new Date() };
+    
+    if (order.dealerConfirmed) {
+      updateData.status = 'verified';
+    }
+
+    const [updated] = await db.update(orders)
+      .set(updateData)
+      .where(eq(orders.id, orderId))
+      .returning();
+    return updated || undefined;
+  }
+
+  async getPendingOrders(): Promise<Order[]> {
+    return await db.select().from(orders)
+      .where(
+        and(
+          eq(orders.status, 'pending'),
+          or(
+            eq(orders.dealerConfirmed, false),
+            eq(orders.customerConfirmed, false)
+          )
+        )
+      )
+      .orderBy(desc(orders.createdAt));
+  }
+
+  async getConfirmedOrders(): Promise<Order[]> {
+    return await db.select().from(orders)
+      .where(
+        and(
+          eq(orders.dealerConfirmed, true),
+          eq(orders.customerConfirmed, true)
+        )
+      )
+      .orderBy(desc(orders.createdAt));
   }
 }
 

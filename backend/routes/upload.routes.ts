@@ -1,13 +1,11 @@
 import { Router, Request, Response } from 'express';
-import { v2 as cloudinary } from 'cloudinary';
+import { writeFile, mkdir } from 'fs/promises';
+import { join } from 'path';
+import { nanoid } from 'nanoid';
 
 const router = Router();
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-});
+const uploadsDir = join(process.cwd(), 'public', 'uploads');
 
 router.post('/upload', async (req: Request, res: Response) => {
   try {
@@ -17,17 +15,22 @@ router.post('/upload', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'No image provided' });
     }
 
-    const uploadResponse = await cloudinary.uploader.upload(image, {
-      folder: 'construction_platform',
-      resource_type: 'auto',
-      transformation: [
-        { width: 1920, height: 1080, crop: 'limit' },
-        { quality: 'auto:good' },
-        { fetch_format: 'auto' }
-      ]
-    });
+    const matches = image.match(/^data:image\/(\w+);base64,(.+)$/);
+    if (!matches) {
+      return res.status(400).json({ error: 'Invalid image format' });
+    }
 
-    res.json({ url: uploadResponse.secure_url });
+    const [, ext, base64Data] = matches;
+    const buffer = Buffer.from(base64Data, 'base64');
+    
+    const filename = `${nanoid()}.${ext}`;
+    const filepath = join(uploadsDir, filename);
+    
+    await mkdir(uploadsDir, { recursive: true });
+    await writeFile(filepath, buffer);
+    
+    const url = `/uploads/${filename}`;
+    res.json({ url });
   } catch (error) {
     console.error('Upload error:', error);
     res.status(500).json({ error: 'Failed to upload image' });
@@ -42,20 +45,24 @@ router.post('/upload-multiple', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'No images provided' });
     }
 
-    const uploadPromises = images.map(image =>
-      cloudinary.uploader.upload(image, {
-        folder: 'construction_platform',
-        resource_type: 'auto',
-        transformation: [
-          { width: 1920, height: 1080, crop: 'limit' },
-          { quality: 'auto:good' },
-          { fetch_format: 'auto' }
-        ]
-      })
-    );
+    const urls: string[] = [];
+    await mkdir(uploadsDir, { recursive: true });
 
-    const results = await Promise.all(uploadPromises);
-    const urls = results.map(result => result.secure_url);
+    for (const image of images) {
+      const matches = image.match(/^data:image\/(\w+);base64,(.+)$/);
+      if (!matches) {
+        continue;
+      }
+
+      const [, ext, base64Data] = matches;
+      const buffer = Buffer.from(base64Data, 'base64');
+      
+      const filename = `${nanoid()}.${ext}`;
+      const filepath = join(uploadsDir, filename);
+      
+      await writeFile(filepath, buffer);
+      urls.push(`/uploads/${filename}`);
+    }
 
     res.json({ urls });
   } catch (error) {

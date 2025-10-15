@@ -7,8 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfessionalProjects, useCreateProject, useDeleteProject, useUpdateProject } from '@/hooks/useProjects';
 import { useToast } from '@/hooks/use-toast';
-import CloudinaryImageUpload from '@/components/CloudinaryImageUpload';
-import CloudinaryMultiImageUpload from '@/components/CloudinaryMultiImageUpload';
+import LocalImageUpload from '@/components/LocalImageUpload';
+import LocalMultiImageUpload from '@/components/LocalMultiImageUpload';
 
 interface Portfolio {
   id: number;
@@ -360,7 +360,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ onBack, onSave, initialData, 
               />
             </div>
           )}
-          <CloudinaryImageUpload
+          <LocalImageUpload
             onUploadComplete={handleProfileImageUpload}
             currentImage={profileImage}
             label="Profile Picture"
@@ -545,7 +545,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ onBack, onSave, initialData, 
                     </div>
 
                     <div>
-                      <CloudinaryMultiImageUpload
+                      <LocalMultiImageUpload
                         images={newPortfolio.images}
                         onImagesChange={handlePortfolioImagesChange}
                         maxImages={5}

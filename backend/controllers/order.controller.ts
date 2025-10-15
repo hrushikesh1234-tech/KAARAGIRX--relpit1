@@ -122,6 +122,58 @@ export class OrderController {
       res.status(500).json({ error: 'Failed to update order status' });
     }
   }
+
+  async confirmFromDealer(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const order = await orderService.confirmFromDealer(id);
+      
+      if (!order) {
+        return res.status(404).json({ error: 'Order not found' });
+      }
+      
+      res.json(order);
+    } catch (error) {
+      console.error('Error confirming order from dealer:', error);
+      res.status(500).json({ error: 'Failed to confirm order from dealer' });
+    }
+  }
+
+  async confirmFromCustomer(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const order = await orderService.confirmFromCustomer(id);
+      
+      if (!order) {
+        return res.status(404).json({ error: 'Order not found' });
+      }
+      
+      res.json(order);
+    } catch (error) {
+      console.error('Error confirming order from customer:', error);
+      res.status(500).json({ error: 'Failed to confirm order from customer' });
+    }
+  }
+
+  async getPendingOrders(req: Request, res: Response) {
+    try {
+      const orders = await orderService.getPendingOrders();
+      res.json(orders);
+    } catch (error) {
+      console.error('Error fetching pending orders:', error);
+      res.status(500).json({ error: 'Failed to fetch pending orders' });
+    }
+  }
+
+  async getConfirmedOrders(req: Request, res: Response) {
+    try {
+      const orders = await orderService.getConfirmedOrders();
+      res.json(orders);
+    } catch (error) {
+      console.error('Error fetching confirmed orders:', error);
+      res.status(500).json({ error: 'Failed to fetch confirmed orders' });
+    }
+  }
 }
 
 export const orderController = new OrderController();

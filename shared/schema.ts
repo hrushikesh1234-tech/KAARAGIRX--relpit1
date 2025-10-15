@@ -161,6 +161,8 @@ export const orders = pgTable("orders", {
   contactEmail: text("contact_email"),
   contactPhone: text("contact_phone"),
   estimatedDelivery: text("estimated_delivery"),
+  dealerConfirmed: boolean("dealer_confirmed").default(false),
+  customerConfirmed: boolean("customer_confirmed").default(false),
   orderDate: timestamp("order_date").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

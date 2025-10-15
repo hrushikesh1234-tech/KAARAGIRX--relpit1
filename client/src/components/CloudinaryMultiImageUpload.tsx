@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { Upload, X, Loader2, Plus } from 'lucide-react';
 import { Button } from './ui/button';
-import { uploadToCloudinary, type UploadProgress } from '@/lib/cloudinary';
+import { uploadToLocal, type UploadProgress } from '@/lib/local-upload';
 import { useToast } from '@/hooks/use-toast';
 
 interface CloudinaryMultiImageUploadProps {
@@ -46,7 +46,7 @@ export default function CloudinaryMultiImageUpload({
     setProgress(prev => ({ ...prev, [index]: 0 }));
 
     try {
-      const url = await uploadToCloudinary(file, (prog: UploadProgress) => {
+      const url = await uploadToLocal(file, (prog: UploadProgress) => {
         setProgress(prev => ({ ...prev, [index]: prog.percentage }));
       });
 
@@ -105,7 +105,7 @@ export default function CloudinaryMultiImageUpload({
       setUploadingIndexes(prev => [...prev, emptyIndex]);
       
       try {
-        const url = await uploadToCloudinary(file, (prog: UploadProgress) => {
+        const url = await uploadToLocal(file, (prog: UploadProgress) => {
           setProgress(prev => ({ ...prev, [emptyIndex]: prog.percentage }));
         });
 

@@ -28,6 +28,7 @@ const MaterialsListingPage2S = lazy(() => import("@/pages/shop/MaterialsListingP
 const DealerProfile2S = lazy(() => import("@/pages/shop/DealerProfile2S"));
 const MaterialDetailsPage2S = lazy(() => import("@/pages/shop/MaterialDetailsPage2S"));
 const BuyNowRequest = lazy(() => import("@/pages/shop/BuyNowRequest2S"));
+const OrderSuccess = lazy(() => import("@/pages/shop/OrderSuccess"));
 const TrackOrderToolbar = lazy(() => import("@/pages/shop/TrackOrder-toolbar2S"));
 const TrackOrder = lazy(() => import("@/pages/shop/TrackOrder2S"));
 const OrderDetailsPage = lazy(() => import("@/pages/shop/OrderDetailsPage2S"));
@@ -155,6 +156,7 @@ function AppRoutes() {
           <Route path="/shop/dealers" element={<MaterialsListingPage2S />} />
           <Route path="/shop/dealers/category/:category" element={<MaterialsListingPage2S />} />
           <Route path="/buy-now/:dealerId" element={<BuyNowRequest />} />
+          <Route path="/order-success" element={<OrderSuccess />} />
           <Route path="/track" element={<TrackOrderToolbar />} />
           <Route path="/track-order" element={<TrackOrderToolbar />} />
           <Route path="/track-order-old" element={<TrackOrder />} />

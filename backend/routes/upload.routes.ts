@@ -7,7 +7,7 @@ const router = Router();
 
 const uploadsDir = join(process.cwd(), 'public', 'uploads');
 
-router.post('/upload', async (req: Request, res: Response) => {
+router.post('/', async (req: Request, res: Response) => {
   try {
     const { image } = req.body;
 
@@ -37,7 +37,7 @@ router.post('/upload', async (req: Request, res: Response) => {
   }
 });
 
-router.post('/upload-multiple', async (req: Request, res: Response) => {
+router.post('/multiple', async (req: Request, res: Response) => {
   try {
     const { images } = req.body;
 

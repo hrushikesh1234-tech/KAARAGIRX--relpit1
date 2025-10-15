@@ -86,7 +86,7 @@ const BuyNowRequest = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
@@ -96,78 +96,98 @@ const BuyNowRequest = () => {
       return;
     }
     
-    // Prepare order data with individual cart items or direct buy item
-    const orderData = {
-      id: `ORD-${Math.floor(100000 + Math.random() * 900000)}`,
-      productName: directBuyItem 
-        ? directBuyItem.name 
-        : (items.length === 1 ? items[0].name : `${items.length} Items`),
-      quantity: directBuyItem ? directBuyItem.quantity : getItemCount(),
-      unit: directBuyItem ? directBuyItem.unit : 'items',
-      price: directBuyItem 
-        ? parseFloat(directBuyItem.price.toString()) 
-        : (items.length === 1 ? parseFloat(items[0].price.toString()) : parseFloat(subtotal.toFixed(2))),
-      total: parseFloat(total.toFixed(2)),
-      status: 'pending',
-      phone: formData.phone,
-      address: `${formData.address}, ${formData.city}, ${formData.pincode}`,
-      orderDate: new Date().toISOString(),
-      estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      dealerName: dealer.name,
-      dealerPhone: dealer.phone,
-      deliveryCharge: parseFloat(deliveryCharge.toFixed(2)),
-      tax: parseFloat(tax.toFixed(2)),
-      subtotal: parseFloat(subtotal.toFixed(2)),
-      items: directBuyItem 
-        ? [{
-            id: directBuyItem.id,
-            name: directBuyItem.name,
-            price: parseFloat(directBuyItem.price.toString()),
-            quantity: directBuyItem.quantity,
-            unit: directBuyItem.unit,
-            image: directBuyItem.image,
-            dealerName: directBuyItem.dealerName,
-            dealerId: directBuyItem.dealerId
-          }]
-        : items.map(item => ({
-            id: item.id,
-            name: item.name,
-            price: parseFloat(item.price.toString()),
-            quantity: item.quantity,
-            unit: item.unit,
-            image: item.image,
-            dealerName: item.dealerName,
-            dealerId: item.dealerId
-          }))
-    };
-    
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // Prepare order data with individual cart items or direct buy item
+      const orderData = {
+        id: `ORD-${Date.now()}-${Math.floor(100000 + Math.random() * 900000)}`,
+        orderNumber: `ORD-${Date.now()}`,
+        productName: directBuyItem 
+          ? directBuyItem.name 
+          : (items.length === 1 ? items[0].name : `${items.length} Items`),
+        quantity: directBuyItem ? directBuyItem.quantity : getItemCount(),
+        unit: directBuyItem ? directBuyItem.unit : 'items',
+        price: directBuyItem 
+          ? directBuyItem.price.toString() 
+          : (items.length === 1 ? items[0].price.toString() : subtotal.toFixed(2)),
+        total: total.toFixed(2),
+        subtotal: subtotal.toFixed(2),
+        deliveryCharge: deliveryCharge.toFixed(2),
+        tax: tax.toFixed(2),
+        status: 'pending',
+        phone: formData.phone,
+        contactPhone: formData.phone,
+        address: `${formData.address}, ${formData.city}, ${formData.pincode}`,
+        shippingAddress: `${formData.address}, ${formData.city}, ${formData.pincode}`,
+        estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        dealerName: dealer.name,
+        dealerId: parseInt(dealerId || '0'),
+        dealerPhone: (dealer as any).phone || '',
+        dealerConfirmed: false,
+        customerConfirmed: false,
+        advancePaid: '0',
+        dueAmount: total.toFixed(2),
+        isAdvancePaid: false,
+        isDuePaid: false,
+        paymentStatus: 'pending',
+        items: directBuyItem 
+          ? [{
+              productId: directBuyItem.id,
+              name: directBuyItem.name,
+              price: directBuyItem.price.toString(),
+              quantity: directBuyItem.quantity,
+              unit: directBuyItem.unit,
+              image: directBuyItem.image,
+              dealerId: parseInt(directBuyItem.dealerId)
+            }]
+          : items.map(item => ({
+              productId: item.id,
+              name: item.name,
+              price: item.price.toString(),
+              quantity: item.quantity,
+              unit: item.unit,
+              image: item.image,
+              dealerId: parseInt(item.dealerId)
+            }))
+      };
+      
+      // Save order to database
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(orderData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create order');
+      }
+
+      const createdOrder = await response.json();
       setIsSubmitting(false);
       
-      // Navigate to track order page with order data (track-order-old renders TrackOrder2S)
-      navigate('/track-order-old', { 
+      // Show success message with phone number
+      const successMessage = `Your order request has been submitted and our team will call you on ${formData.phone} to confirm the order in just a few minutes. Please stay tuned!`;
+      
+      // Navigate to success page with the message
+      navigate('/order-success', { 
         state: { 
-          order: orderData,
-          name: formData.name,
+          message: successMessage,
+          orderId: createdOrder.id,
+          orderNumber: createdOrder.orderNumber,
           phone: formData.phone,
-          address: formData.address,
-          city: formData.city,
-          pincode: formData.pincode,
-          notes: formData.notes,
-          dealerName: dealer.name,
-          dealerPhone: dealer.phone,
-          productName: orderData.productName,
-          quantity: orderData.quantity,
-          unit: orderData.unit,
-          price: orderData.price,
-          total: orderData.total,
-          deliveryCharge: orderData.deliveryCharge,
-          tax: orderData.tax,
-          subtotal: orderData.subtotal
+          total: orderData.total
         } 
       });
-    }, 1500);
+      
+      // Clear cart if using cart items (not direct buy)
+      if (!directBuyItem && items.length > 0) {
+        // Cart will be cleared on the success page or by the user
+      }
+    } catch (error) {
+      console.error('Error creating order:', error);
+      setIsSubmitting(false);
+      alert('Failed to submit order. Please try again.');
+    }
   };
 
   if (isLoading || !dealer) {

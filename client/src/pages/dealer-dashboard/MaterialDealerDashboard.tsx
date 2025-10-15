@@ -114,6 +114,13 @@ export default function MaterialDealerDashboard() {
     ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length 
     : 0;
 
+  const customTabs = [
+    { id: 'portfolio', label: 'Portfolio' },
+    { id: 'orders', label: 'Orders' },
+    { id: 'about', label: 'About' },
+    { id: 'reviews', label: 'Reviews' }
+  ];
+
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/login");
@@ -483,9 +490,10 @@ export default function MaterialDealerDashboard() {
           onEditProfile={() => navigate("/profile/edit")}
           averageRating={averageRating}
           reviewCount={reviews.length}
+          isOwnProfile={true}
         />
 
-        <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
+        <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} customTabs={customTabs} />
 
         {activeTab === "portfolio" && (
           <div className="px-4 py-6">
@@ -563,6 +571,74 @@ export default function MaterialDealerDashboard() {
                         <span className="text-[10px] font-medium">{material.quantity} in stock</span>
                       </div>
                     )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "orders" && (
+          <div className="px-4 py-6">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-semibold">Orders</h3>
+            </div>
+
+            {orders.length === 0 ? (
+              <div className="text-center py-12 text-gray-400">
+                <ShoppingBag className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <p>No orders yet</p>
+                <p className="text-sm mt-2">Customer orders will appear here</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {orders.map((order) => (
+                  <div key={order.id} className="bg-gray-900/50 rounded-lg p-4 border border-gray-800">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <p className="font-medium text-white">
+                          Order #{order.orderNumber}
+                        </p>
+                        <p className="text-sm text-gray-400 mt-1">
+                          {order.productName}
+                        </p>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        order.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
+                        order.status === 'processing' ? 'bg-blue-500/20 text-blue-400' :
+                        order.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                        order.status === 'delivered' ? 'bg-purple-500/20 text-purple-400' :
+                        'bg-red-500/20 text-red-400'
+                      }`}>
+                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                      </span>
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Quantity:</span>
+                        <span className="text-white">{order.quantity} {order.unit}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Price per {order.unit}:</span>
+                        <span className="text-white">₹{Number(order.price).toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Total:</span>
+                        <span className="text-white font-medium">₹{Number(order.total).toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Customer Phone:</span>
+                        <span className="text-white">{order.phone}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Delivery Address:</span>
+                        <span className="text-white text-right max-w-[200px]">{order.address}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Order Date:</span>
+                        <span className="text-white">{new Date(order.orderDate).toLocaleDateString()}</span>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>

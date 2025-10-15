@@ -129,6 +129,13 @@ export default function RentalMerchantDashboard() {
     ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length 
     : 0;
 
+  const customTabs = [
+    { id: 'portfolio', label: 'Portfolio' },
+    { id: 'bookings', label: 'Bookings' },
+    { id: 'about', label: 'About' },
+    { id: 'reviews', label: 'Reviews' }
+  ];
+
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/login");
@@ -565,9 +572,10 @@ export default function RentalMerchantDashboard() {
           onEditProfile={() => navigate("/profile/edit")}
           averageRating={averageRating}
           reviewCount={reviews.length}
+          isOwnProfile={true}
         />
 
-        <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
+        <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} customTabs={customTabs} />
 
         {activeTab === "portfolio" && (
           <div className="px-4 py-6">
@@ -642,6 +650,78 @@ export default function RentalMerchantDashboard() {
                     </div>
                     <div className={`absolute top-2 left-2 ${getAvailabilityColor(eq)} rounded-full px-2 py-1`}>
                       <span className="text-[10px] font-medium">{eq.available}/{eq.quantity} available</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "bookings" && (
+          <div className="px-4 py-6">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-semibold">Bookings</h3>
+            </div>
+
+            {bookings.length === 0 ? (
+              <div className="text-center py-12 text-gray-400">
+                <Calendar className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <p>No bookings yet</p>
+                <p className="text-sm mt-2">Customer bookings will appear here</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {bookings.map((booking) => (
+                  <div key={booking.id} className="bg-gray-900/50 rounded-lg p-4 border border-gray-800">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <p className="font-medium text-white">
+                          Booking #{booking.bookingNumber || booking.id.slice(0, 8)}
+                        </p>
+                        <p className="text-sm text-gray-400 mt-1">
+                          Equipment ID: {booking.equipmentId}
+                        </p>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        booking.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
+                        booking.status === 'approved' ? 'bg-blue-500/20 text-blue-400' :
+                        booking.status === 'active' ? 'bg-green-500/20 text-green-400' :
+                        booking.status === 'completed' ? 'bg-gray-500/20 text-gray-400' :
+                        'bg-red-500/20 text-red-400'
+                      }`}>
+                        {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                      </span>
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Start Date:</span>
+                        <span className="text-white">{new Date(booking.startDate).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">End Date:</span>
+                        <span className="text-white">{new Date(booking.endDate).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Quantity:</span>
+                        <span className="text-white">{booking.quantity}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Total Cost:</span>
+                        <span className="text-white font-medium">₹{Number(booking.totalCost).toLocaleString()}</span>
+                      </div>
+                      {booking.deliveryAddress && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Delivery Address:</span>
+                          <span className="text-white text-right">{booking.deliveryAddress}</span>
+                        </div>
+                      )}
+                      {booking.notes && (
+                        <div className="mt-2 pt-2 border-t border-gray-800">
+                          <span className="text-gray-400">Notes:</span>
+                          <p className="text-white mt-1">{booking.notes}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}

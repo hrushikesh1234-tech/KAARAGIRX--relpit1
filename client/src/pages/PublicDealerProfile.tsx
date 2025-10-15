@@ -108,6 +108,14 @@ const PublicDealerProfile = () => {
     setReviewCount(reviews.length);
   }, [reviews]);
 
+  if (loading) {
+    return <div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>;
+  }
+
+  if (!dealer) {
+    return <div className="min-h-screen bg-black text-white flex items-center justify-center">Dealer not found</div>;
+  }
+
   const portfolioItems: PortfolioItem[] = materials.map(m => ({
     id: String(m.id),
     title: m.name,
@@ -139,14 +147,6 @@ const PublicDealerProfile = () => {
     profileImage: dealer?.profileImage || '/lovable-uploads/1c8904bf-5b78-4e55-88ea-dc5028083eef.png',
     isLive: false
   };
-
-  if (loading) {
-    return <div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>;
-  }
-
-  if (!dealer) {
-    return <div className="min-h-screen bg-black text-white flex items-center justify-center">Dealer not found</div>;
-  }
 
   const renderPortfolioTab = () => {
     if (portfolioItems.length === 0) {

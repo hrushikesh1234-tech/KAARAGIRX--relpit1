@@ -109,6 +109,14 @@ const PublicRentalMerchantProfile = () => {
     setReviewCount(reviews.length);
   }, [reviews]);
 
+  if (loading) {
+    return <div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>;
+  }
+
+  if (!merchant) {
+    return <div className="min-h-screen bg-black text-white flex items-center justify-center">Merchant not found</div>;
+  }
+
   const portfolioItems: PortfolioItem[] = equipment.map(e => ({
     id: String(e.id),
     title: e.name,
@@ -141,14 +149,6 @@ const PublicRentalMerchantProfile = () => {
     profileImage: merchant?.profileImage || '/lovable-uploads/1c8904bf-5b78-4e55-88ea-dc5028083eef.png',
     isLive: false
   };
-
-  if (loading) {
-    return <div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>;
-  }
-
-  if (!merchant) {
-    return <div className="min-h-screen bg-black text-white flex items-center justify-center">Merchant not found</div>;
-  }
 
   const renderPortfolioTab = () => {
     if (portfolioItems.length === 0) {

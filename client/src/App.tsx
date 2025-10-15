@@ -70,6 +70,10 @@ const CustomerDashboard = lazy(() => import("@/pages/customer-dashboard/Customer
 const CustomerEditProfile = lazy(() => import("@/pages/customer-dashboard/CustomerEditProfile"));
 const AdminDashboard = lazy(() => import("@/pages/admin-dashboard/AdminDashboard"));
 
+// Public Profile Pages
+const PublicDealerProfile = lazy(() => import("@/pages/PublicDealerProfile"));
+const PublicRentalMerchantProfile = lazy(() => import("@/pages/PublicRentalMerchantProfile"));
+
 // Loading spinner component
 function LoadingSpinner() {
   return (
@@ -170,6 +174,10 @@ function AppRoutes() {
           <Route path="/professionals" element={<ProfessionalsListingPage />} />
           <Route path="/professionals/:id" element={<PublicProfessionalProfile />} />
           <Route path="/projects/:id/:professionalId" element={<ProjectPage />} />
+          
+          {/* Public Dealer and Rental Merchant Profiles */}
+          <Route path="/dealer-public/:id" element={<PublicDealerProfile />} />
+          <Route path="/rental-merchant-public/:id" element={<PublicRentalMerchantProfile />} />
           
           {/* Authentication */}
           <Route path="/login" element={<LoginPage />} />

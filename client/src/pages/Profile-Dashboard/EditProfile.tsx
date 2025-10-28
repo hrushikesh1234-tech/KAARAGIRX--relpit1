@@ -131,17 +131,18 @@ const EditProfile: React.FC<EditProfileProps> = ({ onBack, onSave, initialData, 
   const handleAddPortfolio = async () => {
     if (newPortfolio.title && newPortfolio.images.length > 0 && professionalId) {
       try {
+        const bhkValue = newPortfolio.bhk && newPortfolio.bhk.trim() ? parseInt(newPortfolio.bhk) : undefined;
         await createProjectMutation.mutateAsync({
           professionalId,
           title: newPortfolio.title,
           name: newPortfolio.title,
-          description: newPortfolio.description,
+          description: newPortfolio.description || '',
           propertyType: 'Residential',
           type: newPortfolio.category || 'General',
-          budget: newPortfolio.budget,
-          completionYear: newPortfolio.buildDate,
-          completionDate: newPortfolio.buildDate,
-          bhk: newPortfolio.bhk ? parseInt(newPortfolio.bhk) : undefined,
+          budget: newPortfolio.budget || '',
+          completionYear: newPortfolio.buildDate || '',
+          completionDate: newPortfolio.buildDate || '',
+          bhk: bhkValue,
           coverImage: newPortfolio.images[0],
           images: newPortfolio.images
         });
@@ -254,18 +255,19 @@ const EditProfile: React.FC<EditProfileProps> = ({ onBack, onSave, initialData, 
   const handleUpdatePortfolio = async () => {
     if (editingPortfolioId && newPortfolio.title && newPortfolio.images.length > 0 && professionalId) {
       try {
+        const bhkValue = newPortfolio.bhk && newPortfolio.bhk.trim() ? parseInt(newPortfolio.bhk) : undefined;
         await updateProjectMutation.mutateAsync({
           id: editingPortfolioId,
           professionalId,
           title: newPortfolio.title,
           name: newPortfolio.title,
-          description: newPortfolio.description,
+          description: newPortfolio.description || '',
           propertyType: 'Residential',
           type: newPortfolio.category || 'General',
-          budget: newPortfolio.budget,
-          completionYear: newPortfolio.buildDate,
-          completionDate: newPortfolio.buildDate,
-          bhk: newPortfolio.bhk ? parseInt(newPortfolio.bhk) : undefined,
+          budget: newPortfolio.budget || '',
+          completionYear: newPortfolio.buildDate || '',
+          completionDate: newPortfolio.buildDate || '',
+          bhk: bhkValue,
           coverImage: newPortfolio.images[0],
           images: newPortfolio.images
         });

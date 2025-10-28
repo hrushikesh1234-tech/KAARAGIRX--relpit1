@@ -60,12 +60,21 @@ export class ProjectController {
 
   async createProject(req: Request, res: Response) {
     try {
+      console.log('Creating project with data:', JSON.stringify(req.body, null, 2));
       const validatedData = createProjectSchema.parse(req.body);
       const project = await projectService.createProject(validatedData);
       res.status(201).json(project);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: error.errors });
+        console.error('Validation error creating project:', JSON.stringify(error.errors, null, 2));
+        return res.status(400).json({ 
+          error: 'Validation failed', 
+          details: error.errors.map(e => ({
+            field: e.path.join('.'),
+            message: e.message,
+            code: e.code
+          }))
+        });
       }
       console.error('Error creating project:', error);
       res.status(500).json({ error: 'Failed to create project' });

@@ -129,54 +129,75 @@ const EditProfile: React.FC<EditProfileProps> = ({ onBack, onSave, initialData, 
   };
 
   const handleAddPortfolio = async () => {
-    if (newPortfolio.title && newPortfolio.images.length > 0 && professionalId) {
-      try {
-        const bhkValue = newPortfolio.bhk && newPortfolio.bhk.trim() ? parseInt(newPortfolio.bhk) : undefined;
-        await createProjectMutation.mutateAsync({
-          professionalId,
-          title: newPortfolio.title,
-          name: newPortfolio.title,
-          description: newPortfolio.description || '',
-          propertyType: 'Residential',
-          type: newPortfolio.category || 'General',
-          budget: newPortfolio.budget || '',
-          completionYear: newPortfolio.buildDate || '',
-          completionDate: newPortfolio.buildDate || '',
-          bhk: bhkValue,
-          coverImage: newPortfolio.images[0],
-          images: newPortfolio.images
-        });
-        
-        setNewPortfolio({ 
-          title: '', 
-          thumbnail: '', 
-          images: [],
-          mediaCount: 0, 
-          description: '', 
-          category: '',
-          bhk: '',
-          buildDate: '',
-          budget: '',
-          specifications: [],
-          specificationInput: ''
-        });
-        setShowAddPortfolio(false);
-        
-        toast({
-          title: "Success",
-          description: "Portfolio added successfully",
-        });
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to add portfolio",
-          variant: "destructive",
-        });
-      }
-    } else if (newPortfolio.images.length === 0) {
+    const validImages = newPortfolio.images.filter(img => img !== null && img !== undefined && img !== '');
+    
+    if (!newPortfolio.title) {
       toast({
-        title: "No images",
-        description: "Please upload at least one image",
+        title: "Missing title",
+        description: "Please enter a portfolio title",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (validImages.length === 0) {
+      toast({
+        title: "No valid images",
+        description: "Please upload at least one valid image",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!professionalId) {
+      toast({
+        title: "Error",
+        description: "Professional profile not found",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      const bhkValue = newPortfolio.bhk && newPortfolio.bhk.trim() ? parseInt(newPortfolio.bhk) : undefined;
+      await createProjectMutation.mutateAsync({
+        professionalId,
+        title: newPortfolio.title,
+        name: newPortfolio.title,
+        description: newPortfolio.description || '',
+        propertyType: 'Residential',
+        type: newPortfolio.category || 'General',
+        budget: newPortfolio.budget || '',
+        completionYear: newPortfolio.buildDate || '',
+        completionDate: newPortfolio.buildDate || '',
+        bhk: bhkValue,
+        coverImage: validImages[0],
+        images: validImages
+      });
+      
+      setNewPortfolio({ 
+        title: '', 
+        thumbnail: '', 
+        images: [],
+        mediaCount: 0, 
+        description: '', 
+        category: '',
+        bhk: '',
+        buildDate: '',
+        budget: '',
+        specifications: [],
+        specificationInput: ''
+      });
+      setShowAddPortfolio(false);
+      
+      toast({
+        title: "Success",
+        description: "Portfolio added successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add portfolio",
         variant: "destructive",
       });
     }
@@ -253,52 +274,88 @@ const EditProfile: React.FC<EditProfileProps> = ({ onBack, onSave, initialData, 
   };
 
   const handleUpdatePortfolio = async () => {
-    if (editingPortfolioId && newPortfolio.title && newPortfolio.images.length > 0 && professionalId) {
-      try {
-        const bhkValue = newPortfolio.bhk && newPortfolio.bhk.trim() ? parseInt(newPortfolio.bhk) : undefined;
-        await updateProjectMutation.mutateAsync({
-          id: editingPortfolioId,
-          professionalId,
-          title: newPortfolio.title,
-          name: newPortfolio.title,
-          description: newPortfolio.description || '',
-          propertyType: 'Residential',
-          type: newPortfolio.category || 'General',
-          budget: newPortfolio.budget || '',
-          completionYear: newPortfolio.buildDate || '',
-          completionDate: newPortfolio.buildDate || '',
-          bhk: bhkValue,
-          coverImage: newPortfolio.images[0],
-          images: newPortfolio.images
-        });
-        
-        setNewPortfolio({ 
-          title: '', 
-          thumbnail: '', 
-          images: [],
-          mediaCount: 0, 
-          description: '', 
-          category: '',
-          bhk: '',
-          buildDate: '',
-          budget: '',
-          specifications: [],
-          specificationInput: ''
-        });
-        setShowAddPortfolio(false);
-        setEditingPortfolioId(null);
-        
-        toast({
-          title: "Success",
-          description: "Portfolio updated successfully",
-        });
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to update portfolio",
-          variant: "destructive",
-        });
-      }
+    const validImages = newPortfolio.images.filter(img => img !== null && img !== undefined && img !== '');
+    
+    if (!editingPortfolioId) {
+      toast({
+        title: "Error",
+        description: "No portfolio selected for editing",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!newPortfolio.title) {
+      toast({
+        title: "Missing title",
+        description: "Please enter a portfolio title",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (validImages.length === 0) {
+      toast({
+        title: "No valid images",
+        description: "Please upload at least one valid image",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!professionalId) {
+      toast({
+        title: "Error",
+        description: "Professional profile not found",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      const bhkValue = newPortfolio.bhk && newPortfolio.bhk.trim() ? parseInt(newPortfolio.bhk) : undefined;
+      await updateProjectMutation.mutateAsync({
+        id: editingPortfolioId,
+        professionalId,
+        title: newPortfolio.title,
+        name: newPortfolio.title,
+        description: newPortfolio.description || '',
+        propertyType: 'Residential',
+        type: newPortfolio.category || 'General',
+        budget: newPortfolio.budget || '',
+        completionYear: newPortfolio.buildDate || '',
+        completionDate: newPortfolio.buildDate || '',
+        bhk: bhkValue,
+        coverImage: validImages[0],
+        images: validImages
+      });
+      
+      setNewPortfolio({ 
+        title: '', 
+        thumbnail: '', 
+        images: [],
+        mediaCount: 0, 
+        description: '', 
+        category: '',
+        bhk: '',
+        buildDate: '',
+        budget: '',
+        specifications: [],
+        specificationInput: ''
+      });
+      setShowAddPortfolio(false);
+      setEditingPortfolioId(null);
+      
+      toast({
+        title: "Success",
+        description: "Portfolio updated successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update portfolio",
+        variant: "destructive",
+      });
     }
   };
 
